@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quantum Orbital Simulation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <style>
+/* ================= CSS FRAMEWORK-READY 2026 – VERSION 4.0 ================= */
+
+@layer reset, variables, base, layout, panel, components, controls, hints, viewport, loading, panel2d, hud;
+
+/* ========= RESET ========= */
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* ====== DESIGN TOKENS ======= */
+@layer variables {
+  :root {
+    /* Palette originale */
+    --accent: #ff9a3c;
+    --accent-dim: #c07020;
+    --accent-muted: #7a4a18;
+    --accent-ghost: #3a2010;
+    --bg-deep: #050302;
+    --bg-panel: #080504;
+    --bg-card: #0d0806;
+    --border: #2a1608;
+    --text-primary: #ff9a3c;
+    --text-secondary: #a07040;
+    --text-dim: #5a3a18;
+
+    --panel-width: 260px;
+    --hud-height: 40px;
+
+    /* Glow tokens */
+    --glow-1: 0 0 14px rgba(255, 154, 60, 0.45);
+    --glow-2: 0 0 10px rgba(255, 154, 60, 0.30);
+    --glow-3: 0 0 30px rgba(255, 130, 40, 0.12);
+    --glow-4: 0 0 80px rgba(120, 50, 10, 0.12);
+
+    /* Spacing scale */
+    --s-1: 4px;
+    --s-2: 6px;
+    --s-3: 8px;
+    --s-4: 10px;
+    --s-5: 12px;
+    --s-6: 14px;
+    --s-7: 16px;
+    --s-8: 18px;
+    --s-9: 20px;
+    --s-10: 28px;
+
+    /* NEW – Type scale */
+    --fs-1: clamp(7px, 0.6vw, 9px);
+    --fs-2: clamp(9px, 0.75vw, 11px);
+    --fs-3: clamp(11px, 0.85vw, 13px);
+    --fs-4: clamp(13px, 1vw, 16px);
+    --fs-5: clamp(19px, 1.6vw, 24px);
+
+    /* NEW – Radius scale */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-pill: 9999px;
+
+    /* NEW – Motion scale */
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-emphasis: cubic-bezier(0.3, 0, 0.2, 1);
+    --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+    --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  /* High Contrast Mode */
+  :root[data-contrast="high"] {
+    --accent: #ffb56a;
+    --accent-dim: #ff9a3c;
+    --text-primary: #ffd8a8;
+    --border: #ffb56a;
+    --text-dim: #ffcc99;
+  }
+
+  /* Low Performance Mode (no glow) */
+  :root[data-performance="low"] {
+    --glow-1: none;
+    --glow-2: none;
+    --glow-3: none;
+    --glow-4: none;
+  }
+}
+
+/* ================= BASE ================= */
+@layer base {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    background: var(--bg-deep);
+    font-family: "Oxanium", monospace;
+    font-size: var(--fs-3);
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+  }
+
+  :focus-visible {
+    scroll-margin: 20px;
+  }
+}
+
+/* ================= APP LAYOUT ================= */
+@layer layout {
+  #app {
+    display: grid;
+    grid-template-columns: var(--panel-width) 1fr;
+    grid-template-rows: 1fr var(--hud-height);
+    height: 100vh;
+    width: 100vw;
+  }
+}
+
+/* ================= PANEL ================= */
+@layer panel {
+  #panel {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-dim) var(--bg-deep);
+  }
+  #panel::-webkit-scrollbar {
+    width: 5px;
+  }
+  #panel::-webkit-scrollbar-track {
+    background: var(--bg-deep);
+  }
+  #panel::-webkit-scrollbar-thumb {
+    background: var(--accent-dim);
+    border-radius: var(--radius-pill);
+  }
+  #panel::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+
+  .panel-header {
+    padding: var(--s-8) var(--s-7) var(--s-6);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-panel);
+    z-index: 2;
+  }
+  .panel-header .app-name {
+    font-size: var(--fs-1);
+    letter-spacing: 4px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: var(--s-2);
+  }
+  .panel-header .title {
+    font-size: var(--fs-4);
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    line-height: 1.2;
+  }
+
+  .panel-section {
+    padding: var(--s-6) var(--s-7);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .section-label {
+    font-size: var(--fs-1);
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: var(--s-1);
+  }
+
+  /* Card de base réutilisable */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+
+  .qn-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--s-3);
+  }
+  .qn-card {
+    composes: card; /* ou .card en pur CSS ci-dessous */
+    padding: var(--s-3) var(--s-2) var(--s-2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-1);
+  }
+  .qn-card-label,
+  .qn-card-name {
+    font-size: var(--fs-1);
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .qn-card-val {
+    font-size: var(--fs-5);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+    font-family: "Share Tech Mono", monospace;
+    text-shadow: var(--glow-1);
+  }
+
+  .energy-row {
+    composes: card;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--s-3) var(--s-5);
+  }
+  .energy-label {
+    font-size: var(--fs-1);
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .energy-value {
+    font-family: "Share Tech Mono", monospace;
+    font-size: var(--fs-3);
+    color: var(--accent);
+    text-shadow: var(--glow-2);
+  }
+}
+
+/* ================= TOGGLE ================= */
+@layer components {
+  .anim-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+  }
+  .toggle-label {
+    font-size: var(--fs-2);
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .toggle-wrap {
+    position: relative;
+    width: 42px;
+    height: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .toggle-wrap input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-pill);
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    transition: background 0.28s var(--ease-standard),
+                border-color 0.28s var(--ease-standard);
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    transition: transform 0.28s var(--ease-standard),
+                background 0.28s var(--ease-standard),
+                box-shadow 0.28s var(--ease-standard);
+  }
+
+  .toggle-wrap:has(input:checked) .toggle-track {
+    background: #1a0d05;
+    border-color: var(--accent-muted);
+  }
+  .toggle-wrap:has(input:checked) .toggle-thumb {
+    transform: translateX(22px);
+    background: var(--accent);
+    box-shadow: 0 0 16px rgba(255, 154, 60, 0.75);
+  }
+}
+
+/* ================= CONTROLS ================= */
+@layer controls {
+  .control-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .control-row label {
+    font-size: var(--fs-2);
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .control-inline {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+  }
+
+  select {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: var(--fs-3);
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease-standard);
+  }
+  select:focus {
+    border-color: var(--accent-muted);
+  }
+
+  input[type="range"] {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: var(--radius-pill);
+    outline: none;
+    -webkit-appearance: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border: 2px solid var(--bg-panel);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--glow-2);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border: 2px solid var(--bg-panel);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--glow-2);
+  }
+
+  button {
+    background: var(--bg-card);
+    border: 1px solid var(--accent-ghost);
+    color: var(--accent-dim);
+    padding: var(--s-2) var(--s-5);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--fs-3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.22s var(--ease-standard);
+    white-space: nowrap;
+  }
+  button:hover {
+    background: #150c05;
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 0 18px rgba(255, 154, 60, 0.25);
+  }
+  button:active {
+    transform: scale(0.965);
+  }
+  .btn-generate {
+    width: 100%;
+    padding: var(--s-4);
+    font-size: var(--fs-3);
+    letter-spacing: 2px;
+    border-color: var(--accent-muted);
+    color: var(--accent);
+    margin-top: var(--s-2);
+  }
+  .btn-2d {
+    font-size: var(--fs-2);
+    border-color: var(--accent-ghost);
+    color: var(--text-dim);
+  }
+  .btn-2d.active {
+    border-color: var(--accent-muted);
+    color: var(--accent-dim);
+  }
+
+  button:focus-visible,
+  select:focus-visible,
+  input[type="range"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+/* ================= HINTS ================= */
+@layer hints {
+  .hints {
+    padding: var(--s-6) var(--s-7);
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+  }
+  .hint-item {
+    display: flex;
+    gap: var(--s-4);
+    align-items: baseline;
+    margin-bottom: var(--s-2);
+  }
+  .hint-key {
+    font-size: var(--fs-1);
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    min-width: 70px;
+    text-transform: uppercase;
+  }
+  .hint-desc {
+    font-size: var(--fs-2);
+    color: var(--text-dim);
+  }
+}
+
+/* ================= VIEWPORT ================= */
+@layer viewport {
+  #viewport {
+    grid-column: 2;
+    grid-row: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-deep);
+    background-image: linear-gradient(rgba(255, 154, 60, 0.015) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 154, 60, 0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    overflow: hidden;
+  }
+  canvas#atomSimCanvas {
+    display: block;
+    cursor: grab;
+    border: 1px solid #1a0d04;
+    box-shadow: var(--glow-3), var(--glow-4), inset 0 0 0 1px rgba(255, 154, 60, 0.04);
+    border-radius: var(--radius-sm);
+    max-width: calc(100% - 40px);
+    max-height: calc(100% - 40px);
+  }
+  canvas#atomSimCanvas:active {
+    cursor: grabbing;
+  }
+}
+
+/* ================= LOADING ================= */
+@layer loading {
+  #loading,
+  #progressBar {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    text-align: center;
+  }
+  #loading {
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(5, 3, 2, 0.88);
+    border: 1px solid var(--accent);
+    padding: var(--s-5) var(--s-9);
+    color: var(--accent);
+    font-size: var(--fs-3);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
+    animation: pulse-text 1.8s var(--ease-standard) infinite;
+  }
+  #progressBar {
+    top: calc(50% + 38px);
+    color: var(--text-dim);
+    font-size: var(--fs-1);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  @keyframes pulse-text {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+}
+
+/* ================= 2D PANEL ================= */
+@layer panel2d {
+  #panel2d {
+    position: absolute;
+    bottom: var(--s-7);
+    right: var(--s-7);
+    z-index: 20;
+    width: 300px;
+    height: 220px;
+    border: 1px solid rgba(255, 154, 60, 0.22);
+    background: rgba(5, 3, 2, 0.93);
+    backdrop-filter: blur(6px);
+    display: none;
+    flex-direction: column;
+    box-shadow: var(--glow-3);
+    border-radius: var(--radius-md);
+  }
+  #panel2d.visible {
+    display: flex;
+  }
+  #panel2d-title {
+    font-size: var(--fs-1);
+    letter-spacing: 0.2em;
+    padding: var(--s-2) var(--s-4);
+    color: rgba(255, 154, 60, 0.45);
+    border-bottom: 1px solid rgba(255, 154, 60, 0.12);
+    text-transform: uppercase;
+  }
+  #c2d {
+    width: 300px;
+    height: 195px;
+    display: block;
+  }
+}
+
+/* ================= HUD ================= */
+@layer hud {
+  #hud {
+    grid-column: 2;
+    grid-row: 2;
+    background: rgba(5, 3, 2, 0.95);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--s-10);
+    gap: var(--s-10);
+    overflow: hidden;
+  }
+  #hud-stats {
+    display: flex;
+    align-items: center;
+    gap: var(--s-10);
+  }
+  .hud-item {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    white-space: nowrap;
+  }
+  .hud-item + .hud-item {
+    border-left: 1px solid var(--border);
+    padding-left: var(--s-10);
+  }
+  .hud-label {
+    font-size: var(--fs-1);
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .hud-val {
+    font-size: var(--fs-3);
+    color: var(--accent-dim);
+    font-variant-numeric: tabular-nums;
+    font-family: "Share Tech Mono", monospace;
+  }
+  .hud-spacer {
+    flex: 1;
+  }
+  .hud-badge {
+    font-size: var(--fs-1);
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+}
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+<div id="app">
+
+  <!-- ── PANEL GAUCHE ── -->
+  <aside id="panel" aria-label="Orbital control panel">
+
+    <header class="panel-header">
+      <hgroup>
+        <p class="app-name">Quantum Lab</p>
+        <h1 class="title">Orbital Density<br>Viewer</h1>
+      </hgroup>
+    </header>
+
+    <!-- State live display -->
+    <section class="panel-section">
+      <h2 class="section-label">State</h2>
+      <div class="qn-grid">
+        <div class="qn-card">
+          <span class="qn-card-label">N</span>
+          <span class="qn-card-val" id="qn-n">2</span>
+          <span class="qn-card-name">Principal</span>
+        </div>
+        <div class="qn-card">
+          <span class="qn-card-label">L</span>
+          <span class="qn-card-val" id="qn-l">1</span>
+          <span class="qn-card-name">Angular</span>
+        </div>
+        <div class="qn-card">
+          <span class="qn-card-label">M</span>
+          <span class="qn-card-val" id="qn-m">0</span>
+          <span class="qn-card-name">Magnetic</span>
+        </div>
+      </div>
+      <div class="energy-row">
+        <span class="energy-label">Energy</span>
+        <span class="energy-value" id="energy-val">−3.40 eV</span>
+      </div>
+    </section>
+
+    <!-- Preset selector -->
+    <section class="panel-section">
+      <h2 class="section-label">Orbital</h2>
+      <div class="control-row">
+        <label for="orbitalSel">Preset</label>
+        <select id="orbitalSel">
+          <optgroup label="n = 1">
+            <option value="1_0_0">1s</option>
+          </optgroup>
+          <optgroup label="n = 2">
+            <option value="2_0_0">2s</option>
+            <option value="2_1_-1">2p<sub>x</sub> (m=−1)</option>
+            <option value="2_1_1">2p<sub>y</sub> (m=1)</option>
+            <option value="2_1_0" selected>2p<sub>z</sub> (m=0)</option>
+          </optgroup>
+          <optgroup label="n = 3">
+            <option value="3_0_0">3s</option>
+            <option value="3_1_0">3p<sub>z</sub></option>
+            <option value="3_1_1">3p (m=1)</option>
+            <option value="3_2_0">3d<sub>z²</sub></option>
+            <option value="3_2_1">3d<sub>xz</sub> (m=1)</option>
+            <option value="3_2_2">3d<sub>x²−y²</sub> (m=2)</option>
+          </optgroup>
+          <optgroup label="n = 4">
+            <option value="4_0_0">4s</option>
+            <option value="4_1_0">4p<sub>z</sub></option>
+            <option value="4_2_0">4d<sub>z²</sub></option>
+            <option value="4_2_2">4d<sub>x²−y²</sub></option>
+            <option value="4_3_0">4f<sub>z³</sub> (m=0)</option>
+            <option value="4_3_1">4f (m=1)</option>
+            <option value="4_3_2">4f (m=2)</option>
+            <option value="4_3_3">4f<sub>x³</sub> (m=3)</option>
+          </optgroup>
+          <optgroup label="n = 5">
+            <option value="5_0_0">5s</option>
+            <option value="5_2_0">5d<sub>z²</sub></option>
+            <option value="5_3_0">5f (m=0)</option>
+            <option value="5_4_0">5g (m=0)</option>
+            <option value="5_4_4">5g (m=4)</option>
+          </optgroup>
+          <optgroup label="n = 6">
+            <option value="6_0_0">6s</option>
+            <option value="6_3_0">6f (m=0)</option>
+            <option value="6_4_2">6g (m=2)</option>
+            <option value="6_5_0">6h (m=0)</option>
+            <option value="6_5_5">6h (m=5)</option>
+          </optgroup>
+          <optgroup label="n = 7">
+            <option value="7_0_0">7s</option>
+            <option value="7_4_0">7g (m=0)</option>
+            <option value="7_6_0">7i (m=0)</option>
+            <option value="7_6_6">7i (m=6)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:4px;">
+        <button id="btnGen" class="btn-generate" type="button" style="flex:1">▶ Generate</button>
+        <button id="btnRandom" class="btn-generate" type="button" style="flex:0 0 auto;padding:8px 10px;letter-spacing:0" title="Random orbital">⚄</button>
+      </div>
+    </section>
+
+    <!-- Render settings -->
+    <section class="panel-section">
+      <h2 class="section-label">Render</h2>
+
+      <div class="control-row">
+        <label for="nParts">Particles</label>
+        <div class="control-inline">
+          <input type="range" id="nParts" min="2000" max="60000" value="15000" step="1000">
+          <output class="range-val" id="nPartsVal">15 000</output>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <label for="ptSize">Point size</label>
+        <div class="control-inline">
+          <input type="range" id="ptSize" min="1" max="10" value="3" step="1">
+          <output class="range-val" id="ptSizeVal">3</output>
+        </div>
+      </div>
+
+      <div class="anim-row">
+        <span class="toggle-label">Animate flow</span>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="animToggle" checked>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Extras -->
+    <section class="panel-section">
+      <h2 class="section-label">Extras</h2>
+      <button id="btn2d" class="btn-2d" type="button">◈ Photoelectric 2D</button>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:2px;">
+        <input type="file" id="jsonInput" accept=".json" style="display:none">
+        <button class="btn-2d" type="button" onclick="document.getElementById('jsonInput').click()">⬆ Import JSON</button>
+      </label>
+      <div class="anim-row" style="margin-top:2px;">
+        <span class="toggle-label">Alt colormap</span>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="colorToggle">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+      </div>
+    </section>
+
+    <nav class="hints" aria-label="Controls">
+      <ul>
+        <li class="hint-item"><span class="hint-key">Left drag</span><span class="hint-desc">Orbit camera</span></li>
+        <li class="hint-item"><span class="hint-key">Scroll</span><span class="hint-desc">Zoom in / out</span></li>
+        <li class="hint-item"><span class="hint-key">W / S</span><span class="hint-desc">n ± 1</span></li>
+        <li class="hint-item"><span class="hint-key">E / D</span><span class="hint-desc">l ± 1</span></li>
+        <li class="hint-item"><span class="hint-key">R / F</span><span class="hint-desc">m ± 1</span></li>
+        <li class="hint-item"><span class="hint-key">T / G</span><span class="hint-desc">N × 2 / ÷ 2</span></li>
+        <li class="hint-item"><span class="hint-key">A</span><span class="hint-desc">Toggle animation</span></li>
+        <li class="hint-item"><span class="hint-key">Q</span><span class="hint-desc">2D panel</span></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- ── VIEWPORT ── -->
+  <main id="viewport">
+    <canvas id="atomSimCanvas" width="800" height="600"
+      role="application" aria-label="Interactive quantum orbital simulation">
+    </canvas>
+
+    <div id="panel2d">
+      <div id="panel2d-title">◈ Photoelectric sim — click to emit waves</div>
+      <canvas id="c2d" width="300" height="195"></canvas>
+    </div>
+
+    <div id="loading"   role="status" aria-live="polite">Computing orbital…</div>
+    <div id="progressBar" role="status" aria-live="polite"></div>
+  </main>
+
+  <!-- ── HUD ── -->
+  <footer id="hud" role="region" aria-label="Simulation statistics">
+    <dl id="hud-stats">
+      <div class="hud-item">
+        <dt class="hud-label">FPS</dt>
+        <dd class="hud-val" id="iFps">--</dd>
+      </div>
+      <div class="hud-item">
+        <dt class="hud-label">Particles</dt>
+        <dd class="hud-val" id="iPts">--</dd>
+      </div>
+      <div class="hud-item">
+        <dt class="hud-label">Orbital</dt>
+        <dd class="hud-val" id="iOrb">2p₀</dd>
+      </div>
+      <div class="hud-item">
+        <dt class="hud-label">Cam dist</dt>
+        <dd class="hud-val" id="iDist">--</dd>
+      </div>
+    </dl>
+    <div class="hud-spacer"></div>
+    <small class="hud-badge">Quantum Orbital Visualization</small>
+  </footer>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     JAVASCRIPT — logique inchangée, ponts DOM adaptés
+     ══════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════
+//  PHYSICS ENGINE
+// ═══════════════════════════════════════════════
+
+function gamma(z) {
+  if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
+  z -= 1;
+  const C = [0.99999999999980993,676.5203681218851,-1259.1392167224028,
+    771.32342877765313,-176.61502916214059,12.507343278686905,
+    -0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  let x = C[0];
+  for (let i = 1; i < 9; i++) x += C[i] / (z + i);
+  const t = z + 7.5;
+  return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+}
+
+// ─── Cached CDF tables ──────────────────────────
+const _rCDF = {}, _tCDF = {};
+
+function buildRCDF(n, l) {
+  const key = `${n}_${l}`;
+  if (_rCDF[key]) return _rCDF[key];
+  const M = 4096, rMax = 10 * n * n;
+  const dr = rMax / (M - 1);
+  const cdf = new Float64Array(M);
+  let sum = 0;
+  const k = n - l - 1, alpha = 2 * l + 1;
+  for (let i = 0; i < M; i++) {
+    const r = i * dr, rho = 2 * r / n;
+    let L = 1;
+    if (k === 1) L = 1 + alpha - rho;
+    else if (k > 1) {
+      let Lm2 = 1, Lm1 = 1 + alpha - rho;
+      for (let j = 2; j <= k; j++) {
+        L = ((2*j-1+alpha-rho)*Lm1 - (j-1+alpha)*Lm2) / j;
+        Lm2 = Lm1; Lm1 = L;
+      }
+    }
+    const norm = Math.pow(2/n, 3) * gamma(n-l) / (2*n*gamma(n+l+1));
+    const R = Math.sqrt(norm) * Math.exp(-rho/2) * Math.pow(rho||0, l) * L;
+    const pdf = r * r * R * R;
+    if (isFinite(pdf)) sum += pdf;
+    cdf[i] = sum;
+  }
+  for (let i = 0; i < M; i++) cdf[i] /= sum;
+  return (_rCDF[key] = { cdf, rMax, M });
+}
+
+function buildTCDF(l, absM) {
+  const key = `${l}_${absM}`;
+  if (_tCDF[key]) return _tCDF[key];
+  const M = 2048;
+  const dt = Math.PI / (M - 1);
+  const cdf = new Float64Array(M);
+  let sum = 0;
+  for (let i = 0; i < M; i++) {
+    const theta = i * dt, x = Math.cos(theta);
+    let Pmm = 1;
+    if (absM > 0) {
+      const s = Math.sqrt((1-x)*(1+x));
+      let fact = 1;
+      for (let j = 1; j <= absM; j++) { Pmm *= -fact * s; fact += 2; }
+    }
+    let Plm = Pmm;
+    if (l > absM) {
+      let Pm1m = x * (2*absM+1) * Pmm;
+      if (l === absM+1) { Plm = Pm1m; }
+      else {
+        let pp = Pmm;
+        for (let ll = absM+2; ll <= l; ll++) {
+          const Pll = ((2*ll-1)*x*Pm1m - (ll+absM-1)*pp) / (ll-absM);
+          pp = Pm1m; Pm1m = Pll;
+        }
+        Plm = Pm1m;
+      }
+    }
+    const pdf = Math.sin(theta) * Plm * Plm;
+    if (isFinite(pdf)) sum += pdf;
+    cdf[i] = sum;
+  }
+  for (let i = 0; i < M; i++) cdf[i] /= sum || 1;
+  return (_tCDF[key] = { cdf, M });
+}
+
+function bsearch(cdf, u) {
+  let lo = 0, hi = cdf.length - 1;
+  while (lo < hi) { const mid = (lo+hi)>>1; if (cdf[mid] < u) lo=mid+1; else hi=mid; }
+  return lo;
+}
+
+function sampleR(n, l) {
+  const { cdf, rMax, M } = buildRCDF(n, l);
+  return bsearch(cdf, Math.random()) * (rMax / (M-1));
+}
+function sampleTheta(l, m) {
+  const { cdf, M } = buildTCDF(l, Math.abs(m));
+  return bsearch(cdf, Math.random()) * (Math.PI / (M-1));
+}
+function samplePhi() { return 2 * Math.PI * Math.random(); }
+
+// ─── Rejection samplers analytiques (par orbital nommée) ─
+const _a0 = 52.9; // Bohr radius pm
+function _rProb2p(r){ const x=r/_a0; return (x**4/24)*Math.exp(-x); }
+function _rProb3p(r){ const x=r/_a0; const R=x*(1-x/6)*Math.exp(-x/3); return R*R*r*r; }
+function _sampleR2p(){ const mx=15*_a0,pm=_rProb2p(4*_a0); for(;;){const r=Math.random()*mx; if(Math.random()<=_rProb2p(r)/pm)return r;} }
+function _sampleR3p(){ const mx=25*_a0,pm=_rProb3p(8*_a0); for(;;){const r=Math.random()*mx; if(Math.random()<=_rProb3p(r)/pm)return r;} }
+const _rT=()=>Math.acos(1-2*Math.random()), _rP=()=>2*Math.PI*Math.random();
+
+const NAMED_SAMPLERS = {
+  '2p_x': ()=>{ const r=_sampleR2p(); let t,p; for(;;){t=_rT();if(Math.random()<=Math.sin(t)**3)break;} for(;;){p=_rP();if(Math.random()<=Math.cos(p)**2)break;} return s2c(r,t,p); },
+  '2p_y': ()=>{ const r=_sampleR2p(); let t,p; for(;;){t=_rT();if(Math.random()<=Math.sin(t)**3)break;} for(;;){p=_rP();if(Math.random()<=Math.sin(p)**2)break;} return s2c(r,t,p); },
+  '2p_z': ()=>{ const r=_sampleR2p(); let t; for(;;){t=_rT();if(Math.random()<=Math.cos(t)**2)break;} return s2c(r,t,_rP()); },
+  '3p_z': ()=>{ const r=_sampleR3p(); let t; for(;;){t=_rT();if(Math.random()<=Math.cos(t)**2)break;} return s2c(r,t,_rP()); }
+};
+
+// ─── Mapping select value → NAMED_SAMPLER key ────
+const SAMPLER_MAP = {
+  '2_1_0': '2p_z', '2_1_1': '2p_x', '2_1_-1': '2p_y',
+  '3_1_0': '3p_z'
+};
+
+// ─── JSON wavefunction loader (format: {points:[[x,y,z],…]} en Bohr) ──
+async function loadWavefunction(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.points) throw new Error('Missing "points" array');
+        const BPM = 5.29; // Bohr → pm
+        const N = data.points.length;
+        posArr = new Float32Array(N*3);
+        rArr   = new Float32Array(N);
+        const colArr = new Float32Array(N*3);
+        data.points.forEach((p,i) => {
+          const x=p[0]*BPM, y=p[1]*BPM, z=p[2]*BPM;
+          posArr[i*3]=x; posArr[i*3+1]=y; posArr[i*3+2]=z;
+          rArr[i]=Math.sqrt(x*x+y*y+z*z);
+          const th=Math.acos(Math.max(-1,Math.min(1,y/Math.max(rArr[i],1e-6))));
+          const ph=Math.atan2(z,x);
+          const [cr,cg,cb]=orbitalColor(rArr[i],th,ph,qn.n,qn.l,qn.m);
+          colArr[i*3]=cr; colArr[i*3+1]=cg; colArr[i*3+2]=cb;
+        });
+        if (cloudMesh) scene.remove(cloudMesh);
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(posArr.slice(),3));
+        geo.setAttribute('color',    new THREE.BufferAttribute(colArr,3));
+        cloudMesh = new THREE.Points(geo, new THREE.PointsMaterial({
+          size:ptSizeVal, vertexColors:true, transparent:true,
+          opacity:.88, sizeAttenuation:true, depthWrite:false
+        }));
+        scene.add(cloudMesh);
+        qn.N = N;
+        document.getElementById('nPartsVal').textContent = N.toLocaleString();
+        updateHUD(); hideLoading();
+        resolve();
+      } catch(e){ reject(e); }
+    };
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
+function s2c(r, th, ph) {
+  const s = Math.sin(th);
+  return [r*s*Math.cos(ph), r*Math.cos(th), r*s*Math.sin(ph)];
+}
+
+function heatFire(v) {
+  v = Math.max(0, Math.min(1, v));
+  const s = [[0,0,0],[0.5,0,0.99],[0.8,0,0],[1,.5,0],[1,1,0],[1,1,1]];
+  const sv = v * 5, i = Math.min(~~sv, 4), t = sv - i;
+  return [s[i][0]+t*(s[i+1][0]-s[i][0]),s[i][1]+t*(s[i+1][1]-s[i][1]),s[i][2]+t*(s[i+1][2]-s[i][2])];
+}
+
+// ─── Alternative colormap: yellow → orange/red → purple ──
+function densityColor(v) {
+  v = Math.max(0, Math.min(1, v));
+  let r, g, b;
+  if (v < 0.5) { const f=v/0.5;      r=1;       g=1-0.5*f; b=0; }
+  else         { const f=(v-0.5)/0.5; r=1-0.5*f; g=0.5*(1-f); b=0.5*f; }
+  return [r, g, b];
+}
+let useAltColor = false; // toggled by UI
+
+function orbitalColor(r, theta, phi, n, l, m) {
+  const rho = 2*r/n, k = n-l-1, alpha = 2*l+1;
+  let L = 1;
+  if (k===1) L = 1+alpha-rho;
+  else if (k>1) {
+    let Lm2=1, Lm1=1+alpha-rho;
+    for (let j=2;j<=k;j++){L=((2*j-1+alpha-rho)*Lm1-(j-1+alpha)*Lm2)/j;Lm2=Lm1;Lm1=L;}
+  }
+  const norm = Math.pow(2/n,3)*gamma(n-l)/(2*n*gamma(n+l+1));
+  const R = Math.sqrt(norm)*Math.exp(-rho/2)*Math.pow(rho||0,l)*L;
+  const absM = Math.abs(m), x = Math.cos(theta);
+  let Pmm=1;
+  if (absM>0){const s=Math.sqrt((1-x)*(1+x));let f=1;for(let j=1;j<=absM;j++){Pmm*=-f*s;f+=2;}}
+  let Plm=Pmm;
+  if (l>absM){
+    let Pm1m=x*(2*absM+1)*Pmm;
+    if(l===absM+1){Plm=Pm1m;}
+    else{let pp=Pmm;for(let ll=absM+2;ll<=l;ll++){const Pll=((2*ll-1)*x*Pm1m-(ll+absM-1)*pp)/(ll-absM);pp=Pm1m;Pm1m=Pll;}Plm=Pm1m;}
+  }
+  const intensity = R*R*Plm*Plm;
+  const t = intensity * 1.5 * Math.pow(5, n);
+  return useAltColor ? densityColor(Math.min(t,1)) : heatFire(t);
+}
+
+function probFlow(px, py, pz, m) {
+  const r = Math.sqrt(px*px+py*py+pz*pz);
+  if (r < 1e-6) return [0,0,0];
+  const theta = Math.acos(Math.max(-1,Math.min(1,py/r)));
+  const phi   = Math.atan2(pz, px);
+  const st    = Math.sin(theta);
+  if (Math.abs(st) < 1e-4) return [0,0,0];
+  const vm = m / (r * st);
+  return [-vm*Math.sin(phi), 0, vm*Math.cos(phi)];
+}
+
+// ═══════════════════════════════════════════════
+//  THREE.JS 3D RENDERER
+// ═══════════════════════════════════════════════
+
+const canvas3d = document.getElementById('atomSimCanvas');
+
+const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.setClearColor(0x050302, 1);
+
+const scene = new THREE.Scene();
+const cam   = new THREE.PerspectiveCamera(60, 800/600, 0.01, 2000);
+
+// ─── Fit canvas to viewport ──────────────────────
+function resizeCanvas() {
+  const vp = document.getElementById('viewport');
+  const w  = vp.clientWidth  - 40;
+  const h  = vp.clientHeight - 40;
+  canvas3d.width  = w;
+  canvas3d.height = h;
+  cam.aspect = w / h;
+  cam.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+
+// ─── Orbit state ────────────────────────────────
+let orb = { az: 0.3, el: Math.PI/2.5, r: 60 };
+let dragging = false, lastX = 0, lastY = 0;
+
+function updateCamera() {
+  const el = Math.max(0.02, Math.min(Math.PI-0.02, orb.el));
+  cam.position.set(
+    orb.r*Math.sin(el)*Math.cos(orb.az),
+    orb.r*Math.cos(el),
+    orb.r*Math.sin(el)*Math.sin(orb.az)
+  );
+  cam.lookAt(0, 0, 0);
+}
+updateCamera();
+
+canvas3d.addEventListener('mousedown', e => { dragging=true; lastX=e.clientX; lastY=e.clientY; });
+window.addEventListener('mouseup',  () => dragging=false);
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  orb.az += (e.clientX-lastX)*0.008;
+  orb.el -= (e.clientY-lastY)*0.008;
+  lastX=e.clientX; lastY=e.clientY;
+  updateCamera();
+  document.getElementById('iDist').textContent = orb.r.toFixed(1);
+});
+canvas3d.addEventListener('wheel', e => {
+  orb.r = Math.max(5, Math.min(400, orb.r + e.deltaY*0.05));
+  updateCamera();
+  document.getElementById('iDist').textContent = orb.r.toFixed(1);
+  e.preventDefault();
+}, {passive:false});
+
+let tLast = null;
+canvas3d.addEventListener('touchstart', e => { tLast = e.touches[0]; });
+canvas3d.addEventListener('touchmove',  e => {
+  if (!tLast) return;
+  const t = e.touches[0];
+  orb.az += (t.clientX-tLast.clientX)*0.01;
+  orb.el -= (t.clientY-tLast.clientY)*0.01;
+  tLast = t; updateCamera(); e.preventDefault();
+}, {passive:false});
+
+// ─── Stars background ────────────────────────────
+(function(){
+  const N=1200, pos=new Float32Array(N*3), col=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const th=Math.acos(2*Math.random()-1), ph=2*Math.PI*Math.random(), r=400+Math.random()*200;
+    pos[i*3]=r*Math.sin(th)*Math.cos(ph); pos[i*3+1]=r*Math.cos(th); pos[i*3+2]=r*Math.sin(th)*Math.sin(ph);
+    const b=0.08+Math.random()*0.25; col[i*3]=b*.9; col[i*3+1]=b*.7; col[i*3+2]=b*.3;
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  g.setAttribute('color',   new THREE.BufferAttribute(col,3));
+  scene.add(new THREE.Points(g,new THREE.PointsMaterial({size:.4,vertexColors:true,sizeAttenuation:true})));
+})();
+
+// ─── Nucleus ─────────────────────────────────────
+const nucleus = new THREE.Mesh(
+  new THREE.SphereGeometry(0.5,16,16),
+  new THREE.MeshBasicMaterial({color:0xff6030})
+);
+scene.add(nucleus);
+const ring = new THREE.Mesh(
+  new THREE.RingGeometry(0.7,1.0,32),
+  new THREE.MeshBasicMaterial({color:0xff4020,side:THREE.DoubleSide,transparent:true,opacity:.3})
+);
+scene.add(ring);
+
+// ─── Cloud state ─────────────────────────────────
+let cloudMesh = null;
+let posArr = null, rArr = null;
+let qn = {n:2, l:1, m:0, N:15000};
+let animating  = true;
+let ptSizeVal  = 0.24;
+
+// ─── Loading helpers ─────────────────────────────
+function showLoading(msg) {
+  const ld = document.getElementById('loading');
+  ld.style.display = 'block';
+  ld.textContent   = msg || 'Computing orbital…';
+}
+function hideLoading() {
+  document.getElementById('loading').style.display    = 'none';
+  document.getElementById('progressBar').textContent  = '';
+}
+
+// ─── Circular dot texture (anti square-pixel) ────
+const _dotTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 16;
+  const x = c.getContext('2d');
+  const g = x.createRadialGradient(8,8,0, 8,8,8);
+  g.addColorStop(0,   'rgba(255,255,255,1)');
+  g.addColorStop(0.5, 'rgba(255,255,255,0.8)');
+  g.addColorStop(1,   'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(0,0,16,16);
+  return new THREE.CanvasTexture(c);
+})();
+
+// ─── Generate cloud (chunked, non-blocking) ──────
+function generateCloud(callback) {
+  const { n, l, m, N } = qn;
+  showLoading('Computing orbital…');
+
+  setTimeout(() => {
+    posArr = new Float32Array(N*3);
+    rArr   = new Float32Array(N);
+    const colArr = new Float32Array(N*3);
+    let done = 0;
+    const chunk = 2000;
+
+    function doChunk() {
+      const end = Math.min(done + chunk, N);
+      for (let i = done; i < end; i++) {
+        let x, y, z, r, theta, phi;
+        const namedFn = NAMED_SAMPLERS[SAMPLER_MAP[document.getElementById('orbitalSel').value]];
+        if (namedFn) {
+          [x,y,z] = namedFn();
+          r = Math.sqrt(x*x+y*y+z*z);
+          theta = Math.acos(Math.max(-1,Math.min(1,y/Math.max(r,1e-9))));
+          phi   = Math.atan2(z,x);
+        } else {
+          r     = sampleR(n, l);
+          theta = sampleTheta(l, m);
+          phi   = samplePhi();
+          [x,y,z] = s2c(r, theta, phi);
+        }
+        posArr[i*3]=x; posArr[i*3+1]=y; posArr[i*3+2]=z;
+        rArr[i] = r;
+        const [cr,cg,cb] = orbitalColor(r,theta,phi,n,l,m);
+        colArr[i*3]=cr; colArr[i*3+1]=cg; colArr[i*3+2]=cb;
+      }
+      done = end;
+      document.getElementById('progressBar').textContent =
+        `${Math.round(done/N*100)}%  —  ${done.toLocaleString()} / ${N.toLocaleString()}`;
+      if (done < N) { setTimeout(doChunk, 0); return; }
+
+      // Build Three.js geometry
+      setTimeout(() => {
+        if (cloudMesh) scene.remove(cloudMesh);
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(posArr.slice(), 3));
+        geo.setAttribute('color',    new THREE.BufferAttribute(colArr, 3));
+        cloudMesh = new THREE.Points(geo, new THREE.PointsMaterial({
+          size: ptSizeVal, vertexColors: true,
+          transparent: true, opacity: 0.88,
+          sizeAttenuation: true, depthWrite: false,
+          map: _dotTex, alphaTest: 0.01
+        }));
+        scene.add(cloudMesh);
+        hideLoading();
+        updateHUD();
+        if (callback) callback();
+      }, 0);
+    }
+    doChunk();
+  }, 50);
+}
+
+// ─── HUD / Panel sync ────────────────────────────
+function updateHUD() {
+  const { n, l, m, N } = qn;
+  document.getElementById('qn-n').textContent      = n;
+  document.getElementById('qn-l').textContent      = l;
+  document.getElementById('qn-m').textContent      = m;
+  document.getElementById('energy-val').textContent = `${(-13.6/(n*n)).toFixed(3)} eV`;
+  document.getElementById('iOrb').textContent      = `${n}, ${l}, ${m}`;
+  document.getElementById('iPts').textContent      = N.toLocaleString();
+  document.getElementById('iDist').textContent     = orb.r.toFixed(1);
+  // sync preset dropdown
+  const sel = document.getElementById('orbitalSel');
+  const match = `${n}_${l}_${m}`;
+  if ([...sel.options].some(o => o.value === match)) sel.value = match;
+}
+
+// ─── Panel controls wiring ───────────────────────
+document.getElementById('orbitalSel').addEventListener('change', function() {
+  const p = this.value.split('_').map(Number);
+  qn.n = p[0]; qn.l = p[1]; qn.m = p[2];
+  updateHUD();
+});
+
+document.getElementById('btnGen').addEventListener('click', () => generateCloud());
+
+// ─── Random orbital button ────────────────────────
+document.getElementById('btnRandom').addEventListener('click', () => {
+  const opts = [...document.getElementById('orbitalSel').options];
+  const pick = opts[Math.floor(Math.random() * opts.length)];
+  document.getElementById('orbitalSel').value = pick.value;
+  const p = pick.value.split('_').map(Number);
+  qn.n = p[0]; qn.l = p[1]; qn.m = p[2];
+  generateCloud();
+});
+
+document.getElementById('nParts').addEventListener('change', function() {
+  qn.N = +this.value;
+  document.getElementById('nPartsVal').textContent = qn.N.toLocaleString();
+  generateCloud();
+});
+document.getElementById('nParts').addEventListener('input', function() {
+  qn.N = +this.value;
+  document.getElementById('nPartsVal').textContent = qn.N.toLocaleString();
+});
+
+document.getElementById('ptSize').addEventListener('input', function() {
+  ptSizeVal = +this.value * 0.08;
+  document.getElementById('ptSizeVal').textContent = this.value;
+  if (cloudMesh) cloudMesh.material.size = ptSizeVal;
+});
+
+document.getElementById('animToggle').addEventListener('change', function() {
+  animating = this.checked;
+});
+
+// ─── JSON import wiring ───────────────────────────
+document.getElementById('jsonInput').addEventListener('change', function() {
+  const file = this.files[0]; if (!file) return;
+  showLoading('Loading JSON…');
+  loadWavefunction(file).catch(e => { hideLoading(); alert('JSON error: ' + e.message); });
+  this.value = '';
+});
+
+// ─── Alt colormap toggle ──────────────────────────
+document.getElementById('colorToggle').addEventListener('change', function() {
+  useAltColor = this.checked;
+  generateCloud();
+});
+
+// ─── 2D panel toggle ─────────────────────────────
+let show2D = false, sim2DInit = false;
+document.getElementById('btn2d').addEventListener('click', () => {
+  show2D = !show2D;
+  document.getElementById('panel2d').classList.toggle('visible', show2D);
+  document.getElementById('btn2d').classList.toggle('active',   show2D);
+  if (show2D && !sim2DInit) init2D();
+});
+
+// ─── Keyboard controls ───────────────────────────
+window.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  const k = e.key.toLowerCase();
+  let dirty = false;
+  if      (k==='w'){qn.n++;dirty=true;}
+  else if (k==='s'){if(qn.n>1)qn.n--;dirty=true;}
+  else if (k==='e'){qn.l++;dirty=true;}
+  else if (k==='d'){if(qn.l>0)qn.l--;dirty=true;}
+  else if (k==='r'){qn.m++;dirty=true;}
+  else if (k==='f'){qn.m--;dirty=true;}
+  else if (k==='t'){
+    qn.N=Math.min(qn.N*2,80000);
+    document.getElementById('nParts').value=qn.N;
+    document.getElementById('nPartsVal').textContent=qn.N.toLocaleString();
+    dirty=true;
+  } else if (k==='g'){
+    qn.N=Math.max(Math.round(qn.N/2),2000);
+    document.getElementById('nParts').value=qn.N;
+    document.getElementById('nPartsVal').textContent=qn.N.toLocaleString();
+    dirty=true;
+  } else if (k==='a'){
+    animating=!animating;
+    document.getElementById('animToggle').checked=animating;
+  } else if (k==='q'){
+    document.getElementById('btn2d').click();
+  }
+  if (dirty) {
+    if(qn.l>qn.n-1) qn.l=qn.n-1;
+    if(qn.l<0)      qn.l=0;
+    if(qn.m>qn.l)   qn.m=qn.l;
+    if(qn.m<-qn.l)  qn.m=-qn.l;
+    generateCloud();
+  }
+});
+
+// ─── Animate probability current ─────────────────
+const DT = 0.4;
+function animateFlow() {
+  if (!cloudMesh || !animating || qn.m === 0) return;
+  const pos = cloudMesh.geometry.attributes.position;
+  const m   = qn.m;
+  for (let i = 0; i < qn.N; i++) {
+    const px=posArr[i*3], py=posArr[i*3+1], pz=posArr[i*3+2];
+    const [vx,,vz] = probFlow(px,py,pz,m);
+    const nx=px+vx*DT, nz=pz+vz*DT;
+    const nr=Math.sqrt(nx*nx+py*py+nz*nz);
+    if(nr>0.01){
+      const sc=rArr[i]/nr;
+      posArr[i*3]=nx*sc; posArr[i*3+2]=nz*sc;
+    }
+    pos.array[i*3]=posArr[i*3];
+    pos.array[i*3+1]=posArr[i*3+1];
+    pos.array[i*3+2]=posArr[i*3+2];
+  }
+  pos.needsUpdate = true;
+}
+
+// ─── FPS tracker ─────────────────────────────────
+let fpsTimes = [], fpsLast = performance.now();
+function tickFPS() {
+  const now = performance.now();
+  fpsTimes.push(now);
+  fpsTimes = fpsTimes.filter(t => now - t < 1000);
+  if (now - fpsLast > 400) {
+    document.getElementById('iFps').textContent = fpsTimes.length;
+    fpsLast = now;
+  }
+}
+
+// ─── 3D render loop ──────────────────────────────
+let frame = 0;
+function loop3D() {
+  requestAnimationFrame(loop3D);
+  frame++;
+  tickFPS();
+  if (cloudMesh) {
+    if (animating && qn.m !== 0 && frame % 2 === 0) animateFlow();
+    if (qn.m === 0 && animating) cloudMesh.rotation.y += 0.002;
+  }
+  nucleus.rotation.y += 0.01;
+  renderer.render(scene, cam);
+}
+
+// ═══════════════════════════════════════════════
+//  2D PHOTOELECTRIC SIMULATION
+// ═══════════════════════════════════════════════
+function init2D() {
+  sim2DInit = true;
+  const cv  = document.getElementById('c2d');
+  const ctx = cv.getContext('2d');
+  const W2=300, H2=195, orbitDist=15;
+
+  class WavePoint { constructor(lp,dir){this.lp=lp;this.dir=dir;} }
+
+  class Wave {
+    constructor(energy,pos,dir,col=[1,.6,.1]){
+      this.energy=energy;this.sigma=30;this.k=0.4;
+      this.phase=0;this.a=6;this.pos={...pos};
+      const len=Math.sqrt(dir.x*dir.x+dir.y*dir.y);
+      this.dir={x:dir.x/len,y:dir.y/len};this.col=col;this.points=[];
+      for(let x=-this.sigma;x<=this.sigma;x+=0.5){
+        this.points.push(new WavePoint(
+          {x:pos.x+x*this.dir.x,y:pos.y+x*this.dir.y},
+          {x:this.dir.x*120,y:this.dir.y*120}
+        ));
+      }
+    }
+    draw(){
+      ctx.strokeStyle=`rgba(${~~(this.col[0]*255)},${~~(this.col[1]*255)},${~~(this.col[2]*255)},.9)`;
+      ctx.lineWidth=0.7;ctx.beginPath();let first=true;
+      for(const p of this.points){
+        const perp={x:-p.dir.y,y:p.dir.x};
+        const pl=Math.sqrt(perp.x*perp.x+perp.y*perp.y)||1;
+        const yd=this.a*Math.sin(this.k*Math.sqrt(p.lp.x*p.lp.x+p.lp.y*p.lp.y)-this.phase);
+        const dx=p.lp.x+perp.x/pl*yd, dy=p.lp.y+perp.y/pl*yd;
+        if(first){ctx.moveTo(dx+W2/2,dy+H2/2);first=false;}
+        else ctx.lineTo(dx+W2/2,dy+H2/2);
+      }
+      ctx.stroke();
+    }
+    update(dt){
+      this.phase+=20*dt;
+      for(const p of this.points){
+        p.lp.x+=p.dir.x*dt; p.lp.y+=p.dir.y*dt;
+        if(Math.abs(p.lp.x)>W2||Math.abs(p.lp.y)>H2) return true;
+      }
+      return false;
+    }
+  }
+
+  class Atom2D {
+    constructor(pos){this.pos={...pos};this.n=1;this.angle=Math.random()*Math.PI*2;}
+    draw(){
+      ctx.strokeStyle='rgba(255,154,60,.18)';ctx.lineWidth=0.5;
+      ctx.beginPath();ctx.arc(this.pos.x+W2/2,this.pos.y+H2/2,this.n*orbitDist,0,Math.PI*2);ctx.stroke();
+      const ex=Math.cos(this.angle)*this.n*orbitDist+this.pos.x+W2/2;
+      const ey=Math.sin(this.angle)*this.n*orbitDist+this.pos.y+H2/2;
+      ctx.fillStyle='#ff9a3c';ctx.beginPath();ctx.arc(ex,ey,1.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#ff4020';ctx.beginPath();ctx.arc(this.pos.x+W2/2,this.pos.y+H2/2,3,0,Math.PI*2);ctx.fill();
+    }
+    update(){this.angle+=0.06;}
+  }
+
+  const atoms2d=[];
+  for(let i=0;i<12;i++){
+    const a=2*Math.PI*i/12;
+    atoms2d.push(new Atom2D({x:Math.cos(a)*55, y:Math.sin(a)*55}));
+  }
+
+  const waves2d=[];
+  const E12=-13.6/4-(-13.6);
+  for(let i=0;i<8;i++) waves2d.push(new Wave(E12,{x:80,y:i*22-76},{x:-1,y:0}));
+
+  cv.addEventListener('click', e => {
+    const rx=e.offsetX-W2/2, ry=e.offsetY-H2/2;
+    for(let i=0;i<18;i++){
+      const a=Math.random()*2*Math.PI;
+      waves2d.push(new Wave(E12,{x:rx,y:ry},{x:Math.cos(a),y:Math.sin(a)}));
+    }
+  });
+
+  function loop2D(){
+    if(!show2D){requestAnimationFrame(loop2D);return;}
+    ctx.fillStyle='rgba(5,3,2,.85)';ctx.fillRect(0,0,W2,H2);
+    for(const a of atoms2d){a.draw();a.update();}
+    for(let i=0;i<waves2d.length;){
+      if(waves2d[i].energy===0){i++;continue;}
+      waves2d[i].draw();
+      if(waves2d[i].update(0.016)) waves2d.splice(i,1); else i++;
+    }
+    requestAnimationFrame(loop2D);
+  }
+  loop2D();
+}
+
+// ─── Resize ──────────────────────────────────────
+window.addEventListener('resize', resizeCanvas);
+
+// ─── Boot ────────────────────────────────────────
+resizeCanvas();
+updateHUD();
+generateCloud(() => { loop3D(); });
+</script>
+</body>
+</html>
