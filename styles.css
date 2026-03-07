@@ -1,4 +1,4 @@
-/* ================= CSS FRAMEWORK-READY 2026 – VERSION 4.0 ================= */
+/* ================= CSS FRAMEWORK-READY 2026 – VERSION 5.0 (FINAL) ================= */
 
 @layer reset, variables, base, layout, panel, components, controls, hints, viewport, loading, panel2d, hud;
 
@@ -11,12 +11,17 @@
     padding: 0;
     box-sizing: border-box;
   }
+
+  /* Garantie que 'hidden' l'emporte toujours sur display */
+  [hidden] {
+    display: none !important;
+  }
 }
 
 /* ====== DESIGN TOKENS ======= */
 @layer variables {
   :root {
-    /* Palette originale */
+    /* Palette */
     --accent: #ff9a3c;
     --accent-dim: #c07020;
     --accent-muted: #7a4a18;
@@ -38,6 +43,7 @@
     --panel2d-title-border: rgba(255, 154, 60, 0.12);
     --hud-bg: rgba(5, 3, 2, 0.95);
 
+    /* Layout */
     --panel-width: 260px;
     --hud-height: 40px;
 
@@ -59,26 +65,33 @@
     --s-9: 20px;
     --s-10: 28px;
 
-    /* NEW – Type scale */
-    --fs-1: clamp(7px, 0.6vw, 9px);
-    --fs-2: clamp(9px, 0.75vw, 11px);
-    --fs-3: clamp(11px, 0.85vw, 13px);
-    --fs-4: clamp(13px, 1vw, 16px);
-    --fs-5: clamp(19px, 1.6vw, 24px);
+    /* Type scale (Accessible min 10px+) */
+    --fs-1: clamp(10px, 0.7vw, 11px);
+    --fs-2: clamp(11px, 0.8vw, 13px);
+    --fs-3: clamp(12px, 0.9vw, 14px);
+    --fs-4: clamp(14px, 1.1vw, 17px);
+    --fs-5: clamp(20px, 1.7vw, 26px);
 
-    /* NEW – Radius scale */
+    /* Radius scale */
     --radius-sm: 2px;
     --radius-md: 4px;
     --radius-lg: 8px;
     --radius-pill: 9999px;
 
-    /* NEW – Motion scale */
+    /* Motion scale */
     --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-    --ease-emphasis: cubic-bezier(0.3, 0, 0.2, 1);
-    --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
-    --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+
+    /* NEW: Component Tokens */
+    --toggle-w: 42px;
+    --toggle-h: 20px;
+    --toggle-thumb-s: 14px;
+    --toggle-thumb-offset: 22px;
+    
+    --panel2d-w: 300px;
+    --panel2d-canvas-h: 195px;
   }
 
+  /* Theme Variants */
   :root[data-theme="light"] {
     --accent: #b35600;
     --accent-dim: #8f4200;
@@ -106,7 +119,6 @@
     --hud-bg: rgba(255, 248, 240, 0.95);
   }
 
-  /* High Contrast Mode */
   :root[data-contrast="high"] {
     --accent: #ffb56a;
     --accent-dim: #ff9a3c;
@@ -115,7 +127,6 @@
     --text-dim: #ffcc99;
   }
 
-  /* Low Performance Mode (no glow) */
   :root[data-performance="low"] {
     --glow-1: none;
     --glow-2: none;
@@ -129,7 +140,7 @@
   html,
   body {
     height: 100%;
-    overflow: hidden;
+    overflow: hidden; /* Conservé pour l'app fullscreen, à surveiller */
   }
   body {
     background: var(--bg-deep);
@@ -141,6 +152,8 @@
 
   :focus-visible {
     scroll-margin: 20px;
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
   }
 }
 
@@ -169,19 +182,10 @@
     scrollbar-width: thin;
     scrollbar-color: var(--accent-dim) var(--bg-deep);
   }
-  #panel::-webkit-scrollbar {
-    width: 5px;
-  }
-  #panel::-webkit-scrollbar-track {
-    background: var(--bg-deep);
-  }
-  #panel::-webkit-scrollbar-thumb {
-    background: var(--accent-dim);
-    border-radius: var(--radius-pill);
-  }
-  #panel::-webkit-scrollbar-thumb:hover {
-    background: var(--accent);
-  }
+  #panel::-webkit-scrollbar { width: 5px; }
+  #panel::-webkit-scrollbar-track { background: var(--bg-deep); }
+  #panel::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: var(--radius-pill); }
+  #panel::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
   .panel-header {
     padding: var(--s-8) var(--s-7) var(--s-6);
@@ -222,8 +226,12 @@
     margin-bottom: var(--s-1);
   }
 
-  /* Card de base réutilisable */
-  .card {
+  /* === Card System === */
+  .qn-card,
+  .energy-row,
+  .preset-info-box,
+  .rule-list li,
+  .preset-meta-item {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -235,7 +243,6 @@
     gap: var(--s-3);
   }
   .qn-card {
-    composes: card; /* ou .card en pur CSS ci-dessous */
     padding: var(--s-3) var(--s-2) var(--s-2);
     display: flex;
     flex-direction: column;
@@ -259,7 +266,6 @@
   }
 
   .energy-row {
-    composes: card;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -277,112 +283,93 @@
     color: var(--accent);
     text-shadow: var(--glow-2);
   }
+
+  /* === Tabs (Pure Semantic) === */
+  .panel-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2);
+    padding: var(--s-5) var(--s-7) var(--s-4);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  /* On stylise le bouton via classe pour éviter trop de global */
+  .panel-tab-btn {
+    padding: var(--s-2) var(--s-3);
+    font-size: var(--fs-2);
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    border: 1px solid var(--accent-ghost);
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.2s var(--ease-standard), 
+                border-color 0.2s var(--ease-standard), 
+                box-shadow 0.2s var(--ease-standard);
+  }
+  .panel-tab-btn[aria-selected="true"] {
+    color: var(--accent);
+    border-color: var(--accent-muted);
+    box-shadow: var(--glow-2);
+  }
+
+  /* 
+    Visibilité : 
+    Par défaut, .panel-tab-content est visible (display: block).
+    Le HTML met 'hidden' sur celui qui est caché.
+    Le CSS n'a pas besoin de gérer l'affichage, sauf fallback.
+  */
+  .panel-tab-content {
+    display: block; /* Default state */
+  }
+
+  .panel-copy {
+    font-size: var(--fs-2);
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+
+  .preset-info-box {
+    padding: var(--s-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+  .preset-name { font-size: var(--fs-4); color: var(--accent); line-height: 1.2; }
+  .preset-summary { font-size: var(--fs-2); color: var(--text-secondary); line-height: 1.35; }
+  
+  .preset-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+  .preset-meta-item {
+    padding: var(--s-2);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .preset-meta-item span { font-size: var(--fs-1); text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+  .preset-meta-item strong { font-size: var(--fs-2); color: var(--accent-dim); font-weight: 600; }
+  
+  .preset-lock { font-size: var(--fs-1); color: var(--text-dim); letter-spacing: 1px; line-height: 1.35; }
+
+  .rule-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .rule-list li {
+    font-size: var(--fs-2);
+    color: var(--text-secondary);
+    line-height: 1.35;
+    padding: var(--s-2) var(--s-3);
+  }
 }
 
-/* ================= PANEL TABS ================= */
-.panel-tabs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-2);
-  padding: var(--s-5) var(--s-7) var(--s-4);
-  border-bottom: 1px solid var(--border);
-}
-.panel-tab-btn {
-  padding: var(--s-2) var(--s-3);
-  font-size: var(--fs-2);
-  letter-spacing: 1px;
-  color: var(--text-secondary);
-  border: 1px solid var(--accent-ghost);
-  background: var(--bg-card);
-  border-radius: var(--radius-sm);
-  text-transform: uppercase;
-}
-.panel-tab-btn[aria-selected="true"] {
-  color: var(--accent);
-  border-color: var(--accent-muted);
-  box-shadow: var(--glow-2);
-}
-.panel-tab-content {
-  display: none;
-}
-.panel-tab-content.active {
-  display: block;
-}
-
-.panel-copy {
-  font-size: var(--fs-2);
-  color: var(--text-secondary);
-  line-height: 1.45;
-}
-
-.preset-info-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--s-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-}
-.preset-name {
-  font-size: var(--fs-4);
-  color: var(--accent);
-  line-height: 1.2;
-}
-.preset-summary {
-  font-size: var(--fs-2);
-  color: var(--text-secondary);
-  line-height: 1.35;
-}
-.preset-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-2);
-}
-.preset-meta-item {
-  background: var(--bg-deep);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--s-2);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.preset-meta-item span {
-  font-size: var(--fs-1);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-dim);
-}
-.preset-meta-item strong {
-  font-size: var(--fs-2);
-  color: var(--accent-dim);
-  font-weight: 600;
-}
-.preset-lock {
-  font-size: var(--fs-1);
-  color: var(--text-dim);
-  letter-spacing: 1px;
-  line-height: 1.35;
-}
-
-.rule-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-}
-.rule-list li {
-  font-size: var(--fs-2);
-  color: var(--text-secondary);
-  line-height: 1.35;
-  padding: var(--s-2) var(--s-3);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  border-radius: var(--radius-sm);
-}
-
-/* ================= TOGGLE ================= */
+/* ================= TOGGLE (Robust Pattern) ================= */
 @layer components {
   .anim-row {
     display: flex;
@@ -399,18 +386,24 @@
 
   .toggle-wrap {
     position: relative;
-    width: 42px;
-    height: 20px;
+    width: var(--toggle-w);
+    height: var(--toggle-h);
     cursor: pointer;
     flex-shrink: 0;
     -webkit-tap-highlight-color: transparent;
   }
+  
+  /* On masque l'input natif mais on garde l'accessibilité */
   .toggle-wrap input {
     opacity: 0;
-    width: 0;
-    height: 0;
+    width: 100%;
+    height: 100%;
     position: absolute;
+    z-index: 1; /* Au dessus pour le click */
+    cursor: pointer;
   }
+
+  /* Track - État par défaut */
   .toggle-track {
     position: absolute;
     inset: 0;
@@ -419,27 +412,36 @@
     border: 1px solid var(--border);
     transition: background 0.28s var(--ease-standard),
                 border-color 0.28s var(--ease-standard);
+    pointer-events: none; /* Laisse le click passer à l'input */
   }
+
+  /* Thumb - État par défaut */
   .toggle-thumb {
     position: absolute;
     top: 3px;
     left: 3px;
-    width: 14px;
-    height: 14px;
+    width: var(--toggle-thumb-s);
+    height: var(--toggle-thumb-s);
     border-radius: 50%;
     background: var(--text-dim);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     transition: transform 0.28s var(--ease-standard),
                 background 0.28s var(--ease-standard),
                 box-shadow 0.28s var(--ease-standard);
+    pointer-events: none;
   }
 
-  .toggle-wrap:has(input:checked) .toggle-track {
+  /* --- États Activés (Adjacent Sibling Selector) --- */
+  
+  /* Style du track quand input est coché */
+  .toggle-wrap input:checked + .toggle-track {
     background: var(--toggle-on-bg);
     border-color: var(--accent-muted);
   }
-  .toggle-wrap:has(input:checked) .toggle-thumb {
-    transform: translateX(22px);
+
+  /* Style du thumb quand input est coché */
+  .toggle-wrap input:checked + .toggle-track .toggle-thumb {
+    transform: translateX(var(--toggle-thumb-offset));
     background: var(--accent);
     box-shadow: 0 0 16px rgba(255, 154, 60, 0.75);
   }
@@ -464,6 +466,7 @@
     gap: var(--s-3);
   }
 
+  /* Select avec icône custom */
   select {
     flex: 1;
     background: var(--bg-card);
@@ -475,10 +478,14 @@
     font-size: var(--fs-3);
     appearance: none;
     cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a07040' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
     transition: border-color 0.2s var(--ease-standard);
   }
   select:focus {
     border-color: var(--accent-muted);
+    outline: none;
   }
 
   input[type="range"] {
@@ -509,6 +516,7 @@
     box-shadow: var(--glow-2);
   }
 
+  /* Boutons */
   button {
     background: var(--bg-card);
     border: 1px solid var(--accent-ghost);
@@ -520,8 +528,12 @@
     font-size: var(--fs-3);
     letter-spacing: 1px;
     text-transform: uppercase;
-    transition: all 0.22s var(--ease-standard);
     white-space: nowrap;
+    transition: background-color 0.22s var(--ease-standard),
+                border-color 0.22s var(--ease-standard),
+                color 0.22s var(--ease-standard),
+                transform 0.22s var(--ease-standard),
+                box-shadow 0.22s var(--ease-standard);
   }
   button:hover {
     background: var(--button-hover-bg);
@@ -533,6 +545,7 @@
   button:active {
     transform: scale(0.965);
   }
+  
   .btn-generate {
     width: 100%;
     padding: var(--s-4);
@@ -547,17 +560,13 @@
     border-color: var(--accent-ghost);
     color: var(--text-dim);
   }
-  .btn-2d.active {
-    border-color: var(--accent-muted);
-    color: var(--accent-dim);
-  }
+  
+  /* Utilitaires de layout pour boutons */
+  .btn-row { display: flex; gap: var(--s-2); margin-top: var(--s-1); }
+  .btn-fill { flex: 1; }
+  .btn-auto { flex: 0 0 auto; padding: var(--s-2) var(--s-4); letter-spacing: 0; }
+  .btn-import { display: inline-flex; align-items: center; justify-content: center; margin-top: var(--s-1); cursor: pointer; }
 
-  button:focus-visible,
-  select:focus-visible,
-  input[type="range"]:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-  }
 }
 
 /* ================= HINTS ================= */
@@ -567,23 +576,9 @@
     margin-top: auto;
     border-top: 1px solid var(--border);
   }
-  .hint-item {
-    display: flex;
-    gap: var(--s-4);
-    align-items: baseline;
-    margin-bottom: var(--s-2);
-  }
-  .hint-key {
-    font-size: var(--fs-1);
-    color: var(--text-dim);
-    letter-spacing: 2px;
-    min-width: 70px;
-    text-transform: uppercase;
-  }
-  .hint-desc {
-    font-size: var(--fs-2);
-    color: var(--text-dim);
-  }
+  .hint-item { display: flex; gap: var(--s-4); align-items: baseline; margin-bottom: var(--s-2); }
+  .hint-key { font-size: var(--fs-1); color: var(--text-dim); letter-spacing: 2px; min-width: 70px; text-transform: uppercase; }
+  .hint-desc { font-size: var(--fs-2); color: var(--text-dim); }
 }
 
 /* ================= VIEWPORT ================= */
@@ -601,7 +596,7 @@
     background-size: 40px 40px;
     overflow: hidden;
   }
-  canvas#atomSimCanvas {
+  #atomSimCanvas {
     display: block;
     cursor: grab;
     border: 1px solid var(--canvas-border);
@@ -610,9 +605,7 @@
     max-width: calc(100% - 40px);
     max-height: calc(100% - 40px);
   }
-  canvas#atomSimCanvas:active {
-    cursor: grabbing;
-  }
+  #atomSimCanvas:active { cursor: grabbing; }
 }
 
 /* ================= LOADING ================= */
@@ -658,19 +651,16 @@
     bottom: var(--s-7);
     right: var(--s-7);
     z-index: 20;
-    width: 300px;
-    height: 220px;
+    width: var(--panel2d-w);
     border: 1px solid var(--panel2d-border);
     background: var(--panel2d-bg);
     backdrop-filter: blur(6px);
-    display: none;
+    display: flex; /* Actif par défaut, sera caché par HTML 'hidden' */
     flex-direction: column;
     box-shadow: var(--glow-3);
     border-radius: var(--radius-md);
   }
-  #panel2d.visible {
-    display: flex;
-  }
+  
   #panel2d-title {
     font-size: var(--fs-1);
     letter-spacing: 0.2em;
@@ -679,9 +669,14 @@
     border-bottom: 1px solid var(--panel2d-title-border);
     text-transform: uppercase;
   }
+  #panel2d p {
+    padding: var(--s-2) var(--s-4);
+    font-size: var(--fs-2);
+    color: var(--text-secondary);
+  }
   #c2d {
-    width: 300px;
-    height: 195px;
+    width: 100%;
+    height: var(--panel2d-canvas-h);
     display: block;
   }
 }
@@ -726,9 +721,7 @@
     font-variant-numeric: tabular-nums;
     font-family: "Share Tech Mono", monospace;
   }
-  .hud-spacer {
-    flex: 1;
-  }
+  .hud-spacer { flex: 1; }
   .hud-badge {
     font-size: var(--fs-1);
     letter-spacing: 3px;
