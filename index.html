@@ -19,51 +19,52 @@
 <div id="app">
 
   <!-- ── PANEL GAUCHE ── -->
-  <aside id="panel" aria-label="Panneau de controle orbital">
+  <aside id="panel" aria-label="Panneau de contrôle orbital">
 
     <header class="panel-header">
-      <hgroup>
+      <div class="title-group">
         <p class="app-name">Laboratoire quantique</p>
-        <h1 class="title">Visualiseur de<br>densite orbitale</h1>
-      </hgroup>
+        <h1 class="title">Visualiseur de<br>densité orbitale</h1>
+      </div>
     </header>
+
     <div class="panel-tabs" role="tablist" aria-label="Vues du panneau">
-      <button id="tabBtnPresets" class="panel-tab-btn" type="button" role="tab" aria-selected="true" aria-controls="panel-view-presets" data-tab="presets">Prereglages</button>
-      <button id="tabBtnAtom" class="panel-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="panel-view-atom" data-tab="atom">Definir atome</button>
+      <button id="tabBtnPresets" class="panel-tab-btn" type="button" role="tab" aria-selected="true" aria-controls="panel-view-presets" data-tab="presets" tabindex="0">Préréglages</button>
+      <button id="tabBtnAtom" class="panel-tab-btn" type="button" role="tab" aria-selected="false" aria-controls="panel-view-atom" data-tab="atom" tabindex="-1">Définir atome</button>
     </div>
 
     <div id="panel-view-presets" class="panel-tab-content active" role="tabpanel" aria-labelledby="tabBtnPresets">
-      <!-- Affichage de l'etat -->
+      <!-- Affichage de l'état -->
       <section class="panel-section">
-        <h2 class="section-label">Etat</h2>
-        <div class="qn-grid">
+        <h2 class="section-label">État</h2>
+        <dl class="qn-grid">
           <div class="qn-card">
-            <span class="qn-card-label">N</span>
-            <span class="qn-card-val" id="qn-n">2</span>
+            <dt class="qn-card-label">N</dt>
+            <dd class="qn-card-val" id="qn-n">2</dd>
             <span class="qn-card-name">Principal</span>
           </div>
           <div class="qn-card">
-            <span class="qn-card-label">L</span>
-            <span class="qn-card-val" id="qn-l">1</span>
+            <dt class="qn-card-label">L</dt>
+            <dd class="qn-card-val" id="qn-l">1</dd>
             <span class="qn-card-name">Angulaire</span>
           </div>
           <div class="qn-card">
-            <span class="qn-card-label">M</span>
-            <span class="qn-card-val" id="qn-m">0</span>
-            <span class="qn-card-name">Magnetique</span>
+            <dt class="qn-card-label">M</dt>
+            <dd class="qn-card-val" id="qn-m">0</dd>
+            <span class="qn-card-name">Magnétique</span>
           </div>
-        </div>
-        <div class="energy-row">
-          <span class="energy-label">Energie</span>
-          <span class="energy-value" id="energy-val">-3.40 eV</span>
-        </div>
+        </dl>
+        <dl class="energy-row">
+          <dt class="energy-label">Énergie</dt>
+          <dd class="energy-value" id="energy-val">-3.40 eV</dd>
+        </dl>
       </section>
 
-      <!-- Selecteur de prereglage -->
+      <!-- Sélecteur de préréglage -->
       <section class="panel-section">
         <h2 class="section-label">Orbitale</h2>
         <div class="control-row">
-          <label for="orbitalSel">Prereglage</label>
+          <label for="orbitalSel">Préréglage</label>
           <select id="orbitalSel">
             <optgroup label="n = 1">
               <option value="1_0_0">1s</option>
@@ -114,40 +115,40 @@
             </optgroup>
           </select>
         </div>
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <button id="btnGen" class="btn-generate" type="button" style="flex:1">Generer</button>
-          <button id="btnRandom" class="btn-generate" type="button" style="flex:0 0 auto;padding:8px 10px;letter-spacing:0" title="Orbitale aleatoire">Aleatoire</button>
+        <div class="btn-row">
+          <button id="btnGen" class="btn-generate btn-fill" type="button">Générer</button>
+          <button id="btnRandom" class="btn-generate btn-auto" type="button" title="Orbitale aléatoire">Aléatoire</button>
         </div>
       </section>
 
       <section class="panel-section">
-        <h2 class="section-label">Infos prereglage</h2>
+        <h2 class="section-label">Infos préréglage</h2>
         <div class="preset-info-box">
           <p class="preset-name" id="presetName">2p_z (m=0)</p>
-          <p class="preset-summary" id="presetSummary">Etat de reference de la couche n=2.</p>
-          <div class="preset-meta">
+          <p class="preset-summary" id="presetSummary">État de référence de la couche n=2.</p>
+          <dl class="preset-meta">
             <div class="preset-meta-item">
-              <span>Famille</span>
-              <strong id="presetFamily">p</strong>
+              <dt>Famille</dt>
+              <dd id="presetFamily">p</dd>
             </div>
             <div class="preset-meta-item">
-              <span>Niveaux</span>
-              <strong id="presetNumbers">n=2, l=1, m=0</strong>
+              <dt>Niveaux</dt>
+              <dd id="presetNumbers">n=2, l=1, m=0</dd>
             </div>
             <div class="preset-meta-item">
-              <span>Noeuds</span>
-              <strong id="presetNodes">0 radial, 1 angulaire</strong>
+              <dt>Nœuds</dt>
+              <dd id="presetNodes">0 radial, 1 angulaire</dd>
             </div>
             <div class="preset-meta-item">
-              <span>Projection</span>
-              <strong id="presetProjection">m=0</strong>
+              <dt>Projection</dt>
+              <dd id="presetProjection">m=0</dd>
             </div>
-          </div>
-          <p class="preset-lock" id="presetLock">Contraintes fixes: n>=1, 0<=l<=n-1, -l<=m<=l.</p>
+          </dl>
+          <p class="preset-lock" id="presetLock">Contraintes fixes : n≥1, 0≤l≤n-1, -l≤m≤l.</p>
         </div>
       </section>
 
-      <!-- Reglages de rendu -->
+      <!-- Réglages de rendu -->
       <section class="panel-section">
         <h2 class="section-label">Rendu</h2>
 
@@ -179,19 +180,19 @@
       <!-- Outils -->
       <section class="panel-section">
         <h2 class="section-label">Outils</h2>
-        <button id="btn2d" class="btn-2d" type="button">Photoelectrique 2D</button>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:2px;">
-          <input type="file" id="jsonInput" accept=".json" style="display:none">
-          <button class="btn-2d" type="button" onclick="document.getElementById('jsonInput').click()">Importer JSON</button>
-        </label>
-        <div class="anim-row" style="margin-top:2px;">
+        <button id="btn2d" class="btn-2d" type="button">Photoélectrique 2D</button>
+        
+        <input type="file" id="jsonInput" accept=".json" hidden>
+        <label for="jsonInput" class="btn-2d btn-import">Importer JSON</label>
+
+        <div class="anim-row">
           <span class="toggle-label">Palette alternative</span>
           <label class="toggle-wrap">
             <input type="checkbox" id="colorToggle">
             <span class="toggle-track"><span class="toggle-thumb"></span></span>
           </label>
         </div>
-        <div class="anim-row" style="margin-top:2px;">
+        <div class="anim-row">
           <span class="toggle-label">Mode clair</span>
           <label class="toggle-wrap">
             <input type="checkbox" id="themeToggle">
@@ -201,10 +202,10 @@
       </section>
     </div>
 
-    <div id="panel-view-atom" class="panel-tab-content" role="tabpanel" aria-labelledby="tabBtnAtom">
+    <div id="panel-view-atom" class="panel-tab-content" role="tabpanel" aria-labelledby="tabBtnAtom" hidden>
       <section class="panel-section">
-        <h2 class="section-label">Definir l'atome</h2>
-        <p class="panel-copy">Selectionne les nombres quantiques. Les limites physiques sont appliquees automatiquement.</p>
+        <h2 class="section-label">Définir l'atome</h2>
+        <p class="panel-copy">Sélectionne les nombres quantiques. Les limites physiques sont appliquées automatiquement.</p>
         <div class="control-row">
           <label for="atomN">n principal</label>
           <select id="atomN"></select>
@@ -214,27 +215,27 @@
           <select id="atomL"></select>
         </div>
         <div class="control-row">
-          <label for="atomM">m magnetique (-l..+l)</label>
+          <label for="atomM">m magnétique (-l..+l)</label>
           <select id="atomM"></select>
         </div>
-        <button id="btnApplyAtom" class="btn-generate" type="button">Appliquer et generer</button>
+        <button id="btnApplyAtom" class="btn-generate" type="button">Appliquer et générer</button>
       </section>
 
       <section class="panel-section">
-        <h2 class="section-label">Regles orbitales</h2>
+        <h2 class="section-label">Règles orbitales</h2>
         <ul class="rule-list">
-          <li><strong>n</strong> definit la couche d'energie. Valeur minimale: 1.</li>
-          <li><strong>l</strong> definit la forme de l'orbitale et reste toujours entre 0 et n-1.</li>
-          <li><strong>m</strong> definit l'orientation et reste toujours entre -l et +l.</li>
-          <li>Ces regles sont verrouillees ici pour eviter les parametres non physiques.</li>
+          <li><strong>n</strong> définit la couche d'énergie. Valeur minimale : 1.</li>
+          <li><strong>l</strong> définit la forme de l'orbitale et reste toujours entre 0 et n-1.</li>
+          <li><strong>m</strong> définit l'orientation et reste toujours entre -l et +l.</li>
+          <li>Ces règles sont verrouillées ici pour éviter les paramètres non physiques.</li>
         </ul>
       </section>
     </div>
 
-    <nav class="hints" aria-label="Controles">
+    <nav class="hints" aria-label="Contrôles">
       <ul>
-        <li class="hint-item"><span class="hint-key">Glisser gauche</span><span class="hint-desc">Orbite camera</span></li>
-        <li class="hint-item"><span class="hint-key">Molette</span><span class="hint-desc">Zoom avant / arriere</span></li>
+        <li class="hint-item"><span class="hint-key">Glisser gauche</span><span class="hint-desc">Orbite caméra</span></li>
+        <li class="hint-item"><span class="hint-key">Molette</span><span class="hint-desc">Zoom avant / arrière</span></li>
         <li class="hint-item"><span class="hint-key">W / S</span><span class="hint-desc">n ± 1</span></li>
         <li class="hint-item"><span class="hint-key">E / D</span><span class="hint-desc">l ± 1</span></li>
         <li class="hint-item"><span class="hint-key">R / F</span><span class="hint-desc">m ± 1</span></li>
@@ -248,15 +249,16 @@
   <!-- ── VIEWPORT ── -->
   <main id="viewport">
     <canvas id="atomSimCanvas" width="800" height="600"
-      role="application" aria-label="Simulation orbitale quantique interactive">
+      aria-label="Simulation orbitale quantique interactive">
     </canvas>
 
-    <div id="panel2d">
-      <div id="panel2d-title">◈ Simulation photoelectrique - cliquer pour emettre des ondes</div>
-      <canvas id="c2d" width="300" height="195"></canvas>
-    </div>
+    <section id="panel2d" aria-labelledby="panel2d-title" hidden>
+      <h2 id="panel2d-title">Simulation photoélectrique</h2>
+      <p>Cliquez pour émettre des ondes.</p>
+      <canvas id="c2d" width="300" height="195" aria-label="Simulation 2D photoélectrique"></canvas>
+    </section>
 
-    <div id="loading"   role="status" aria-live="polite">Calcul de l'orbitale...</div>
+    <div id="loading" role="status" aria-live="polite">Calcul de l'orbitale...</div>
     <div id="progressBar" role="status" aria-live="polite"></div>
   </main>
 
@@ -276,7 +278,7 @@
         <dd class="hud-val" id="iOrb">2p₀</dd>
       </div>
       <div class="hud-item">
-        <dt class="hud-label">Dist camera</dt>
+        <dt class="hud-label">Dist caméra</dt>
         <dd class="hud-val" id="iDist">--</dd>
       </div>
     </dl>

@@ -1,9 +1,5 @@
 'use strict';
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  PHYSICS ENGINE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-
 function gamma(z) {
   if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
   z -= 1;
@@ -16,7 +12,6 @@ function gamma(z) {
   return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
 }
 
-// â”€â”€â”€ Cached CDF tables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const _rCDF = {}, _tCDF = {};
 
 function buildRCDF(n, l) {
@@ -100,7 +95,6 @@ function sampleTheta(l, m) {
 }
 function samplePhi() { return 2 * Math.PI * Math.random(); }
 
-// â”€â”€â”€ Rejection samplers analytiques (par orbital nommÃ©e) â”€
 const _a0 = 52.9; // Bohr radius pm
 function _rProb2p(r){ const x=r/_a0; return (x**4/24)*Math.exp(-x); }
 function _rProb3p(r){ const x=r/_a0; const R=x*(1-x/6)*Math.exp(-x/3); return R*R*r*r; }
@@ -115,13 +109,12 @@ const NAMED_SAMPLERS = {
   '3p_z': ()=>{ const r=_sampleR3p(); let t; for(;;){t=_rT();if(Math.random()<=Math.cos(t)**2)break;} return s2c(r,t,_rP()); }
 };
 
-// â”€â”€â”€ Mapping select value â†’ NAMED_SAMPLER key â”€â”€â”€â”€
 const SAMPLER_MAP = {
   '2_1_0': '2p_z', '2_1_1': '2p_x', '2_1_-1': '2p_y',
   '3_1_0': '3p_z'
 };
 
-// â”€â”€â”€ JSON wavefunction loader (format: {points:[[x,y,z],â€¦]} en Bohr) â”€â”€
+
 async function loadWavefunction(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -129,7 +122,7 @@ async function loadWavefunction(file) {
       try {
         const data = JSON.parse(ev.target.result);
         if (!data.points) throw new Error('Missing "points" array');
-        const BPM = 5.29; // Bohr â†’ pm
+        const BPM = 5.29; // Bohr → pm
         const N = data.points.length;
         posArr = new Float32Array(N*3);
         rArr   = new Float32Array(N);
@@ -143,7 +136,12 @@ async function loadWavefunction(file) {
           const [cr,cg,cb]=orbitalColor(rArr[i],th,ph,qn.n,qn.l,qn.m);
           colArr[i*3]=cr; colArr[i*3+1]=cg; colArr[i*3+2]=cb;
         });
-        if (cloudMesh) scene.remove(cloudMesh);
+        if (cloudMesh) {
+  scene.remove(cloudMesh);
+  if (cloudMesh.geometry) cloudMesh.geometry.dispose();
+  if (cloudMesh.material) cloudMesh.material.dispose();
+  cloudMesh = null;
+}
         const geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(posArr.slice(),3));
         geo.setAttribute('color',    new THREE.BufferAttribute(colArr,3));
@@ -175,7 +173,6 @@ function heatFire(v) {
   return [s[i][0]+t*(s[i+1][0]-s[i][0]),s[i][1]+t*(s[i+1][1]-s[i][1]),s[i][2]+t*(s[i+1][2]-s[i][2])];
 }
 
-// â”€â”€â”€ Alternative colormap: yellow â†’ orange/red â†’ purple â”€â”€
 function densityColor(v) {
   v = Math.max(0, Math.min(1, v));
   let r, g, b;
@@ -183,7 +180,7 @@ function densityColor(v) {
   else         { const f=(v-0.5)/0.5; r=1-0.5*f; g=0.5*(1-f); b=0.5*f; }
   return [r, g, b];
 }
-let useAltColor = false; // toggled by UI
+let useAltColor = false;
 
 function orbitalColor(r, theta, phi, n, l, m) {
   const rho = 2*r/n, k = n-l-1, alpha = 2*l+1;
@@ -220,10 +217,6 @@ function probFlow(px, py, pz, m) {
   return [-vm*Math.sin(phi), 0, vm*Math.cos(phi)];
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  THREE.JS 3D RENDERER
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-
 const canvas3d = document.getElementById('atomSimCanvas');
 
 const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true, alpha: false });
@@ -233,7 +226,6 @@ renderer.setClearColor(0x050302, 1);
 const scene = new THREE.Scene();
 const cam   = new THREE.PerspectiveCamera(60, 800/600, 0.01, 2000);
 
-// â”€â”€â”€ Fit canvas to viewport â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function resizeCanvas() {
   const vp = document.getElementById('viewport');
   const w  = vp.clientWidth  - 40;
@@ -245,7 +237,6 @@ function resizeCanvas() {
   renderer.setSize(w, h);
 }
 
-// â”€â”€â”€ Orbit state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let orb = { az: 0.3, el: Math.PI/2.5, r: 60 };
 let dragging = false, lastX = 0, lastY = 0;
 
@@ -287,7 +278,6 @@ canvas3d.addEventListener('touchmove',  e => {
   tLast = t; updateCamera(); e.preventDefault();
 }, {passive:false});
 
-// â”€â”€â”€ Stars background â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 (function(){
   const N=1200, pos=new Float32Array(N*3), col=new Float32Array(N*3);
   for(let i=0;i<N;i++){
@@ -301,7 +291,6 @@ canvas3d.addEventListener('touchmove',  e => {
   scene.add(new THREE.Points(g,new THREE.PointsMaterial({size:.4,vertexColors:true,sizeAttenuation:true})));
 })();
 
-// â”€â”€â”€ Nucleus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const nucleus = new THREE.Mesh(
   new THREE.SphereGeometry(0.5,16,16),
   new THREE.MeshBasicMaterial({color:0xff6030})
@@ -313,7 +302,6 @@ const ring = new THREE.Mesh(
 );
 scene.add(ring);
 
-// â”€â”€â”€ Cloud state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let cloudMesh = null;
 let posArr = null, rArr = null;
 let qn = {n:2, l:1, m:0, N:15000};
@@ -348,13 +336,13 @@ function applyTheme(theme, persist = true) {
 
 const ORBITAL_LETTERS = ['s','p','d','f','g','h','i'];
 const ORBITAL_FAMILY = {
-  s: 'Distribution spherique autour du noyau.',
+  s: 'Distribution sphérique autour du noyau.',
   p: 'Deux lobes principaux avec un plan nodal.',
-  d: 'Forme complexe a plusieurs lobes (type trefle).',
+  d: 'Forme complexe a plusieurs lobes (type trèfle).',
   f: 'Forme multi-lobes avec structure plus fine.',
   g: 'Orbitale de haut ordre avec nombreux noeuds angulaires.',
-  h: 'Orbitale de haut ordre, tres structuree.',
-  i: 'Orbitale de tres haut ordre et forte complexite angulaire.'
+  h: 'Orbitale de haut ordre, très structurée.',
+  i: 'Orbitale de tres haut ordre et forte complexité angulaire.'
 };
 const PANEL_MIN_N = 1;
 const PANEL_MAX_N = 9;
@@ -461,7 +449,6 @@ function applyAtomForm() {
   generateCloud();
 }
 
-// â”€â”€â”€ Loading helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function showLoading(msg) {
   const ld = document.getElementById('loading');
   ld.style.display = 'block';
@@ -472,7 +459,6 @@ function hideLoading() {
   document.getElementById('progressBar').textContent  = '';
 }
 
-// â”€â”€â”€ Circular dot texture (anti square-pixel) â”€â”€â”€â”€
 const _dotTex = (() => {
   const c = document.createElement('canvas'); c.width = c.height = 16;
   const x = c.getContext('2d');
@@ -484,7 +470,6 @@ const _dotTex = (() => {
   return new THREE.CanvasTexture(c);
 })();
 
-// â”€â”€â”€ Generate cloud (chunked, non-blocking) â”€â”€â”€â”€â”€â”€
 function generateCloud(callback) {
   const { n, l, m, N } = qn;
   showLoading('Calcul de l\'orbitale...');
@@ -519,12 +504,17 @@ function generateCloud(callback) {
       }
       done = end;
       document.getElementById('progressBar').textContent =
-        `${Math.round(done/N*100)}%  â€”  ${done.toLocaleString()} / ${N.toLocaleString()}`;
+        `${Math.round(done/N*100)}% - ${done.toLocaleString()} / ${N.toLocaleString()}`;
       if (done < N) { setTimeout(doChunk, 0); return; }
 
       // Build Three.js geometry
       setTimeout(() => {
-        if (cloudMesh) scene.remove(cloudMesh);
+  if (cloudMesh) {
+    scene.remove(cloudMesh);
+    if (cloudMesh.geometry) cloudMesh.geometry.dispose();
+    if (cloudMesh.material) cloudMesh.material.dispose();
+    cloudMesh = null;
+  }
         const geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(posArr.slice(), 3));
         geo.setAttribute('color',    new THREE.BufferAttribute(colArr, 3));
@@ -544,7 +534,6 @@ function generateCloud(callback) {
   }, 50);
 }
 
-// â”€â”€â”€ HUD / Panel sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function updateHUD() {
   const { n, l, m, N } = qn;
   document.getElementById('qn-n').textContent      = n;
@@ -573,11 +562,11 @@ function updateHUD() {
   updatePresetInfo();
 }
 
-// â”€â”€â”€ Panel controls wiring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById('orbitalSel').addEventListener('change', function() {
   const p = this.value.split('_').map(Number);
   qn.n = p[0]; qn.l = p[1]; qn.m = p[2];
   updateHUD();
+  generateCloud();
 });
 
 document.getElementById('btnGen').addEventListener('click', () => generateCloud());
@@ -590,13 +579,13 @@ document.getElementById('btnApplyAtom').addEventListener('click', applyAtomForm)
 setPanelTab('presets');
 applyTheme(getPreferredTheme(), false);
 
-// â”€â”€â”€ Random orbital button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById('btnRandom').addEventListener('click', () => {
   const opts = [...document.getElementById('orbitalSel').options];
   const pick = opts[Math.floor(Math.random() * opts.length)];
   document.getElementById('orbitalSel').value = pick.value;
   const p = pick.value.split('_').map(Number);
   qn.n = p[0]; qn.l = p[1]; qn.m = p[2];
+  updateHUD();
   generateCloud();
 });
 
@@ -624,7 +613,6 @@ document.getElementById('themeToggle').addEventListener('change', function() {
   applyTheme(this.checked ? 'light' : 'dark');
 });
 
-// â”€â”€â”€ JSON import wiring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById('jsonInput').addEventListener('change', function() {
   const file = this.files[0]; if (!file) return;
   showLoading('Chargement JSON...');
@@ -632,13 +620,12 @@ document.getElementById('jsonInput').addEventListener('change', function() {
   this.value = '';
 });
 
-// â”€â”€â”€ Alt colormap toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 document.getElementById('colorToggle').addEventListener('change', function() {
   useAltColor = this.checked;
   generateCloud();
 });
 
-// â”€â”€â”€ 2D panel toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let show2D = false, sim2DInit = false;
 document.getElementById('btn2d').addEventListener('click', () => {
   show2D = !show2D;
@@ -647,7 +634,6 @@ document.getElementById('btn2d').addEventListener('click', () => {
   if (show2D && !sim2DInit) init2D();
 });
 
-// â”€â”€â”€ Keyboard controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.addEventListener('keydown', e => {
   if (e.repeat) return;
   const k = e.key.toLowerCase();
@@ -683,7 +669,7 @@ window.addEventListener('keydown', e => {
   }
 });
 
-// â”€â”€â”€ Animate probability current â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 const DT = 0.4;
 function animateFlow() {
   if (!cloudMesh || !animating || qn.m === 0) return;
@@ -705,7 +691,6 @@ function animateFlow() {
   pos.needsUpdate = true;
 }
 
-// â”€â”€â”€ FPS tracker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let fpsTimes = [], fpsLast = performance.now();
 function tickFPS() {
   const now = performance.now();
@@ -717,7 +702,7 @@ function tickFPS() {
   }
 }
 
-// â”€â”€â”€ 3D render loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 let frame = 0;
 function loop3D() {
   requestAnimationFrame(loop3D);
@@ -731,9 +716,7 @@ function loop3D() {
   renderer.render(scene, cam);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  2D PHOTOELECTRIC SIMULATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
 function init2D() {
   sim2DInit = true;
   const cv  = document.getElementById('c2d');
@@ -823,10 +806,10 @@ function init2D() {
   loop2D();
 }
 
-// â”€â”€â”€ Resize â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 window.addEventListener('resize', resizeCanvas);
 
-// â”€â”€â”€ Boot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 resizeCanvas();
 updateHUD();
 generateCloud(() => { loop3D(); });
