@@ -319,6 +319,32 @@ let posArr = null, rArr = null;
 let qn = {n:2, l:1, m:0, N:15000};
 let animating  = true;
 let ptSizeVal  = 0.24;
+const THEME_STORAGE_KEY = 'atom-theme';
+const THEME_CLEAR_COLOR = { dark: 0x050302, light: 0xf3ece4 };
+
+function getPreferredTheme() {
+  try {
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    if (storedTheme === 'light' || storedTheme === 'dark') return storedTheme;
+  } catch (e) {}
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    return 'light';
+  }
+  return 'dark';
+}
+
+function applyTheme(theme, persist = true) {
+  const normalizedTheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', normalizedTheme);
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) themeToggle.checked = normalizedTheme === 'light';
+  renderer.setClearColor(THEME_CLEAR_COLOR[normalizedTheme], 1);
+  if (persist) {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, normalizedTheme);
+    } catch (e) {}
+  }
+}
 
 const ORBITAL_LETTERS = ['s','p','d','f','g','h','i'];
 const ORBITAL_FAMILY = {
@@ -562,6 +588,7 @@ document.getElementById('atomL').addEventListener('change', () => refreshAtomFor
 document.getElementById('atomM').addEventListener('change', () => refreshAtomForm(false));
 document.getElementById('btnApplyAtom').addEventListener('click', applyAtomForm);
 setPanelTab('presets');
+applyTheme(getPreferredTheme(), false);
 
 // â”€â”€â”€ Random orbital button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.getElementById('btnRandom').addEventListener('click', () => {
@@ -591,6 +618,10 @@ document.getElementById('ptSize').addEventListener('input', function() {
 
 document.getElementById('animToggle').addEventListener('change', function() {
   animating = this.checked;
+});
+
+document.getElementById('themeToggle').addEventListener('change', function() {
+  applyTheme(this.checked ? 'light' : 'dark');
 });
 
 // â”€â”€â”€ JSON import wiring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
