@@ -33,7 +33,6 @@
 - [Origine du projet](#origine-du-projet)
 - [Objectifs](#objectifs)
 - [Licence](#licence)
-- [Crédits](#crédits)
 
 ---
 
