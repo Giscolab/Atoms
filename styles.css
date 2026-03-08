@@ -41,9 +41,10 @@
     --panel2d-title-border: rgba(255, 154, 60, 0.12);
     --hud-bg: rgba(5, 3, 2, 0.95);
 
-    /* Layout */
-    --panel-width: 260px;
-    --hud-height: 40px;
+/* Layout */
+--panel-width: clamp(340px, 30vw, 460px);
+--hud-height: 40px;
+
 
     /* Glow tokens */
     --glow-1: 0 0 14px rgba(255, 154, 60, 0.45);
@@ -186,7 +187,7 @@
   #panel::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
   .panel-header {
-    padding: var(--s-8) var(--s-7) var(--s-6);
+    padding: var(--s-9) var(--s-8) var(--s-7);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
@@ -210,7 +211,7 @@
   }
 
   .panel-section {
-    padding: var(--s-6) var(--s-7);
+    padding: var(--s-7) var(--s-8);
     border-bottom: 1px solid var(--border);
     display: flex;
     flex-direction: column;
@@ -287,13 +288,13 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-2);
-    padding: var(--s-5) var(--s-7) var(--s-4);
+    padding: var(--s-6) var(--s-8) var(--s-5);
     border-bottom: 1px solid var(--border);
   }
   
   /* On stylise le bouton via classe pour éviter trop de global */
   .panel-tab-btn {
-    padding: var(--s-2) var(--s-3);
+    padding: var(--s-3) var(--s-4);
     font-size: var(--fs-2);
     letter-spacing: 1px;
     color: var(--text-secondary);
@@ -560,7 +561,7 @@
   }
   
   /* Utilitaires de layout pour boutons */
-  .btn-row { display: flex; gap: var(--s-2); margin-top: var(--s-1); }
+  .btn-row { display: flex; gap: var(--s-3); margin-top: var(--s-2); }
   .btn-fill { flex: 1; }
   .btn-auto { flex: 0 0 auto; padding: var(--s-2) var(--s-4); letter-spacing: 0; }
   .btn-import { display: inline-flex; align-items: center; justify-content: center; margin-top: var(--s-1); cursor: pointer; }
