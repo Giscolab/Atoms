@@ -432,8 +432,16 @@ function updatePresetInfo() {
 
 function setPanelTab(tabId) {
   const showPresets = tabId === 'presets';
-  document.getElementById('panel-view-presets').classList.toggle('active', showPresets);
-  document.getElementById('panel-view-atom').classList.toggle('active', !showPresets);
+
+  const presets = document.getElementById('panel-view-presets');
+  const atom = document.getElementById('panel-view-atom');
+
+  presets.classList.toggle('active', showPresets);
+  atom.classList.toggle('active', !showPresets);
+
+  presets.hidden = !showPresets;
+  atom.hidden = showPresets;
+
   document.getElementById('tabBtnPresets').setAttribute('aria-selected', showPresets ? 'true' : 'false');
   document.getElementById('tabBtnAtom').setAttribute('aria-selected', showPresets ? 'false' : 'true');
 }
@@ -442,12 +450,15 @@ function applyAtomForm() {
   const nVal = Number(document.getElementById('atomN').value);
   const lVal = Number(document.getElementById('atomL').value);
   const mVal = Number(document.getElementById('atomM').value);
+
   qn.n = Math.max(1, nVal || 1);
   qn.l = Math.max(0, Math.min(qn.n - 1, lVal || 0));
   qn.m = clampValue(mVal || 0, -qn.l, qn.l);
+
   updateHUD();
   generateCloud();
 }
+
 
 function showLoading(msg) {
   const ld = document.getElementById('loading');
