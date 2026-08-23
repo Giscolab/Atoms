@@ -24,7 +24,7 @@ function readSource(path: string): string {
   return readFileSync(path, 'utf8');
 }
 
-describe('frontières du Lot 1.2', () => {
+describe('frontières architecturales', () => {
   it('garde la couche scientifique indépendante de Three.js et du navigateur', async () => {
     const scienceDirectory = join(sourceRoot, 'science');
     const scienceFiles = collectTypeScriptFiles(scienceDirectory);
@@ -32,8 +32,8 @@ describe('frontières du Lot 1.2', () => {
 
     const forbiddenPatterns = [
       /(?:from\s+|import\s*\()\s*['"]three(?:\/[^'"]*)?['"]/u,
-      /\b(?:document|window|HTMLElement|HTMLCanvasElement|CanvasRenderingContext2D|WebGLRenderer)\b/u,
-      /(?:from\s+|import\s*\()\s*['"]\.\.\/(?:app|data|rendering|state|ui)(?:\/|['"])/u,
+      /\b(?:document|window|HTMLElement|HTMLCanvasElement|CanvasRenderingContext2D|OffscreenCanvas|FileReader|WebGLRenderer)\b/u,
+      /(?:from\s+|import\s*\()\s*['"](?:\.\.\/)+(?:app|data|rendering|state|ui)(?:\/|['"])/u,
     ];
 
     for (const path of scienceFiles) {
@@ -78,5 +78,17 @@ describe('frontières du Lot 1.2', () => {
       /\bTHREE\b|from\s+['"]three|Math\.random|setTimeout|requestAnimationFrame|-13\.6|52\.9|5\.29/u,
     );
     expect(existsSync(join(sourceRoot, 'workers'))).toBe(false);
+  });
+
+  it('laisse le nouveau socle scientifique déconnecté du runtime visible', () => {
+    const newScienceModulePattern =
+      /(?:from\s+|import\s*\()\s*['"](?:[^'"]*\/)?science\/(?:constants|hydrogen|quantum|special|units)\//u;
+    const runtimeFiles = collectTypeScriptFiles(sourceRoot).filter(
+      (path) => !sourceName(path).startsWith('science/'),
+    );
+
+    for (const path of runtimeFiles) {
+      expect(readSource(path), sourceName(path)).not.toMatch(newScienceModulePattern);
+    }
   });
 });
