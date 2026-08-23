@@ -1,0 +1,22 @@
+* text=auto eol=lf
+
+# Scripts Windows exécutables par l'interpréteur natif.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Ressources binaires.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.glb binary
+*.gltf text eol=lf

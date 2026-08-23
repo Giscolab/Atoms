@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Documentation et ressources historiques hors du formatage mécanique Phase 1.
+AGENTS.md
+PLAN.md
+corpus.md
+README.md
+index.html
+styles.css
+docs/references/
+*.png

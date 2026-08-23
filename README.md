@@ -10,10 +10,9 @@
 
 <p align="center">
   <a href="https://github.com/votre-utilisateur/orbital-visualizer/actions"><img src="https://img.shields.io/github/actions/workflow/status/votre-utilisateur/orbital-visualizer/ci.yml?branch=main" alt="Build Status"></a>
-  <a href="https://github.com/votre-utilisateur/orbital-visualizer/blob/main/LICENSE"><img src="https://img.shields.io/github/license/votre-utilisateur/orbital-visualizer" alt="License"></a>
   <a href="https://github.com/votre-utilisateur/orbital-visualizer/stargazers"><img src="https://img.shields.io/github/stars/votre-utilisateur/orbital-visualizer" alt="Stars"></a>
   <a href="https://github.com/votre-utilisateur/orbital-visualizer/issues"><img src="https://img.shields.io/github/issues/votre-utilisateur/orbital-visualizer" alt="Issues"></a>
-  <a href="https://threejs.org/"><img src="https://img.shields.io/badge/Three.js-r147-blue" alt="Three.js"></a>
+  <a href="https://threejs.org/"><img src="https://img.shields.io/badge/Three.js-r185-blue" alt="Three.js"></a>
 </p>
 
 ---
@@ -32,7 +31,6 @@
 - [Contribution](#contribution)
 - [Origine du projet](#origine-du-projet)
 - [Objectifs](#objectifs)
-- [Licence](#licence)
 
 ---
 
@@ -70,19 +68,17 @@ La visualisation repose sur la fonction d’onde de l’atome d’hydrogène, d�
 | `l`    | Nombre quantique azimutal | Détermine la forme de l’orbitale | Entier de 0 à n-1 |
 | `m`    | Nombre quantique magnétique | Détermine l’orientation spatiale | Entier de -l à +l |
 
+### Densité de probabilité
+
 La densité de probabilité affichée est calculée comme suit :
 
-\[
-|\Psi_{n l m}(r, \theta, \phi)|^2 = |R_{n l}(r)|^2 \cdot |Y_{l m}(\theta, \phi)|^2
-\]
+|Ψₙₗₘ(r, θ, φ)|² = |Rₙₗ(r)|² · |Yₗₘ(θ, φ)|²
 
 Où :
-- \( R_{n l}(r) \) est la partie radiale.
-- \( Y_{l m}(\theta, \phi) \) est la partie angulaire (harmoniques sphériques).
+- Rₙₗ(r) est la partie radiale.
+- Yₗₘ(θ, φ) est la partie angulaire (harmoniques sphériques).
 
 Cette densité représente la probabilité de trouver l’électron en un point donné de l’espace.
-
----
 
 ## Types d’orbitales
 
@@ -104,12 +100,12 @@ Explorez diverses orbitales classées par leur forme et énergie :
 |-------------|---------|------|
 | HTML5 | - | Structure de base de l’application |
 | CSS3 | - | Styles et mise en forme responsive |
-| JavaScript | ES6+ | Logique interactive et calculs quantiques |
+| TypeScript | 7.0.2 | Logique interactive et calculs quantiques |
 | WebGL | 2.0 | Rendu 3D accéléré par GPU |
-| Three.js | r147+ | Bibliothèque pour la manipulation 3D et les scènes |
-| npm (optionnel) | - | Gestion des dépendances pour le développement |
+| Three.js | r185 | Bibliothèque pour la manipulation 3D et les scènes |
+| npm | - | Gestion des dépendances et des commandes de développement |
 
-Aucune dépendance externe lourde ; tout est inclus pour une exécution autonome.
+Three.js et les outils de développement sont installés de façon reproductible depuis `package-lock.json` avec npm.
 
 ---
 
@@ -117,7 +113,7 @@ Aucune dépendance externe lourde ; tout est inclus pour une exécution autonome
 
 ### Prérequis
 - Un navigateur web moderne (Chrome, Firefox, Edge) avec support WebGL.
-- Node.js (optionnel, pour un serveur local avancé).
+- Node.js 24.19.0 LTS et npm.
 
 ### Étapes
 
@@ -127,20 +123,18 @@ Aucune dépendance externe lourde ; tout est inclus pour une exécution autonome
    cd orbital-visualizer
    ```
 
-2. **Installer les dépendances** (si vous utilisez npm pour des outils de dev) :
+2. **Installer les dépendances** :
    ```bash
    npm install
    ```
 
 3. **Lancer un serveur local** :
-   - Avec npm : `npm start` (si un script est configuré).
-   - Avec npx : `npx serve .`
-   - Ou utilisez l’extension **Live Server** dans VS Code.
+   ```bash
+   npm run dev
+   ```
 
 4. **Ouvrir l’application** :
-   Accédez à `http://localhost:3000` (ou le port indiqué).
-
-Pour un déploiement sur GitHub Pages, poussez sur la branche `gh-pages`.
+   Accédez à `http://localhost:5173` (ou au port indiqué par Vite).
 
 ---
 
@@ -154,7 +148,7 @@ Pour un déploiement sur GitHub Pages, poussez sur la branche `gh-pages`.
    - **Déplacement** : Cliquez droit et glissez.
 4. Explorez les options : Changez la densité de points, activez les labels quantiques, ou basculez en mode fil de fer.
 
-Exemple de code pour intégrer dans un projet : Chargez `script.js` et initialisez la scène Three.js.
+Le point d’entrée de l’application est `src/main.ts`.
 
 ---
 
@@ -164,11 +158,11 @@ Exemple de code pour intégrer dans un projet : Chargez `script.js` et initialis
 orbital-visualizer/
 ├── index.html          # Page principale
 ├── style.css           # Styles CSS
-├── script.js           # Logique JavaScript et Three.js
+├── src/
+│   └── main.ts         # Point d’entrée TypeScript et Three.js
 ├── screenshot.png      # Image d’aperçu
 ├── assets/             # (Optionnel) Modèles 3D ou textures supplémentaires
-├── README.md           # Ce fichier
-└── LICENSE             # Fichier de licence
+└── README.md           # Ce fichier
 ```
 
 ---
@@ -176,8 +170,8 @@ orbital-visualizer/
 ## Captures d'écran
 
 <p align="center">
-  <img src="screenshot.png" width="400" alt="Orbitale 1s">
-  <img src="another-screenshot.png" width="400" alt="Orbitale 2p"> <!-- Ajoutez plus si disponible -->
+  <img src="Orbitale 1s.png" width="400" alt="Orbitale 1s">
+  <img src="3dx2-y2 (m=2).png" width="400" alt="Orbitale 3dx2-y2 (m=2)">
 </p>
 
 ---
@@ -212,21 +206,15 @@ Cette version est une réimplémentation indépendante en technologies web, avec
 ## Objectifs
 
 - Rendre la **mécanique quantique visuellement intuitive** pour l’éducation.
-- Fournir un outil **interactif et open-source** pour la visualisation scientifique.
+- Fournir un outil **interactif** pour la visualisation scientifique.
 - Démontrer les capacités des **technologies web** (WebGL, Three.js) pour des simulations complexes.
 - Encourager des **expérimentations pédagogiques** et des extensions communautaires.
 
 ---
 
-## Licence
-
-Ce projet est sous licence [MIT](LICENSE) – libre d’utilisation pour des fins éducatives et non commerciales. Veuillez créditer les sources originales.
-
----
-
 
 <p align="center">
-  Développé avec ❤️ et Three.js • Inspiré par Kavan Anderson
+  Développé avec Three.js • Inspiré de Kavan Anderson
 </p>
 
 Si vous appréciez ce projet, donnez une ⭐ sur GitHub ! Pour toute question, ouvrez une issue.

@@ -1,0 +1,46 @@
+{
+  "name": "atoms",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Visualiseur web d'orbitales de l'atome d'hydrogène.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "engines": {
+    "node": ">=24.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Giscolab/Atoms.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Giscolab/Atoms/issues"
+  },
+  "homepage": "https://github.com/Giscolab/Atoms#readme",
+  "dependencies": {
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.62.1",
+    "@types/node": "24.13.3",
+    "@types/three": "0.185.4",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "eslint": "10.7.0",
+    "globals": "17.11.0",
+    "prettier": "3.9.0",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "typescript-eslint": "8.67.0",
+    "vite": "8.2.2",
+    "vitest": "4.1.10"
+  }
+}
