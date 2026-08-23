@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { chooseTheme, inclusiveIntegerRange, parseOrbitalOption } from '../../src/uiState';
+import { chooseTheme, inclusiveIntegerRange, parseOrbitalOption } from '../../src/ui/uiState';
 
 describe('chooseTheme', () => {
   it('gives a valid stored theme priority over the system preference', () => {

@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "typecheck:science": "tsc -p tsconfig.science.json",
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",

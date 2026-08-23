@@ -34,6 +34,9 @@ jobs:
       - name: Vérifier les types
         run: npm run typecheck
 
+      - name: Vérifier l'indépendance du moteur scientifique
+        run: npm run typecheck:science
+
       - name: Exécuter les tests unitaires
         run: npm run test
 
