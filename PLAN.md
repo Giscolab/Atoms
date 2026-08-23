@@ -3,65 +3,120 @@
 **Document de référence — 23 août 2026**  
 **Projet :** `Giscolab/Atoms`  
 **Origine :** réimplémentation web issue du travail pédagogique original de Kavan (`kavan010/Atoms`)  
-**Cible de refonte :** `v5.0.0`
+**Cible de refonte :** `v5.0.0`  
+**État du plan :** mis à jour après validation de la Phase 2 et du Micro-Lot 2.1 CODATA
 
 ---
 
-## 1. But de la refonte
+## Légende d'avancement
+
+- [x] terminé et validé ;
+- [ ] à faire ;
+- lorsqu'un élément est partiellement réalisé, le détail est indiqué explicitement dans son texte.
+
+Le présent document décrit l'état réel du projet et sa trajectoire cible. Le code validé fait foi sur l'implémentation actuelle ; ce plan fixe les prochaines décisions et les critères de sortie.
+
+---
+
+# 1. But de la refonte
 
 Atoms doit devenir un visualiseur scientifique de l'atome d'hydrogène qui soit à la fois :
 
-- scientifiquement défendable ;
-- graphiquement lisible et moderne ;
-- déterministe et testable ;
-- performant sur navigateur moderne ;
-- maintenable ;
-- transparent sur ses hypothèses physiques ;
-- explicite sur ce qui est une représentation pédagogique et ce qui est une grandeur physique ;
-- respectueux du travail de l'auteur original.
+- [ ] scientifiquement défendable de bout en bout ;
+- [ ] graphiquement lisible et moderne ;
+- [ ] déterministe et reproductible ;
+- [ ] testable scientifiquement et logiciellement ;
+- [ ] performant sur navigateur moderne ;
+- [ ] maintenable ;
+- [ ] transparent sur ses hypothèses physiques ;
+- [ ] explicite sur ce qui est une représentation pédagogique et ce qui est une grandeur physique ;
+- [x] respectueux du travail de l'auteur original par une attribution visible et durable.
 
 La priorité absolue est la **justesse scientifique**. Aucun effet visuel ne doit suggérer un phénomène physique faux.
 
 ---
 
-## 2. Principes non négociables
+# 2. Principes non négociables
 
-1. **La physique est la source de vérité.**
-   - Une visualisation ne doit jamais être conservée uniquement parce qu'elle est jolie.
-   - Toute grandeur affichée doit avoir une unité, une définition et une provenance.
+## 2.1 La physique est la source de vérité
 
-2. **Séparer calcul, échantillonnage, rendu et interface.**
-   - Le moteur quantique ne connaît pas Three.js.
-   - Three.js ne connaît pas les formules physiques.
-   - L'UI ne contient aucune formule de physique.
+- [x] Le nouveau noyau scientifique est séparé du moteur legacy.
+- [ ] Une visualisation ne doit jamais être conservée uniquement parce qu'elle est jolie.
+- [ ] Toute grandeur affichée doit avoir une unité, une définition et une provenance.
+- [ ] Toute approximation importante doit être nommée explicitement dans l'interface ou la documentation scientifique.
 
-3. **Aucune trajectoire classique fictive de l'électron.**
-   - Un nuage de points représente des échantillons de `|ψ|²`, pas des électrons individuels en mouvement.
-   - Un état stationnaire ne doit pas être représenté comme une planète orbitant autour du noyau.
+## 2.2 Séparer calcul, échantillonnage, rendu et interface
 
-4. **Deux notions différentes doivent rester différentes.**
-   - Les états propres complexes `|n,l,m⟩`.
-   - Les orbitales réelles usuelles `p_x`, `p_y`, `d_xy`, etc., qui sont des combinaisons linéaires d'états `m`.
+- [x] Le noyau scientifique actuel ne dépend ni du DOM ni de Three.js.
+- [x] Le renderer Three.js est isolé du nouveau noyau scientifique.
+- [x] L'UI est séparée du renderer et du noyau scientifique.
+- [ ] Le sampler scientifique doit devenir un module indépendant du renderer.
+- [ ] La génération asynchrone doit devenir un service Worker indépendant.
 
-5. **Unités cohérentes de bout en bout.**
-   - Calcul interne en unités atomiques lorsque cela simplifie et sécurise les équations.
-   - Conversion vers `a₀`, pm, nm, Hartree et eV uniquement aux frontières d'affichage/import/export.
+Règle cible :
 
-6. **Toute assertion scientifique importante doit être testée.**
+```text
+science → sampling → worker → application → rendering/UI
+```
 
-7. **Le dépôt ne conserve qu'une branche de travail : `main`.**
-   - Les jalons sont conservés par tags Git, pas par branches permanentes.
+Aucune dépendance inverse ne doit introduire de formule scientifique dans le renderer ou l'UI.
 
-8. **L'auteur original doit rester crédité clairement.**
-   - Le projet devient autonome techniquement sans effacer sa provenance historique.
+## 2.3 Aucune trajectoire classique fictive de l'électron
+
+- [ ] Un nuage de points doit représenter des échantillons de `|ψ|²`, pas des électrons individuels en mouvement.
+- [ ] Un état stationnaire ne doit jamais être représenté comme une planète orbitant autour du noyau.
+- [ ] Le mouvement legacy actuel des points doit disparaître du rendu scientifique final.
+- [ ] Un éventuel courant de probabilité doit être présenté comme **champ de courant**, jamais comme trajectoires individuelles.
+
+## 2.4 États complexes et orbitales réelles restent distincts
+
+Le logiciel doit distinguer :
+
+```text
+Base complexe : |n,l,m⟩
+Base réelle    : pₓ, pᵧ, dxy, ...
+```
+
+- [ ] `m=+1` ne doit pas être assimilé à `p_x`.
+- [ ] `m=-1` ne doit pas être assimilé à `p_y`.
+- [ ] Les orbitales réelles doivent être construites comme combinaisons linéaires correctement normalisées des états complexes `±m`.
+- [ ] La phase et la densité doivent rester deux grandeurs distinctes.
+
+## 2.5 Unités cohérentes de bout en bout
+
+- [x] Les conversions physiques du nouveau noyau sont centralisées et testées.
+- [x] `a₀ ↔ m ↔ pm ↔ nm` est défini dans le nouveau noyau.
+- [x] `E_h ↔ J ↔ eV` est défini dans le nouveau noyau.
+- [ ] Le runtime legacy doit être remplacé afin qu'aucune ancienne échelle incohérente ne subsiste.
+- [ ] Les imports/exports doivent déclarer explicitement leurs unités.
+
+## 2.6 Toute assertion scientifique importante doit être testée
+
+- [x] Les constantes, unités, nombres quantiques, énergie et fonctions spéciales de base sont testés.
+- [ ] Les fonctions d'onde doivent être testées analytiquement et numériquement.
+- [ ] Le sampler doit être testé statistiquement.
+- [ ] Le renderer scientifique doit disposer de régressions visuelles déterministes.
+
+## 2.7 Politique Git
+
+- [x] `main` est la seule branche permanente de travail.
+- [x] Le point legacy est conservé par tag Git.
+- [ ] Les futurs jalons `v5` doivent être conservés par tags, pas par branches historiques permanentes.
+- [ ] Aucun historique ne doit être réécrit uniquement pour masquer la provenance du projet.
+
+## 2.8 Attribution
+
+- [x] Kavan / `kavan010` reste crédité clairement.
+- [x] Le dépôt original est référencé dans `CREDITS.md`.
+- [ ] Le README final doit reprendre cette attribution de manière visible.
 
 ---
 
-## 3. État de départ constaté
+# 3. État du projet
 
-### 3.1 Architecture actuelle
+## 3.1 État de départ legacy
 
-Le dépôt actuel est une application web sans build :
+Le point de départ historique était une application web compacte :
 
 ```text
 Atoms/
@@ -72,175 +127,209 @@ Atoms/
 └── README.md
 ```
 
-Le moteur scientifique, le rendu Three.js, l'UI, la simulation 2D et les entrées utilisateur sont regroupés principalement dans `script.js`.
+Le moteur scientifique, le rendu Three.js, l'UI, la simulation 2D et les entrées utilisateur étaient regroupés principalement dans `script.js`.
 
-### 3.2 Git
+## 3.2 État actuel après Phase 2.1
 
-État observé dans l'archive du 23 août 2026 :
+L'application a été migrée vers Vite + TypeScript et les responsabilités ont été séparées.
 
-- branche locale : `main` uniquement ;
-- `origin/main` : `Giscolab/Atoms` ;
-- remote `upstream` : `kavan010/Atoms` ;
-- `main` et `upstream/main` n'ont actuellement aucun ancêtre commun ;
-- l'origine du projet Kavan est préservée explicitement par la documentation et les crédits, indépendamment de la topologie Git ;
-- les quatre fichiers texte signalés modifiés dans l'archive ne présentent pas de différence sémantique avec `origin/main` : il s'agit de fins de ligne.
+Structure actuelle pertinente :
 
-### 3.3 Défauts déjà identifiés
+```text
+src/
+├── app/
+│   ├── animationLoop.ts
+│   └── cloudController.ts
+├── data/
+│   ├── orbitals.ts
+│   └── wavefunctionData.ts
+├── rendering/
+│   ├── legacyPhotoelectricModel.ts
+│   ├── orbitalColors.ts
+│   ├── photoelectric2d.ts
+│   └── sceneRenderer.ts
+├── science/
+│   ├── legacyScience.ts
+│   ├── constants/
+│   │   └── codata2022.ts
+│   ├── hydrogen/
+│   │   └── energy.ts
+│   ├── quantum/
+│   │   └── quantumNumbers.ts
+│   ├── special/
+│   │   ├── associatedLegendre.ts
+│   │   ├── factorial.ts
+│   │   └── generalizedLaguerre.ts
+│   └── units/
+│       └── atomicUnits.ts
+├── state/
+│   └── appState.ts
+├── ui/
+│   ├── appUi.ts
+│   ├── dom.ts
+│   ├── uiState.ts
+│   ├── viewportControls.ts
+│   └── wavefunctionFile.ts
+└── main.ts
+```
 
-- mélange d'unités entre rayons de Bohr et picomètres ;
-- constante d'import JSON `5.29` incorrecte pour une conversion `a₀ → pm` ;
-- samplers spéciaux `2p_x`, `2p_y`, `2p_z`, `3p_z` utilisant une échelle différente du moteur générique ;
-- confusion entre `m=±1` et les orbitales réelles `p_x` / `p_y` ;
-- risque de concurrence entre plusieurs appels de `generateCloud()` à cause des tableaux globaux partagés ;
-- panneau 2D masqué par l'attribut HTML `hidden` alors que le code ne le retire pas ;
-- animation du nuage susceptible d'être interprétée à tort comme une trajectoire électronique ;
-- énergie affichée avec l'approximation `-13.6/n²` sans préciser le modèle ;
-- simulation dite « photoélectrique » ne modélisant pas actuellement un véritable effet photoélectrique ni une photoionisation ;
-- README annonçant des fonctions, fichiers, commandes, versions et une licence qui ne correspondent pas au dépôt réel.
+Tests actuels pertinents :
+
+```text
+tests/
+├── e2e/
+├── scientific/
+└── unit/
+```
+
+Le nouveau noyau scientifique est volontairement **déconnecté du runtime visible**. `legacyScience.ts` reste temporairement la source du comportement historique de l'application jusqu'aux phases d'intégration prévues plus bas.
+
+## 3.3 Défauts legacy encore ouverts
+
+- [ ] mélange historique d'unités dans le runtime legacy ;
+- [ ] constante d'import JSON historique `5.29` incorrecte pour `a₀ → pm` ;
+- [ ] samplers spéciaux `2p_x`, `2p_y`, `2p_z`, `3p_z` ;
+- [ ] confusion historique entre `m=±1` et `p_x/p_y` ;
+- [ ] concurrence possible entre plusieurs générations asynchrones ;
+- [x] panneau 2D rendu réellement visible/cachable et couvert par E2E ;
+- [ ] animation du nuage encore susceptible d'être interprétée comme une trajectoire électronique ;
+- [ ] énergie visible encore issue du modèle legacy `-13.6/n²` ;
+- [ ] module 2D encore nommé/interprété comme « photoélectrique » sans modèle physique correct ;
+- [ ] README encore partiellement legacy et à réécrire avant release.
 
 ---
 
-## 4. Point juridique et attribution
+# 4. Point juridique, attribution et références
 
-### 4.1 Crédit
+## 4.1 Crédit
 
-Le futur README devra conserver une section visible du type :
+Le README final devra conserver une section visible de ce type :
 
 > Atoms est une réimplémentation web indépendante inspirée du projet pédagogique original **Hydrogen Quantum Orbital Visualizer** de **Kavan** (`kavan010/Atoms`). Le dépôt original a fourni le point de départ historique et pédagogique du projet.
 
-Le lien vers le dépôt original doit être conservé :
+Lien historique :
 
 - https://github.com/kavan010/Atoms
 
-### 4.2 Licence : point à corriger avant publication finale
+État :
 
-Le dépôt original observé ne contient pas de fichier `LICENSE` à sa racine.
+- [x] `CREDITS.md` créé ;
+- [x] provenance historique explicitée ;
+- [ ] reprendre cette attribution dans le README final.
 
-Par conséquent :
+## 4.2 Licence
 
-- le README actuel ne doit pas déclarer arbitrairement « licence MIT » ;
-- « code visible publiquement sur GitHub » ne signifie pas automatiquement « code sous licence open source » ;
-- le crédit à l'auteur ne remplace pas une licence ;
-- la licence finale du projet doit être décidée uniquement après clarification de la provenance et des droits applicables aux éléments conservés.
+Le dépôt original observé ne comporte pas de fichier `LICENSE` à sa racine.
 
-**Action de refonte :** retirer l'affirmation MIT du README tant qu'elle n'est pas juridiquement fondée.
+Conséquences :
+
+- [ ] ne jamais affirmer arbitrairement « MIT » ;
+- [ ] clarifier le statut juridique final avant `v5.0.0` ;
+- [ ] distinguer crédit, provenance et licence ;
+- [ ] vérifier les droits de redistribution de tout document scientifique ou média conservé dans le dépôt public ;
+- [ ] préférer des références officielles et des liens publics lorsqu'une redistribution locale n'est pas nécessaire.
+
+## 4.3 Références scientifiques
+
+Sources prioritaires :
+
+1. NIST / CODATA pour les constantes physiques ;
+2. NIST DLMF pour les fonctions spéciales et conventions ;
+3. MIT OpenCourseWare pour la formulation pédagogique et certaines dérivations ;
+4. NIST ASD pour les comparaisons spectroscopiques lorsque pertinentes.
+
+- [x] `docs/SCIENCE.md` initial existe ;
+- [ ] créer `docs/REFERENCES.md` final ;
+- [ ] créer `docs/VALIDATION.md` final.
 
 ---
 
-## 5. Stratégie Git : une seule branche `main`
+# 5. Stratégie Git : une seule branche `main`
 
-### 5.1 Avant toute opération destructrice
+## 5.1 Sauvegarde legacy
 
-Créer un tag immuable du point de départ :
+- [x] créer le tag `legacy-web-2026-08-23` ;
+- [x] conserver le point de départ récupérable ;
+- [ ] pousser/archiver les tags de jalon nécessaires selon la politique de release.
 
-```text
-legacy-web-2026-08-23
-```
-
-Ce tag constitue le retour arrière de référence.
-
-### 5.2 Politique cible
+## 5.2 Politique cible
 
 ```text
 main        ← seule branche permanente
 v5.0.0-*    ← tags de versions
 ```
 
-Pas de branches historiques conservées pour la refonte.
+- [x] `main` est la branche permanente de travail ;
+- [ ] ne créer aucune branche historique permanente pour les phases ;
+- [ ] utiliser des tags aux jalons importants.
 
-### 5.3 Remote `upstream`
+## 5.3 Remote historique
 
-Après création de `CREDITS.md` et correction du README :
+Les historiques `main` et `upstream/main` n'ont pas d'ancêtre commun et ne doivent pas être greffés artificiellement.
 
-- conserver le lien historique vers `kavan010/Atoms` dans la documentation ;
-- supprimer le remote Git `upstream` du clone de travail ;
-- ne jamais supprimer ni modifier le dépôt de l'auteur original.
+- [x] provenance préservée par documentation ;
+- [ ] traiter le remote `upstream` lors de la phase finale d'autonomie GitHub ;
+- [ ] ne jamais supprimer ni modifier le dépôt original de l'auteur.
 
-Les historiques `main` et `upstream/main` n'ont actuellement aucun ancêtre commun. Ils ne doivent pas être greffés artificiellement.
+## 5.4 Autonomie GitHub
 
-L'origine du projet Kavan est préservée explicitement par la documentation et les crédits, indépendamment de la topologie Git.
+Avant toute éventuelle sortie d'un réseau de forks :
 
-### 5.4 Détacher le fork GitHub
+- [ ] vérifier issues ;
+- [ ] vérifier pull requests ;
+- [ ] vérifier stars/watchers ;
+- [ ] vérifier forks enfants ;
+- [ ] sauvegarder localement ;
+- [ ] documenter les conséquences ;
+- [ ] décider explicitement si l'opération est nécessaire.
 
-Si le dépôt doit devenir officiellement autonome sur GitHub, utiliser la fonction **Leave fork network** lorsque les conditions GitHub sont satisfaites.
+## 5.5 Pas de réécriture globale
 
-Avant de le faire :
-
-- vérifier les issues ;
-- vérifier les pull requests ;
-- vérifier les stars/watchers ;
-- vérifier l'absence de forks enfants ;
-- effectuer une sauvegarde locale complète.
-
-GitHub indique que la sortie du réseau de forks conserve les métadonnées des commits mais peut faire perdre les métadonnées GitHub liées au fork (issues, PR, wiki, stars, watchers, commentaires, etc.). L'opération est permanente.
-
-Référence : https://docs.github.com/en/pull-requests/how-tos/work-with-forks/detaching-a-fork
-
-### 5.5 Ne pas réécrire l'histoire
-
-La refonte ne doit pas faire de `git filter-repo`, squash global ou réécriture complète de `main` uniquement pour masquer l'origine du projet.
-
-L'historique existant est utile :
-
-- techniquement ;
-- historiquement ;
-- pour l'attribution.
+- [x] aucune réécriture globale de l'historique n'a été nécessaire pour la refonte ;
+- [ ] conserver ce principe jusqu'à `v5.0.0` sauf raison juridique ou technique exceptionnelle documentée.
 
 ---
 
-## 6. Stack cible moderne
+# 6. Stack cible moderne
 
-Versions stables vérifiées le 23 août 2026.
+Versions de référence retenues pour la refonte :
 
-| Composant | Version cible | Rôle |
-|---|---:|---|
-| Node.js | **24.19.0 LTS** | environnement CI et référence de développement |
-| Node.js | **26.7.0 Current** | autorisé localement, non utilisé comme baseline CI |
-| TypeScript | **7.0.2** | langage principal |
-| Vite | **8.2.2** | serveur de développement et build |
-| Three.js | **0.185.1 / r185** | rendu 3D |
-| Vitest | **4.1.10** | tests unitaires et scientifiques |
-| Playwright Test | **1.62.1** | tests navigateur end-to-end |
-| ESLint | **10.7.0** | analyse statique |
-| Prettier | **3.9.0** | formatage déterministe |
+| Composant | Version cible | Rôle | État |
+|---|---:|---|---|
+| Node.js | 24.19.0 LTS | baseline CI | [x] |
+| Node.js | 26.x Current | développement local autorisé | [x] |
+| TypeScript | 7.x natif / compatibilité outillage | langage principal | [x] |
+| Vite | 8.2.2 | dev + build | [x] |
+| Three.js | 0.185.1 / r185 | rendu 3D | [x] |
+| Vitest | 4.1.10 | tests unitaires/scientifiques | [x] |
+| Playwright Test | 1.62.1 | E2E | [x] |
+| ESLint | 10.7.0 | analyse statique | [x] |
+| Prettier | 3.9.0 | formatage | [x] |
 
-### 6.1 Pourquoi Node 24 LTS plutôt que Node 26 comme baseline
+## 6.1 Baseline Node
 
-Node 26 est la version Current au 23 août 2026. Node recommande les versions LTS pour les applications de production. La CI doit donc être reproductible sur Node 24 LTS, tout en autorisant Node 26 pour le développement local.
+- [x] Node 24 LTS utilisé comme référence CI ;
+- [x] Node Current autorisé localement ;
+- [ ] ne pas relever la baseline CI sans décision explicite.
 
-Référence : https://nodejs.org/en/about/previous-releases
+## 6.2 UI sans framework lourd
 
-### 6.2 Pourquoi pas React
+- [x] DOM natif + TypeScript conservé ;
+- [ ] ne pas introduire React ou autre framework sans besoin réel démontré.
 
-La refonte ne doit pas ajouter un framework UI sans nécessité.
+## 6.3 WebGL / WebGPU
 
-Atoms a besoin :
-
-- d'un moteur scientifique robuste ;
-- d'un renderer 3D ;
-- d'un panneau de contrôle ;
-- d'un état applicatif limité.
-
-TypeScript + DOM natif + composants simples suffisent et réduisent :
-
-- la surface de dépendances ;
-- les abstractions ;
-- le coût de maintenance ;
-- les interactions indirectes entre UI et moteur scientifique.
-
-React pourra être reconsidéré uniquement si la complexité réelle de l'interface le justifie plus tard.
-
-### 6.3 WebGL / WebGPU
-
-Baseline `v5.0.0` :
-
-- WebGL2 stable via Three.js ;
-- architecture de renderer suffisamment isolée pour permettre un backend WebGPU ultérieur ;
-- WebGPU ne doit pas devenir une dépendance fonctionnelle obligatoire avant validation multi-navigateurs.
+- [x] WebGL2 via Three.js est la baseline actuelle ;
+- [ ] conserver une isolation suffisante pour envisager WebGPU plus tard ;
+- [ ] ne pas rendre WebGPU obligatoire pour `v5.0.0` sans validation multi-navigateurs.
 
 ---
 
-## 7. Architecture cible
+# 7. Architecture cible mise à jour
+
+Le plan initial prévoyait `src/physics/`. L'architecture validée utilise désormais `src/science/`. **Aucun renommage vers `physics/` ne doit être effectué uniquement pour coller à une ancienne version du plan.**
+
+Architecture cible :
 
 ```text
 Atoms/
@@ -248,115 +337,96 @@ Atoms/
 │   └── assets/
 ├── src/
 │   ├── main.ts
-│   │
 │   ├── app/
-│   │   ├── AtomsApp.ts
-│   │   ├── state.ts
-│   │   └── commands.ts
-│   │
-│   ├── physics/
-│   │   ├── constants.ts
-│   │   ├── units.ts
-│   │   ├── quantumNumbers.ts
-│   │   ├── energy.ts
-│   │   ├── hydrogen/
-│   │   │   ├── radialWavefunction.ts
-│   │   │   ├── sphericalHarmonics.ts
-│   │   │   ├── realOrbitals.ts
-│   │   │   ├── wavefunction.ts
-│   │   │   ├── probabilityDensity.ts
-│   │   │   └── observables.ts
-│   │   └── special/
-│   │       ├── gamma.ts
-│   │       ├── factorial.ts
-│   │       ├── laguerre.ts
-│   │       └── legendre.ts
-│   │
+│   ├── data/
+│   ├── science/
+│   │   ├── legacyScience.ts
+│   │   ├── constants/
+│   │   │   └── codata2022.ts
+│   │   ├── units/
+│   │   │   └── atomicUnits.ts
+│   │   ├── quantum/
+│   │   │   └── quantumNumbers.ts
+│   │   ├── special/
+│   │   │   ├── factorial.ts
+│   │   │   ├── generalizedLaguerre.ts
+│   │   │   └── associatedLegendre.ts
+│   │   ├── math/
+│   │   │   └── complex.ts
+│   │   └── hydrogen/
+│   │       ├── energy.ts
+│   │       ├── radialWavefunction.ts
+│   │       ├── sphericalHarmonics.ts
+│   │       ├── wavefunction.ts
+│   │       ├── probabilityDensity.ts
+│   │       ├── realOrbitals.ts
+│   │       └── observables.ts
 │   ├── sampling/
 │   │   ├── rng.ts
+│   │   ├── cdf.ts
 │   │   ├── radialSampler.ts
 │   │   ├── angularSampler.ts
-│   │   ├── orbitalSampler.ts
-│   │   └── cdf.ts
-│   │
+│   │   └── orbitalSampler.ts
 │   ├── workers/
 │   │   ├── orbital.worker.ts
 │   │   └── protocol.ts
-│   │
-│   ├── render/
-│   │   ├── SceneRenderer.ts
+│   ├── rendering/
+│   │   ├── sceneRenderer.ts
 │   │   ├── camera.ts
 │   │   ├── pointCloud.ts
 │   │   ├── isosurface.ts
 │   │   ├── axes.ts
 │   │   ├── phaseColors.ts
 │   │   └── dispose.ts
-│   │
 │   ├── features/
 │   │   └── photonHydrogen2d/
 │   │       ├── model.ts
 │   │       ├── transitions.ts
 │   │       ├── photoionization.ts
 │   │       └── renderer2d.ts
-│   │
-│   ├── ui/
-│   │   ├── controls.ts
-│   │   ├── presets.ts
-│   │   ├── scientificInfo.ts
-│   │   ├── loading.ts
-│   │   └── accessibility.ts
-│   │
-│   └── styles/
-│       ├── tokens.css
-│       ├── base.css
-│       ├── layout.css
-│       ├── controls.css
-│       └── viewport.css
-│
+│   ├── state/
+│   └── ui/
+│       ├── controls.ts
+│       ├── presets.ts
+│       ├── scientificInfo.ts
+│       ├── loading.ts
+│       └── accessibility.ts
 ├── tests/
 │   ├── unit/
 │   ├── scientific/
 │   ├── sampling/
 │   ├── regression/
 │   └── e2e/
-│
 ├── docs/
 │   ├── SCIENCE.md
 │   ├── VALIDATION.md
 │   └── REFERENCES.md
-│
 ├── CREDITS.md
 ├── PLAN.md
 ├── README.md
-├── index.html
-├── package.json
-├── package-lock.json
-├── tsconfig.json
-├── vite.config.ts
-├── vitest.config.ts
-├── playwright.config.ts
-├── eslint.config.js
-├── .prettierrc
-├── .editorconfig
-└── .gitattributes
+└── ...
 ```
+
+L'arborescence cible est une direction, pas une obligation de renommer des modules déjà correctement isolés.
 
 ---
 
-## 8. Contrat scientifique du moteur quantique
+# 8. Contrat scientifique du moteur quantique
 
-### 8.1 Domaine initial
+## 8.1 Domaine initial
 
 `v5.0.0` modélise en priorité :
 
-- l'atome d'hydrogène neutre `¹H` ;
-- un électron ;
-- un potentiel coulombien central ;
-- les solutions analytiques de l'équation de Schrödinger non relativiste.
+- [x] atome d'hydrogène neutre `¹H` comme domaine scientifique choisi ;
+- [x] un électron ;
+- [x] potentiel coulombien central ;
+- [x] approximation non relativiste de Schrödinger ;
+- [x] correction de masse réduite électron-proton dans le nouveau noyau ;
+- [ ] fonctions d'onde analytiques complètes ;
+- [ ] échantillonnage de `|ψ|²` ;
+- [ ] rendu visible utilisant exclusivement le nouveau moteur.
 
-Les limites du modèle doivent être affichées clairement.
-
-Ne pas présenter le modèle comme incluant par défaut :
+Le modèle `v5.0.0` ne doit pas être présenté comme incluant par défaut :
 
 - structure fine ;
 - Lamb shift ;
@@ -367,333 +437,401 @@ Ne pas présenter le modèle comme incluant par défaut :
 - effet Zeeman ;
 - interactions multi-électroniques.
 
-Ces phénomènes pourront être ajoutés plus tard comme modules distincts.
+## 8.2 Constantes et métrologie
 
-### 8.2 Fonction d'onde
+Source : CODATA 2022 / NIST.
 
-Le cœur doit représenter explicitement :
+Déjà implémenté :
+
+- [x] `c` ;
+- [x] `h` ;
+- [x] `ħ` dérivé de `h` ;
+- [x] `e` ;
+- [x] `m_e` ;
+- [x] `m_p` ;
+- [x] `m_e/m_p` direct CODATA ;
+- [x] `a₀` ;
+- [x] `E_h`.
+
+Pour `¹H`, le modèle utilise directement :
+
+```text
+r = m_e / m_p
+μ / m_e = 1 / (1 + r)
+```
+
+et conserve la relation physique générale :
+
+```text
+μ = m_e m_p / (m_e + m_p)
+```
+
+## 8.3 Rayon caractéristique
+
+Le rayon de Bohr conventionnel et le rayon du problème relatif restent distincts :
+
+```text
+a₀   = rayon de Bohr conventionnel
+a_μ  = a₀ m_e / μ
+a_μ  = a₀ (1 + m_e/m_p)
+```
+
+- [x] distinction `a₀` / `a_μ` implémentée ;
+- [x] relation testée ;
+- [ ] utiliser `a_μ` explicitement dans la future fonction radiale de `¹H`.
+
+## 8.4 Énergie
+
+Le nouveau moteur utilise :
+
+```text
+E_n / E_h = -(μ/m_e) / (2 n²)
+```
+
+- [x] résultat disponible en Hartree ;
+- [x] conversion en joules ;
+- [x] conversion en eV ;
+- [x] dépendance `1/n²` testée ;
+- [x] distinction modèle de Schrödinger / valeur spectroscopique documentée ;
+- [ ] remplacer l'énergie visible legacy par cette grandeur lors de l'intégration UI.
+
+## 8.5 Fonction d'onde
+
+Cible :
 
 ```text
 ψₙₗₘ(r, θ, φ) = Rₙₗ(r) Yₗᵐ(θ, φ)
 ```
 
-avec normalisation vérifiée numériquement.
+- [ ] implémenter `Rₙₗ` ;
+- [ ] implémenter `Yₗᵐ` ;
+- [ ] implémenter `ψₙₗₘ` complexe ;
+- [ ] implémenter `|ψₙₗₘ|²` ;
+- [ ] implémenter la phase ;
+- [ ] valider la normalisation complète.
 
-### 8.3 Partie radiale
+## 8.6 Coordonnée radiale et masse réduite
 
-Implémenter les polynômes de Laguerre associés avec une convention documentée et testée.
-
-Le sampler radial utilise la densité radiale :
+Le futur moteur radial de `¹H` doit utiliser une variable adimensionnelle cohérente avec la masse réduite :
 
 ```text
-P(r) dr = r² |Rₙₗ(r)|² dr
+ρ = 2r / (n a_μ)
 ```
 
-Le facteur `r²` ne doit jamais être oublié ou appliqué deux fois.
+Les API peuvent exposer les longueurs en `a₀`, mais la formule physique doit convertir explicitement vers `a_μ` lorsque nécessaire.
 
-### 8.4 Partie angulaire
+- [ ] aucun usage silencieux de `a₀` à la place de `a_μ` ;
+- [ ] tester les formes fermées `1s`, `2s`, `2p` avec cette convention.
 
-Pour un état complexe `|n,l,m⟩` :
+## 8.7 Partie radiale
+
+Le sampler radial futur doit être basé sur :
+
+```text
+Pₙₗ(r) dr = r² |Rₙₗ(r)|² dr
+```
+
+- [ ] ne jamais oublier le facteur `r²` ;
+- [ ] ne jamais l'appliquer deux fois ;
+- [ ] normaliser numériquement `∫₀∞ r²|Rₙₗ|²dr = 1`.
+
+## 8.8 Partie angulaire
+
+Pour un état complexe :
 
 ```text
 Yₗᵐ(θ, φ) ∝ Pₗᵐ(cos θ) e^(imφ)
 ```
 
-Conséquences à respecter dans l'interface :
+Convention retenue :
 
-- `m=+1` n'est pas `p_x` ;
-- `m=-1` n'est pas `p_y` ;
-- les densités de probabilité des états `+m` et `-m` sont identiques dans le modèle sans perturbation externe ;
-- leur phase / courant de probabilité peut différer.
+- [x] fonction de Ferrers / Legendre associé DLMF ;
+- [x] phase de Condon–Shortley déjà incluse dans `Pₗᵐ` ;
+- [ ] ne jamais appliquer une seconde phase de Condon–Shortley dans `Yₗᵐ` ;
+- [ ] traiter correctement `m < 0` ;
+- [ ] vérifier `Y_l^{-m}` via la relation de conjugaison appropriée ;
+- [ ] vérifier que `|Y_l^{+m}|² = |Y_l^{-m}|²`.
 
-### 8.5 Orbitales réelles
+## 8.9 Orbitales réelles
 
-Les orbitales réelles usuelles doivent être une catégorie UI séparée :
+- [ ] `p_x`, `p_y`, `p_z` ;
+- [ ] `d_xy`, `d_xz`, `d_yz` ;
+- [ ] `d_x²-y²`, `d_z²` ;
+- [ ] familles supérieures nécessaires à l'UI.
 
-- `p_x`, `p_y`, `p_z` ;
-- `d_xy`, `d_xz`, `d_yz` ;
-- `d_x²-y²`, `d_z²` ;
-- etc.
+Elles doivent être dérivées de combinaisons normalisées d'états complexes `±m`, avec convention de signe documentée et tests associés.
 
-Elles sont construites comme combinaisons réelles des harmoniques sphériques complexes.
+## 8.10 Nœuds
 
-Le moteur doit donc exposer deux modes explicites :
-
-```text
-Base complexe : |n,l,m⟩
-Base réelle    : pₓ, pᵧ, dxy, ...
-```
-
-### 8.6 Nœuds
-
-Le moteur doit vérifier et afficher :
+Relations attendues :
 
 ```text
-nœuds radiaux   = n - l - 1
+nœuds radiaux    = n - l - 1
 nœuds angulaires = l
-nœuds totaux    = n - 1
+nœuds totaux     = n - 1
 ```
 
-La visualisation doit permettre de voir les surfaces nodales lorsque cela est pertinent.
+- [x] comptage simple disponible dans les données/UI legacy ;
+- [ ] le calcul scientifique doit devenir source de vérité ;
+- [ ] tester les nœuds radiaux ;
+- [ ] tester les nœuds angulaires ;
+- [ ] afficher les surfaces nodales lors de la phase renderer/UI.
 
-### 8.7 Unités
+## 8.11 Unités
 
-Convention proposée :
+Convention cible :
 
-#### Interne
+### Interne scientifique
 
-- longueur : rayon de Bohr `a₀` ;
+- longueur d'API : `a₀` lorsque pertinent ;
+- longueur caractéristique du problème `¹H` : `a_μ` explicitement dérivée ;
 - énergie : Hartree `E_h` ;
-- angles : radians.
+- angles : radians ;
+- fonctions d'onde : normalisation cohérente avec les unités choisies.
 
-#### Affichage
+### Affichage
 
 - `a₀` ;
 - pm ;
 - nm ;
 - eV.
 
-Les conversions sont centralisées dans `physics/units.ts`.
-
-Aucune constante numérique physique ne doit être copiée à plusieurs endroits.
-
-### 8.8 Constantes physiques
-
-La source de référence pour les constantes est **CODATA 2022 / NIST**, qui est encore le jeu de valeurs recommandé le plus récent au 23 août 2026.
-
-Références :
-
-- https://physics.nist.gov/constants
-- https://physics.nist.gov/cuu/Reference/versioncon.shtml
-
-La prochaine révision CODATA est annoncée pour 2026 mais n'est pas encore le jeu recommandé publié au moment de ce plan.
-
-### 8.9 Énergie
-
-Ne plus afficher simplement :
-
-```text
--13.6 / n²
-```
-
-sans contexte.
-
-L'application doit distinguer :
-
-1. **énergie du modèle de Schrödinger idéal** ;
-2. éventuellement **valeur de référence spectroscopique NIST** lorsque la comparaison a un sens ;
-3. les corrections physiques non incluses.
-
-Le NIST fournit des valeurs critiques pour les niveaux de l'hydrogène, y compris des données plus fines que le modèle de Schrödinger simple.
-
-Références :
-
-- https://physics.nist.gov/PhysRefData/ASD/levels_form.html
-- https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable5.htm
+- [x] conversions du nouveau noyau centralisées ;
+- [ ] éliminer toutes les constantes magiques restantes du runtime legacy lors de son remplacement.
 
 ---
 
-## 9. Échantillonnage : refonte complète
+# 9. Échantillonnage scientifique : contrat cible
 
-### 9.1 Supprimer les exceptions ad hoc
+Le sampler scientifique ne doit être construit qu'après validation des fonctions d'onde.
 
-Supprimer à terme :
+## 9.1 Suppression des exceptions ad hoc
 
-- `_rProb2p` ;
-- `_rProb3p` ;
-- `_sampleR2p` ;
-- `_sampleR3p` ;
-- `NAMED_SAMPLERS` ;
-- `SAMPLER_MAP`.
+À supprimer au moment de l'intégration du nouveau sampler :
 
-Toutes les orbitales doivent passer par un moteur cohérent commun.
+- [ ] `_rProb2p` ;
+- [ ] `_rProb3p` ;
+- [ ] `_sampleR2p` ;
+- [ ] `_sampleR3p` ;
+- [ ] `NAMED_SAMPLERS` ;
+- [ ] `SAMPLER_MAP` ;
+- [ ] toute correspondance `m=±1 → p_x/p_y`.
 
-### 9.2 Sampler générique
+## 9.2 Pipeline commun
 
 Le sampler doit :
 
-- accepter une définition d'état quantique ;
-- produire des positions selon `|ψ|²` ;
-- utiliser les mêmes unités pour toutes les orbitales ;
-- être indépendant du renderer ;
-- permettre une graine pseudo-aléatoire reproductible ;
-- être testable statistiquement.
+- [ ] accepter une définition d'état scientifique explicite ;
+- [ ] accepter soit une base complexe, soit une orbitale réelle correctement définie ;
+- [ ] produire des positions suivant la densité cible ;
+- [ ] utiliser les mêmes unités internes pour toutes les orbitales ;
+- [ ] être indépendant de Three.js ;
+- [ ] être indépendant du DOM ;
+- [ ] être déterministe pour une seed et une version données ;
+- [ ] exposer des métadonnées de génération utiles aux tests.
 
-### 9.3 CDF
+## 9.3 PRNG seedable
 
-Les CDF ne doivent plus être de simples sommes de points sans contrôle d'erreur.
+- [ ] choisir un algorithme PRNG explicite et documenté ;
+- [ ] versionner son contrat de reproductibilité ;
+- [ ] définir précisément la transformation d'une seed utilisateur vers l'état interne ;
+- [ ] interdire `Math.random()` dans le nouveau sampler ;
+- [ ] tester des vecteurs déterministes du PRNG ;
+- [ ] garantir qu'une même seed produit la même suite dans une même version du moteur.
+
+## 9.4 CDF radiale
+
+La CDF radiale doit être construite depuis :
+
+```text
+Pₙₗ(r) = r² |Rₙₗ(r)|²
+```
 
 À faire :
 
-- intégration numérique documentée ;
-- interpolation dans l'inversion de CDF ;
-- résolution adaptée aux nombres quantiques ;
-- tests de convergence ;
-- cache indexé par paramètres physiques ;
-- invalidation explicite.
+- [ ] intégration numérique documentée ;
+- [ ] choix adaptatif/justifié du domaine radial ;
+- [ ] contrôle de la masse de probabilité tronquée ;
+- [ ] résolution adaptée à l'état ;
+- [ ] interpolation lors de l'inversion de CDF ;
+- [ ] monotonie explicitement vérifiée ;
+- [ ] normalisation explicite ;
+- [ ] tests de convergence quand domaine/résolution augmentent ;
+- [ ] cache indexé par paramètres scientifiques ;
+- [ ] invalidation/versionnement explicite du cache.
 
-### 9.4 Reproductibilité
+## 9.5 Sampling angulaire
 
-Introduire un PRNG seedable.
+Pour les états complexes :
 
-Exemple fonctionnel attendu :
+- [ ] dériver la distribution angulaire de `|Yₗᵐ|²` ;
+- [ ] tenir compte de la mesure `sin θ dθ dφ` ;
+- [ ] exploiter l'uniformité en `φ` des densités complexes lorsque mathématiquement applicable ;
+- [ ] tester la symétrie `+m/-m`.
+
+Pour les orbitales réelles :
+
+- [ ] dériver la distribution depuis la vraie combinaison réelle ;
+- [ ] ne jamais réintroduire de sampler nommé ad hoc ;
+- [ ] vérifier l'orientation attendue sans changer la distribution radiale.
+
+## 9.6 Tests statistiques
+
+Les tests doivent être déterministes grâce à une seed fixe.
+
+- [ ] comparer l'ECDF radiale à la CDF théorique ;
+- [ ] comparer les distributions angulaires aux densités théoriques ;
+- [ ] tester moyennes et quantiles pertinents ;
+- [ ] tester la convergence avec `N` croissant ;
+- [ ] utiliser des seuils statistiques justifiés plutôt que des tolérances arbitraires ;
+- [ ] éviter les tests flakys dépendant d'un RNG non déterministe.
+
+## 9.7 Critère d'uniformité du pipeline
+
+Toutes les orbitales doivent utiliser :
 
 ```text
-state = 3d, seed = 123456, N = 50 000
-→ même tableau d'échantillons à version identique du moteur
+état scientifique
+    ↓
+fonction d'onde / densité
+    ↓
+sampler commun
+    ↓
+positions en unités scientifiques
 ```
 
-Cela permet :
-
-- tests de régression ;
-- comparaison de renderer ;
-- captures reproductibles ;
-- débogage scientifique.
+Aucun nom d'orbitale ne doit sélectionner une formule de sampling codée à part.
 
 ---
 
-## 10. Concurrence et Web Worker
+# 10. Concurrence et Web Worker
 
-### 10.1 Problème actuel
+## 10.1 Problème legacy
 
-`generateCloud()` écrit dans des tableaux globaux pendant plusieurs tâches asynchrones.
+Le runtime actuel peut lancer plusieurs générations asynchrones qui manipulent des états partagés.
 
-Deux générations rapprochées peuvent donc se mélanger.
+- [ ] supprimer toute possibilité de mélange entre deux générations ;
+- [ ] ne plus réutiliser des buffers globaux comme contrat implicite entre jobs.
 
-### 10.2 Architecture cible
+## 10.2 Contrat de job
 
-Chaque génération possède :
+Chaque génération doit posséder au minimum :
 
 ```text
 jobId
 state
+basis
 seed
 sampleCount
 options
+scienceVersion
+samplerVersion
 ```
 
-Le worker retourne :
+Le résultat doit contenir :
 
 ```text
 jobId
 positions
-colors / phase éventuelle
 metadata
+phase / informations optionnelles si demandées
 ```
 
-Le thread principal n'accepte un résultat que si `jobId` correspond encore à la requête active.
+## 10.3 Buffers
 
-### 10.3 Buffers
+- [ ] utiliser des `Float32Array`/buffers transférables lorsque pertinent ;
+- [ ] ne pas partager un tableau mutable entre deux jobs ;
+- [ ] mesurer le coût conversion Float64 → Float32 avant rendu.
 
-Utiliser des `Float32Array` transférables entre worker et thread principal.
+## 10.4 Annulation
 
-Ne pas garder des tableaux globaux réutilisés entre deux jobs.
-
-### 10.4 Annulation
-
-Une nouvelle génération annule logiquement l'ancienne.
-
-Une génération obsolète :
-
-- ne modifie pas la scène ;
-- ne modifie pas le HUD ;
-- ne modifie pas la progression ;
-- peut s'arrêter dès que possible.
+- [ ] une nouvelle génération rend l'ancienne obsolète ;
+- [ ] un résultat obsolète ne modifie jamais scène, HUD ou progression ;
+- [ ] le worker peut interrompre le travail obsolète dès que raisonnablement possible ;
+- [ ] tester les changements rapides d'état.
 
 ---
 
-## 11. Rendu 3D scientifique
+# 11. Rendu 3D scientifique
 
-### 11.1 Modes de rendu
+## 11.1 Nuage probabiliste
 
-Prévoir au minimum :
+- [ ] les points doivent être échantillonnés depuis `|ψ|²` ;
+- [ ] nombre de points réglable ;
+- [ ] transparence contrôlée ;
+- [ ] légende expliquant que les points ne sont pas des électrons individuels ;
+- [ ] seed affichable/exportable pour reproduction.
 
-1. **Nuage probabiliste**
-   - échantillons de `|ψ|²` ;
-   - nombre de points réglable ;
-   - transparence contrôlée.
+## 11.2 Isosurfaces
 
-2. **Isosurface de densité**
-   - surface d'une densité choisie ;
-   - option de plusieurs niveaux ;
-   - utile pour comparer aux représentations classiques d'orbitales.
+- [ ] densité choisie explicitement ;
+- [ ] possibilité de plusieurs niveaux ;
+- [ ] conventions documentées ;
+- [ ] validation visuelle sur cas connus.
 
-3. **Surfaces nodales**
-   - visualisation pédagogique distincte.
+## 11.3 Surfaces nodales
 
-4. **Phase / signe**
-   - palette divergente cohérente ;
-   - légende visible ;
-   - ne pas confondre couleur de phase et densité.
+- [ ] mode distinct ;
+- [ ] surfaces nodales dérivées du moteur scientifique ;
+- [ ] ne pas les confondre avec une isosurface de densité.
 
-### 11.2 Échelle
+## 11.4 Phase / signe
 
-Le renderer doit afficher une échelle réelle du modèle :
+- [ ] palette divergente ;
+- [ ] légende ;
+- [ ] phase séparée de densité ;
+- [ ] accessible en déficience de perception des couleurs autant que possible.
 
-- valeur en `a₀` ;
-- conversion pm ;
-- axes optionnels ;
-- repère d'échelle.
+## 11.5 Échelle
 
-La caméra doit se cadrer automatiquement à partir de la distribution radiale de l'état, pas d'une distance arbitraire commune à toutes les orbitales.
+- [ ] afficher `a₀` ;
+- [ ] conversion pm ;
+- [ ] conversion nm si utile ;
+- [ ] axes optionnels ;
+- [ ] repère d'échelle ;
+- [ ] cadrage automatique basé sur la distribution radiale réelle.
 
-### 11.3 Noyau
+## 11.6 Noyau
 
-Si le noyau est représenté avec une taille visible, indiquer explicitement :
+- [ ] si le noyau est agrandi pour être visible, afficher :
 
 ```text
 Noyau représenté de manière schématique — taille non à l'échelle.
 ```
 
-Une représentation à l'échelle réelle rendrait le proton pratiquement invisible à l'échelle atomique.
+## 11.7 Animation
 
-### 11.4 Animation
+- [ ] supprimer l'animation legacy des points comme pseudo-orbites ;
+- [ ] autoriser rotation de caméra ;
+- [ ] autoriser rotation volontaire de la scène comme outil d'observation ;
+- [ ] autoriser animation de phase uniquement si clairement étiquetée ;
+- [ ] représenter un éventuel courant de probabilité comme champ, jamais comme trajectoires de points.
 
-Supprimer toute animation pouvant laisser croire que les points sont des électrons classiques en orbite.
+## 11.8 Ressources Three.js
 
-Modes autorisés :
-
-- rotation de caméra ;
-- rotation volontaire de la scène comme outil d'observation ;
-- animation de phase clairement étiquetée ;
-- champ de courant de probabilité correctement dérivé et présenté comme champ, pas comme trajectoires individuelles.
-
-### 11.5 Couleurs
-
-Séparer :
-
-- couleur de densité ;
-- couleur de phase ;
-- sélection UI ;
-- thème graphique.
-
-Une palette scientifique doit :
-
-- être lisible en mode sombre et clair ;
-- rester interprétable en déficience de perception des couleurs ;
-- disposer d'une légende.
+- [x] renderer isolé ;
+- [ ] auditer disposal des géométries, matériaux et textures ;
+- [ ] tester absence de fuite lors de changements répétés d'état.
 
 ---
 
-## 12. Refonte graphique et UX
+# 12. UI/UX scientifique
 
-### 12.1 Direction visuelle
+## 12.1 Direction visuelle
 
-Objectif : interface d'instrument scientifique moderne, pas interface décorative.
+Objectif : interface d'instrument scientifique moderne.
 
-Principes :
+- [ ] surface 3D prioritaire ;
+- [ ] panneau compact ;
+- [ ] hiérarchie typographique claire ;
+- [ ] effets uniquement fonctionnels ;
+- [ ] informations scientifiques proches du contrôle concerné ;
+- [ ] thèmes sombre/clair équivalents ;
+- [ ] `prefers-reduced-motion`.
 
-- surface 3D prioritaire ;
-- panneau compact ;
-- hiérarchie typographique forte ;
-- peu d'effets gratuits ;
-- informations scientifiques proches du contrôle concerné ;
-- transitions courtes et fonctionnelles ;
-- thème sombre et clair réellement équivalents.
+## 12.2 Panneau orbital
 
-### 12.2 Panneau orbital
-
-Séparer clairement :
+Structure cible :
 
 ```text
 État quantique
@@ -703,10 +841,10 @@ Séparer clairement :
 
 Représentation
   base complexe / base réelle
-  orbitales réelles disponibles
+  orbitale réelle éventuelle
 
 Rendu
-  points
+  nuage
   isosurface
   nœuds
   phase
@@ -715,208 +853,228 @@ Rendu
   a₀ / pm / nm
 ```
 
-### 12.3 Informations scientifiques
+- [ ] séparer base complexe et base réelle ;
+- [ ] reconstruire les presets ;
+- [ ] supprimer les labels scientifiques faux ;
+- [ ] empêcher les combinaisons invalides.
 
-Afficher en temps réel :
+## 12.3 Informations scientifiques
 
-- état choisi ;
-- notation spectroscopique ;
-- nombre de nœuds ;
-- énergie du modèle ;
-- rayon caractéristique ou statistiques utiles ;
-- hypothèse physique active ;
-- signification de la couleur ;
-- signification du nuage.
+Afficher :
 
-### 12.4 Accessibilité
+- [ ] état choisi ;
+- [ ] notation spectroscopique ;
+- [ ] nombre de nœuds ;
+- [ ] énergie du modèle ;
+- [ ] hypothèse de masse réduite ;
+- [ ] statistiques radiales utiles ;
+- [ ] signification de la couleur ;
+- [ ] signification du nuage ;
+- [ ] seed si mode reproductible.
 
-Minimum :
+## 12.4 Accessibilité
 
-- navigation clavier complète ;
-- focus visible ;
-- labels explicites ;
-- `aria-live` limité aux informations utiles ;
-- contrastes vérifiés ;
-- `prefers-reduced-motion` ;
-- aucun contrôle uniquement identifiable par couleur.
+- [ ] navigation clavier complète ;
+- [x] focus et contrôles clavier de base présents ;
+- [ ] audit final focus visible ;
+- [ ] labels explicites ;
+- [ ] `aria-live` limité aux informations pertinentes ;
+- [ ] contrastes vérifiés ;
+- [ ] aucun contrôle identifié uniquement par couleur.
 
 ---
 
-## 13. Module 2D : remplacer « Photoélectrique » par une physique cohérente
+# 13. Module 2D : interactions photon–hydrogène
 
-### 13.1 Diagnostic
+## 13.1 État actuel
 
-Le module actuel :
+- [x] panneau 2D ouvrable/fermable ;
+- [x] raccourci `Q` fonctionnel ;
+- [x] E2E couvre l'état `hidden` et la visibilité ;
+- [ ] modèle physique actuel à remplacer.
 
-- dessine des atomes en modèle de Bohr ;
-- utilise une différence d'énergie proche de la transition `1 → 2` ;
-- dessine des ondes incidentes ;
-- ne calcule pas une véritable émission photoélectrique ;
-- ne modélise pas une photoionisation réelle.
+## 13.2 Direction
 
-### 13.2 Direction recommandée
-
-Pour rester cohérent avec Atoms, renommer le module :
+Renommer le module final en :
 
 **Interactions photon–hydrogène 2D**
 
-et y distinguer :
+Il doit distinguer :
 
-1. transitions liées-liées ;
-2. absorption d'un photon ;
-3. émission stimulée / spontanée uniquement si modélisée correctement ;
-4. photoionisation lorsque l'énergie du photon dépasse le seuil de l'état considéré.
+- [ ] transitions liées-liées ;
+- [ ] absorption ;
+- [ ] émission lorsque correctement modélisée ;
+- [ ] photoionisation ;
+- [ ] seuil énergétique selon l'état initial.
 
-### 13.3 Photoionisation
+## 13.3 Photoionisation
 
-Dans l'approximation simple :
+Approximation simple :
 
 ```text
 hν > |E_bound|
-```
-
-puis :
-
-```text
 K ≈ hν - |E_bound|
 ```
 
-avec hypothèses et limites documentées.
+- [ ] documenter hypothèses ;
+- [ ] utiliser les énergies du nouveau moteur ;
+- [ ] tester les seuils.
 
-### 13.4 Effet photoélectrique classique
+## 13.4 Effet photoélectrique métallique
 
-Si l'on veut également enseigner l'effet photoélectrique d'un métal :
+Si ce sujet est conservé :
 
 ```text
 K_max = hν - Φ
 ```
 
-ce doit être un **module séparé**, car la fonction travail `Φ` d'un matériau n'est pas le seuil d'ionisation de l'atome d'hydrogène.
+- [ ] le placer dans un module séparé ;
+- [ ] ne jamais confondre fonction travail d'un matériau et énergie d'ionisation de `¹H`.
 
 ---
 
-## 14. Tests scientifiques obligatoires
+# 14. Tests scientifiques obligatoires
 
-### 14.1 Nombres quantiques
+## 14.1 Fondations déjà validées
 
-Tester :
+- [x] constantes CODATA ;
+- [x] unités ;
+- [x] nombres quantiques ;
+- [x] masse réduite ;
+- [x] énergie ;
+- [x] factorielle ;
+- [x] Laguerre généralisé ;
+- [x] Legendre associé/Ferrers ;
+- [x] phase de Condon–Shortley documentée.
 
-```text
-n >= 1
-0 <= l <= n - 1
--l <= m <= l
-```
+## 14.2 Normalisation radiale
 
-Aucun état invalide ne doit atteindre le moteur.
-
-### 14.2 Normalisation radiale
-
-Pour plusieurs couples `(n,l)` :
+Pour plusieurs `(n,l)` :
 
 ```text
 ∫₀∞ r² |Rₙₗ(r)|² dr ≈ 1
 ```
 
-### 14.3 Normalisation angulaire
+- [ ] `1s` ;
+- [ ] `2s` ;
+- [ ] `2p` ;
+- [ ] états supérieurs représentatifs.
+
+## 14.3 Normalisation angulaire
 
 ```text
 ∫ |Yₗᵐ(θ,φ)|² dΩ ≈ 1
 ```
 
-### 14.4 Normalisation complète
+- [ ] plusieurs `l` ;
+- [ ] `m=0` ;
+- [ ] `m>0` ;
+- [ ] `m<0`.
+
+## 14.4 Normalisation complète
 
 ```text
 ∫ |ψₙₗₘ|² dV ≈ 1
 ```
 
-### 14.5 Orthogonalité
+- [ ] états complexes ;
+- [ ] orbitales réelles.
 
-Tester numériquement des paires d'états distincts.
+## 14.5 Orthogonalité
 
-### 14.6 Symétries
+- [ ] états différents en `n` ;
+- [ ] états différents en `l` ;
+- [ ] états différents en `m` ;
+- [ ] orbitales réelles orthogonales pertinentes.
 
-Exemples :
+## 14.6 Symétries
 
-- `1s` isotrope ;
-- `m` et `-m` : même densité dans la base complexe ;
-- `p_x`, `p_y`, `p_z` : mêmes distributions radiales, orientations différentes ;
-- symétries de parité attendues.
+- [ ] `1s` isotrope ;
+- [ ] `+m` / `-m` : même densité en base complexe ;
+- [ ] `p_x`, `p_y`, `p_z` : même distribution radiale ;
+- [ ] orientations réelles correctes ;
+- [ ] parité `(-1)^l`.
 
-### 14.7 Nœuds
+## 14.7 Nœuds
 
-Vérifier le nombre de nœuds radiaux et angulaires connu analytiquement.
+- [ ] nœuds radiaux `n-l-1` ;
+- [ ] nœuds angulaires `l` ;
+- [ ] nœuds totaux `n-1`.
 
-### 14.8 Valeurs moyennes analytiques
+## 14.8 Observables analytiques
 
-Ajouter des tests sur des observables connues, par exemple :
+Ajouter progressivement :
 
-- `⟨r⟩` ;
-- `⟨1/r⟩` ;
-- rayon le plus probable de `1s` ;
-- énergie en fonction de `n` dans le modèle choisi.
+- [ ] `⟨r⟩` ;
+- [ ] `⟨1/r⟩` ;
+- [ ] rayon le plus probable de `1s` ;
+- [x] énergie en fonction de `n` dans le modèle choisi ;
+- [ ] autres références analytiques utiles et bien sourcées.
 
-### 14.9 Tests statistiques du sampler
+## 14.9 Tests statistiques du sampler
 
-Pour une seed fixe et un grand `N` :
+- [ ] histogramme/ECDF radial vs théorie ;
+- [ ] distribution angulaire vs théorie ;
+- [ ] moyenne/quantiles ;
+- [ ] convergence avec `N` ;
+- [ ] seed fixe ;
+- [ ] seuils statistiques justifiés.
 
-- histogramme radial comparé à la distribution théorique ;
-- distribution angulaire comparée à la théorie ;
-- moyenne et quantiles dans les tolérances ;
-- tests de convergence avec `N` croissant.
+## 14.10 Régressions visuelles
 
-### 14.10 Régressions visuelles
+Créer des captures reproductibles au minimum pour :
 
-Playwright doit produire des captures reproductibles pour un ensemble minimal :
-
-```text
-1s
-2s
-2p_z réel
-2p état complexe m=+1
-3d_z²
-3d_xy
-4f exemple
-```
+- [ ] `1s` ;
+- [ ] `2s` ;
+- [ ] `2p_z` réel ;
+- [ ] `2p` complexe `m=+1` ;
+- [ ] `3d_z²` ;
+- [ ] `3d_xy` ;
+- [ ] un état `4f` représentatif.
 
 ---
 
-## 15. Références scientifiques de validation
+# 15. Références scientifiques de validation
 
-Sources primaires / institutionnelles à privilégier :
-
-### NIST / CODATA
+## 15.1 NIST / CODATA
 
 - Fundamental Physical Constants: https://physics.nist.gov/constants
 - CODATA version history: https://physics.nist.gov/cuu/Reference/versioncon.shtml
 - Atomic Spectra Database: https://physics.nist.gov/asd
 - Hydrogen energy levels: https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable5.htm
 
-### NIST DLMF
-
-Utiliser la Digital Library of Mathematical Functions comme référence pour :
-
-- fonctions spéciales ;
-- polynômes de Laguerre ;
-- fonctions de Legendre associées ;
-- conventions mathématiques.
+## 15.2 NIST DLMF
 
 - https://dlmf.nist.gov/
 
-### Documentation interne
+Utilisation principale :
 
-`docs/SCIENCE.md` devra préciser pour chaque formule :
+- fonctions de Laguerre ;
+- Legendre/Ferrers ;
+- futures harmoniques sphériques ;
+- conventions mathématiques.
 
-- convention utilisée ;
-- source ;
-- unités ;
-- domaine de validité ;
-- test associé.
+## 15.3 MIT OpenCourseWare
+
+Utilisation :
+
+- formulation pédagogique du problème de l'hydrogène ;
+- masse réduite ;
+- moment angulaire ;
+- structure des solutions analytiques.
+
+## 15.4 Documentation interne
+
+- [x] `SCIENCE.md` initial ;
+- [ ] chaque nouvelle formule doit indiquer convention, source, unité, domaine et tests associés ;
+- [ ] `REFERENCES.md` final ;
+- [ ] `VALIDATION.md` final.
 
 ---
 
-## 16. Tests logiciels et qualité
+# 16. Tests logiciels et qualité
 
-### 16.1 Vitest
+## 16.1 Vitest
 
 Catégories :
 
@@ -927,35 +1085,39 @@ sampling
 regression
 ```
 
-### 16.2 Playwright
+- [x] `unit` ;
+- [x] `scientific` fondations ;
+- [ ] `sampling` ;
+- [ ] `regression` scientifique/visuelle hors E2E.
 
-Tester :
+## 16.2 Playwright
 
-- démarrage application ;
-- changement d'état ;
-- génération concurrente ;
-- responsive ;
-- clavier ;
-- thèmes ;
-- module 2D ;
-- absence d'erreurs console ;
-- capture scientifique stable.
+- [x] démarrage application ;
+- [x] WebGL2/HUD sans erreur ;
+- [x] contrôles essentiels ;
+- [x] panneau 2D visible/caché ;
+- [ ] génération concurrente ;
+- [ ] état scientifique complexe/réel ;
+- [ ] responsive final ;
+- [ ] clavier final ;
+- [ ] thèmes finalisés ;
+- [ ] absence d'erreurs console sur tous les scénarios ;
+- [ ] captures scientifiques stables.
 
-### 16.3 ESLint
+## 16.3 ESLint
 
-Configuration stricte.
+- [x] configuration active ;
+- [x] lint vert sur l'état actuel ;
+- [ ] conserver l'interdiction des globals implicites ;
+- [ ] surveiller promesses oubliées ;
+- [ ] surveiller conversions douteuses ;
+- [ ] éviter `any` non justifié.
 
-Interdire notamment :
+## 16.4 TypeScript
 
-- globals implicites ;
-- promesses oubliées ;
-- variables inutilisées ;
-- conversions douteuses ;
-- `any` TypeScript non justifié.
-
-### 16.4 TypeScript
-
-Activer un niveau strict :
+- [x] typecheck principal vert ;
+- [x] typecheck scientifique sans DOM vert ;
+- [ ] auditer avant release la présence effective des options finales :
 
 ```text
 strict: true
@@ -965,33 +1127,32 @@ noImplicitOverride: true
 noFallthroughCasesInSwitch: true
 ```
 
-Les types doivent différencier autant que possible :
+Les types doivent progressivement différencier :
 
-- nombre quantique principal ;
-- nombre azimutal ;
-- nombre magnétique ;
-- unités / grandeurs ;
-- état complexe ;
-- orbitale réelle ;
-- résultat d'échantillonnage.
+- [ ] nombres quantiques validés ;
+- [ ] unités/grandeurs ;
+- [ ] état complexe ;
+- [ ] orbitale réelle ;
+- [ ] seed ;
+- [ ] résultat d'échantillonnage ;
+- [ ] résultat Worker.
 
 ---
 
-## 17. Performance
+# 17. Performance
 
-### 17.1 Objectifs
+## 17.1 Objectifs
 
-Cibles à mesurer, pas à supposer :
+- [ ] UI réactive pendant génération ;
+- [ ] annulation logique immédiate d'un job obsolète ;
+- [ ] 60 FPS lorsque la charge GPU le permet ;
+- [ ] dégradation propre sur matériel faible ;
+- [ ] aucune fuite Three.js ;
+- [ ] mesures reproductibles avant toute optimisation.
 
-- UI toujours réactive pendant la génération ;
-- annulation immédiate d'un job obsolète ;
-- 60 FPS si la charge GPU le permet ;
-- dégradation propre sur matériel plus faible ;
-- aucune fuite de géométrie ou matériau Three.js.
+## 17.2 Progressive rendering
 
-### 17.2 Progressive rendering
-
-Possibilité de retourner des lots progressifs :
+Possibilité future :
 
 ```text
 5 000
@@ -1000,28 +1161,33 @@ Possibilité de retourner des lots progressifs :
 60 000 points
 ```
 
-sans mélanger plusieurs états.
+- [ ] ne pas mélanger des lots de deux états différents ;
+- [ ] préserver la seed et le jobId ;
+- [ ] mesurer le bénéfice réel avant adoption.
 
-### 17.3 Qualité adaptative
+## 17.3 Qualité adaptative
 
-Adapter éventuellement :
+Peut adapter :
 
 - pixel ratio ;
 - nombre de points ;
 - taille de points ;
-- fréquence de mise à jour ;
+- fréquence de mise à jour.
 
-mais ne jamais changer la physique pour gagner des FPS.
+Ne doit jamais adapter :
+
+- la fonction d'onde ;
+- la distribution de probabilité ;
+- les constantes physiques ;
+- le modèle scientifique.
 
 ---
 
-## 18. Import / export
+# 18. Import / export
 
-### 18.1 Import JSON
+## 18.1 Import JSON
 
-Définir un schéma versionné.
-
-Exemple :
+Schéma cible :
 
 ```json
 {
@@ -1033,377 +1199,697 @@ Exemple :
     "l": 1,
     "m": 0
   },
+  "seed": 123456,
   "points": []
 }
 ```
 
-Refuser un fichier dont l'unité est absente ou ambiguë.
+- [ ] unité obligatoire ;
+- [ ] version de schéma obligatoire ;
+- [ ] état quantique validé ;
+- [ ] base explicite ;
+- [ ] seed optionnelle/explicite selon le type d'import ;
+- [ ] refuser les unités ambiguës ;
+- [ ] supprimer la conversion legacy `5.29` lors de la migration.
 
-### 18.2 Export
+## 18.2 Export
 
-Priorité :
+Priorités :
 
-- capture PNG ;
-- état JSON reproductible ;
-- paramètres + seed ;
-- données scientifiques CSV/JSON si utile.
-
-OBJ / glTF ne doivent être annoncés que s'ils sont réellement implémentés et scientifiquement pertinents.
+- [ ] capture PNG ;
+- [ ] état JSON reproductible ;
+- [ ] paramètres + seed ;
+- [ ] CSV/JSON scientifique si utile ;
+- [ ] n'annoncer OBJ/glTF que si réellement implémentés et pertinents.
 
 ---
 
-## 19. Documentation finale
+# 19. Documentation finale
 
-### README.md
+## 19.1 README.md
 
 Doit contenir uniquement ce qui existe réellement :
 
-- capture actuelle ;
-- URL réelle ;
-- installation réelle ;
-- scripts npm réels ;
-- version Three.js réelle ;
-- limites scientifiques ;
-- crédit de Kavan / `kavan010` ;
-- statut de licence exact ;
-- lien vers `SCIENCE.md` et `VALIDATION.md`.
+- [ ] capture actuelle ;
+- [ ] URL réelle ;
+- [ ] installation réelle ;
+- [ ] scripts npm réels ;
+- [ ] stack réellement utilisée ;
+- [ ] limites scientifiques ;
+- [ ] crédit Kavan / `kavan010` ;
+- [ ] statut de licence exact ;
+- [ ] lien vers `SCIENCE.md` ;
+- [ ] lien vers `VALIDATION.md` ;
+- [ ] aucune fonction inexistante.
 
-### CREDITS.md
+## 19.2 CREDITS.md
 
-Doit conserver :
+- [x] Kavan / `kavan010` ;
+- [x] dépôt original ;
+- [x] rôle historique/pédagogique ;
+- [ ] audit final avant release.
 
-- Kavan / `kavan010` ;
-- dépôt original ;
-- rôle du travail original ;
-- distinction entre origine pédagogique et réimplémentation web actuelle.
+## 19.3 SCIENCE.md
 
-### SCIENCE.md
+- [x] contrat initial ;
+- [x] CODATA 2022 ;
+- [x] masse réduite ;
+- [x] rapport direct `m_e/m_p` ;
+- [x] énergie ;
+- [x] conventions Laguerre/Legendre ;
+- [ ] fonctions d'onde ;
+- [ ] orbitales réelles ;
+- [ ] sampling ;
+- [ ] renderer scientifique ;
+- [ ] photon–hydrogène 2D.
 
-Contrat scientifique complet.
+## 19.4 VALIDATION.md
 
-### VALIDATION.md
-
-Résultats des tests numériques :
-
-- tolérances ;
-- valeurs analytiques ;
-- comparaisons ;
-- limites.
+- [ ] tolérances ;
+- [ ] valeurs analytiques ;
+- [ ] normalisations ;
+- [ ] orthogonalités ;
+- [ ] tests statistiques ;
+- [ ] captures/régressions ;
+- [ ] navigateurs ;
+- [ ] performance ;
+- [ ] limites connues.
 
 ---
 
-## 20. CI
+# 20. CI
 
-Créer une GitHub Action sur `main` :
+Pipeline cible sur `main` :
 
 ```text
 npm ci
 npm run typecheck
+npm run typecheck:science
 npm run lint
 npm run test
 npm run build
 npm run test:e2e
 ```
 
-Baseline : Node 24 LTS.
-
-Aucun déploiement si un test scientifique critique échoue.
-
----
-
-## 21. Séquence de refonte
-
-## Phase 0 — Gel et sécurisation
-
-### Actions
-
-- créer le tag `legacy-web-2026-08-23` ;
-- normaliser les fins de ligne avec `.gitattributes` ;
-- confirmer `main` comme seule branche ;
-- conserver l'historique ;
-- créer `PLAN.md` ;
-- créer `CREDITS.md` minimal ;
-- retirer les déclarations de licence non vérifiées lors de la révision README.
-
-### Critère de sortie
-
-Le point de départ est récupérable exactement.
+- [x] CI présente ;
+- [x] baseline Node 24 LTS ;
+- [x] typecheck scientifique indépendant ajouté ;
+- [ ] étendre aux futurs tests sampling/régression ;
+- [ ] aucun déploiement si un test scientifique critique échoue.
 
 ---
 
-## Phase 1 — Toolchain moderne
+# 21. Séquence de refonte mise à jour
 
-### Actions
+# Phase 0 — Gel et sécurisation ✅
 
-- initialiser npm ;
-- installer Vite / TypeScript / Three.js ;
-- créer la structure `src/` ;
-- convertir le chargement CDN Three.js en import ESM ;
-- ajouter ESLint / Prettier ;
-- ajouter Vitest ;
-- ajouter Playwright ;
-- ajouter CI ;
-- conserver le rendu fonctionnel avant modification physique majeure.
+## Actions
 
-### Critère de sortie
+- [x] créer le tag `legacy-web-2026-08-23` ;
+- [x] normaliser les fins de ligne avec `.gitattributes` ;
+- [x] confirmer `main` comme seule branche permanente ;
+- [x] conserver l'historique ;
+- [x] créer `PLAN.md` ;
+- [x] créer `CREDITS.md` minimal ;
+- [ ] retirer toutes les déclarations de licence non vérifiées lors de la révision finale du README.
 
-L'application actuelle tourne sous Vite + TypeScript avec comportement visuel équivalent.
+## Critère de sortie
 
----
-
-## Phase 2 — Moteur scientifique pur
-
-### Actions
-
-- créer `physics/constants.ts` ;
-- créer `units.ts` ;
-- écrire les fonctions spéciales ;
-- écrire `Rₙₗ` ;
-- écrire `Yₗᵐ` ;
-- écrire les orbitales réelles ;
-- supprimer progressivement les formules du renderer/UI ;
-- écrire les premiers tests de normalisation.
-
-### Critère de sortie
-
-Le moteur quantique fonctionne sans DOM ni Three.js et passe ses tests analytiques.
+- [x] le point de départ est récupérable ;
+- [x] la provenance est documentée.
 
 ---
 
-## Phase 3 — Sampler scientifique
+# Phase 1 — Toolchain moderne et séparation des responsabilités ✅
 
-### Actions
+## Actions
 
-- seedable RNG ;
-- CDF radiale validée ;
-- sampling angulaire validé ;
-- suppression des samplers ad hoc ;
-- tests statistiques ;
-- unités uniques.
+- [x] initialiser npm ;
+- [x] installer Vite / TypeScript / Three.js ;
+- [x] convertir Three.js CDN vers npm/ESM ;
+- [x] migrer le legacy vers TypeScript sans correction scientifique majeure ;
+- [x] ajouter ESLint ;
+- [x] ajouter Prettier ;
+- [x] ajouter Vitest ;
+- [x] ajouter Playwright ;
+- [x] ajouter CI ;
+- [x] séparer app / data / rendering / science / state / ui ;
+- [x] isoler Three.js dans le renderer ;
+- [x] réduire `main.ts` au rôle de composition root ;
+- [x] ajouter le typecheck scientifique sans DOM ;
+- [x] réparer le bug de visibilité du panneau 2D ;
+- [x] ajouter un test E2E de non-régression du panneau 2D.
 
-### Critère de sortie
+## Critère de sortie
 
-Toutes les orbitales utilisent le même pipeline scientifique.
-
----
-
-## Phase 4 — Worker et concurrence
-
-### Actions
-
-- déplacer la génération dans un Web Worker ;
-- protocole `jobId` ;
-- annulation des jobs obsolètes ;
-- buffers transférables ;
-- progression sûre ;
-- test de changements rapides d'orbitale.
-
-### Critère de sortie
-
-Impossible qu'un résultat ancien écrase un nouvel état.
+- [x] l'application tourne sous Vite + TypeScript ;
+- [x] le comportement legacy est conservé hors correctif 2D explicitement validé ;
+- [x] les responsabilités sont séparées.
 
 ---
 
-## Phase 5 — Renderer 3D
+# Phase 2 — Fondations scientifiques pures ✅
 
-### Actions
+## Actions
 
-- isoler Three.js ;
-- gestion propre des ressources ;
-- cadrage automatique ;
-- échelle physique ;
-- axes ;
-- légendes ;
-- mode densité ;
-- mode phase ;
-- préparation isosurfaces ;
-- suppression des animations trompeuses.
+### Lot 2
 
-### Critère de sortie
+- [x] centraliser CODATA 2022 ;
+- [x] créer les conversions d'unités ;
+- [x] valider les nombres quantiques ;
+- [x] définir la masse réduite ;
+- [x] définir `a_μ` ;
+- [x] implémenter l'énergie de Schrödinger non relativiste avec masse réduite ;
+- [x] implémenter factorielle ;
+- [x] implémenter Laguerre généralisé ;
+- [x] implémenter Legendre/Ferrers associé ;
+- [x] fixer la convention de Condon–Shortley ;
+- [x] créer les tests scientifiques ;
+- [x] créer `docs/SCIENCE.md` ;
+- [x] maintenir l'isolation DOM/Three.js ;
+- [x] laisser `legacyScience.ts` intact ;
+- [x] ne pas connecter le nouveau moteur au runtime.
 
-Le rendu est à la fois plus propre et plus fidèle à la signification physique.
+### Micro-Lot 2.1 CODATA
 
----
+- [x] ajouter la constante directe `m_e/m_p` CODATA 2022 ;
+- [x] utiliser `μ/m_e = 1/(1+m_e/m_p)` pour `¹H` ;
+- [x] conserver les masses SI générales ;
+- [x] conserver la fonction générique de masse réduite ;
+- [x] mettre à jour les tests métrologiques ;
+- [x] mettre à jour `SCIENCE.md` ;
+- [x] maintenir le runtime visible inchangé.
 
-## Phase 6 — UI/UX complète
+## Critère de sortie
 
-### Actions
-
-- séparer états complexes et orbitales réelles ;
-- reconstruire les presets ;
-- corriger toutes les notations ;
-- moderniser le panneau ;
-- corriger thème clair/sombre ;
-- accessibilité clavier ;
-- responsive ;
-- panneaux pédagogiques courts mais précis.
-
-### Critère de sortie
-
-Aucun label UI ne contredit le moteur scientifique.
-
----
-
-## Phase 7 — Interactions photon–hydrogène 2D
-
-### Actions
-
-- supprimer le modèle de Bohr utilisé comme représentation principale ;
-- implémenter transitions énergétiques ;
-- distinguer excitation et ionisation ;
-- calculer l'énergie des photons ;
-- documenter les approximations ;
-- ajouter tests.
-
-### Critère de sortie
-
-Le module 2D possède une signification physique définie et vérifiable.
+- [x] constantes, unités, quantum numbers, énergie et fonctions spéciales de base validés ;
+- [x] noyau scientifique compilable sans DOM ;
+- [x] aucune dépendance Three.js ;
+- [x] tests scientifiques verts ;
+- [x] fondations figées avant fonctions d'onde.
 
 ---
 
-## Phase 8 — Validation globale
+# Phase 3 — Fonctions d'onde et bases orbitales ⬅️ PROCHAINE PHASE
 
-### Actions
+## Actions
 
-- campagne de tests scientifiques ;
-- comparaison aux références ;
-- tests Playwright ;
-- tests Chrome / Firefox / WebKit ;
-- tests responsive ;
-- profilage CPU/GPU ;
-- chasse aux fuites mémoire.
+### Mathématique complexe
 
-### Critère de sortie
+- [ ] créer un type/utilitaires complexes minimaux et purs ;
+- [ ] tester addition, multiplication, conjugaison, module² et phase ;
+- [ ] éviter une dépendance externe si elle n'apporte pas de bénéfice réel.
 
-`VALIDATION.md` est rempli avec des résultats reproductibles.
+### Fonction radiale
+
+- [ ] implémenter `Rₙₗ(r)` ;
+- [ ] utiliser `a_μ` de manière explicite pour le modèle `¹H` ;
+- [ ] utiliser `ρ = 2r/(n a_μ)` ;
+- [ ] documenter la normalisation ;
+- [ ] valider `1s`, `2s`, `2p` contre formes analytiques ;
+- [ ] tester normalisation radiale ;
+- [ ] tester nœuds radiaux.
+
+### Harmoniques sphériques complexes
+
+- [ ] implémenter `Yₗᵐ(θ,φ)` ;
+- [ ] utiliser la convention DLMF déjà choisie ;
+- [ ] ne pas doubler la phase de Condon–Shortley ;
+- [ ] gérer `m<0` ;
+- [ ] tester normalisation angulaire ;
+- [ ] tester orthogonalité ;
+- [ ] tester relation `+m/-m` ;
+- [ ] tester parité.
+
+### Fonction d'onde complète
+
+- [ ] implémenter `ψₙₗₘ = RₙₗYₗᵐ` ;
+- [ ] exposer amplitude complexe ;
+- [ ] exposer phase ;
+- [ ] exposer `|ψ|²` ;
+- [ ] tester normalisation 3D ;
+- [ ] tester plusieurs états connus.
+
+### Orbitales réelles
+
+- [ ] définir une représentation typée des orbitales réelles ;
+- [ ] implémenter combinaisons `±m` normalisées ;
+- [ ] `p_x` ;
+- [ ] `p_y` ;
+- [ ] `p_z` ;
+- [ ] famille `d` standard ;
+- [ ] autres familles utiles aux presets ;
+- [ ] documenter conventions de signe ;
+- [ ] tester orientation et orthogonalité ;
+- [ ] vérifier que distribution radiale ne dépend pas de l'orientation réelle.
+
+### Observables et nœuds de base
+
+- [ ] centraliser calcul des nombres de nœuds ;
+- [ ] tester `n-l-1`, `l`, `n-1` ;
+- [ ] ajouter les premières observables analytiques simples nécessaires à la validation.
+
+### Isolation
+
+- [ ] aucun DOM ;
+- [ ] aucun Three.js ;
+- [ ] aucun sampler ;
+- [ ] aucun Worker ;
+- [ ] aucun branchement runtime pendant la construction initiale.
+
+## Critère de sortie
+
+- [ ] le moteur calcule correctement `Rₙₗ` ;
+- [ ] le moteur calcule correctement `Yₗᵐ` ;
+- [ ] le moteur calcule `ψₙₗₘ`, sa phase et `|ψ|²` ;
+- [ ] les orbitales réelles sont des combinaisons scientifiques correctes ;
+- [ ] normalisation et orthogonalité passent ;
+- [ ] le tout fonctionne sans DOM, Three.js ni sampling.
 
 ---
 
-## Phase 9 — Documentation, attribution et autonomie GitHub
+# Phase 4 — Sampler scientifique
 
-### Actions
+## Actions
 
-- réécrire README ;
-- finaliser CREDITS ;
-- clarifier licence ;
-- supprimer le remote local `upstream` ;
-- vérifier qu'`origin` ne possède que `main` ;
-- décider du détachement du réseau de forks ;
-- configurer GitHub Pages / déploiement réel ;
-- ajouter badges réels uniquement.
+### Reproductibilité
 
-### Critère de sortie
+- [ ] PRNG seedable ;
+- [ ] contrat de seed documenté ;
+- [ ] vecteurs de test déterministes ;
+- [ ] aucun `Math.random()` dans le nouveau sampler.
 
-Le dépôt public décrit exactement ce qu'il contient et d'où il vient.
+### Radial
+
+- [ ] CDF radiale depuis `r²|Rₙₗ|²` ;
+- [ ] intégration numérique documentée ;
+- [ ] domaine radial convergé ;
+- [ ] contrôle de masse tronquée ;
+- [ ] inversion CDF interpolée ;
+- [ ] cache scientifique versionné ;
+- [ ] tests de convergence.
+
+### Angulaire
+
+- [ ] sampling `|Yₗᵐ|²` pour base complexe ;
+- [ ] sampling des orbitales réelles depuis leur densité réelle ;
+- [ ] mesure `sinθ` correctement prise en compte ;
+- [ ] tests de symétrie et orientation.
+
+### Pipeline unique
+
+- [ ] supprimer samplers ad hoc ;
+- [ ] supprimer `NAMED_SAMPLERS` ;
+- [ ] supprimer `SAMPLER_MAP` ;
+- [ ] supprimer mapping `m=±1 → p_x/p_y` ;
+- [ ] unités uniques ;
+- [ ] même orchestrateur de sampling pour toutes les représentations.
+
+### Validation statistique
+
+- [ ] tests ECDF/CDF ;
+- [ ] tests angulaires ;
+- [ ] moyennes/quantiles ;
+- [ ] convergence avec `N` ;
+- [ ] seuils statistiques justifiés ;
+- [ ] aucun test flaky.
+
+## Critère de sortie
+
+- [ ] toutes les orbitales utilisent le même pipeline scientifique ;
+- [ ] une seed fixe reproduit la même génération à version identique du moteur ;
+- [ ] les distributions générées passent les tests statistiques.
 
 ---
 
-## Phase 10 — Release 5.0
+# Phase 5 — Worker et concurrence
 
-### Versionnement proposé
+## Actions
+
+- [ ] déplacer la génération dans un Web Worker ;
+- [ ] protocole `jobId` ;
+- [ ] seed dans le protocole ;
+- [ ] état scientifique immuable par job ;
+- [ ] buffers transférables ;
+- [ ] progression associée au bon job ;
+- [ ] annulation logique des jobs obsolètes ;
+- [ ] résultat obsolète ignoré ;
+- [ ] tests de changements rapides d'état ;
+- [ ] supprimer les buffers globaux de génération legacy.
+
+## Critère de sortie
+
+- [ ] impossible qu'un résultat ancien écrase un nouvel état ;
+- [ ] l'UI reste réactive pendant la génération.
+
+---
+
+# Phase 6 — Renderer 3D scientifique
+
+## Actions
+
+- [ ] brancher le renderer sur le nouveau sampler ;
+- [ ] nuage probabiliste explicite ;
+- [ ] échelle physique ;
+- [ ] cadrage automatique ;
+- [ ] axes ;
+- [ ] légendes ;
+- [ ] mode densité ;
+- [ ] mode phase ;
+- [ ] isosurfaces ;
+- [ ] surfaces nodales ;
+- [ ] gestion propre des ressources ;
+- [ ] noyau signalé non à l'échelle ;
+- [ ] supprimer pseudo-trajectoires des points ;
+- [ ] rotation caméra/scène clairement distinguée de la dynamique physique ;
+- [ ] courant de probabilité éventuel représenté comme champ.
+
+## Critère de sortie
+
+- [ ] le rendu est physiquement interprétable ;
+- [ ] aucun effet visuel n'implique une orbite classique fictive ;
+- [ ] l'échelle et les légendes sont explicites.
+
+---
+
+# Phase 7 — UI/UX scientifique complète
+
+## Actions
+
+- [ ] séparer base complexe et base réelle ;
+- [ ] reconstruire presets ;
+- [ ] corriger labels `m` ;
+- [ ] afficher énergie du nouveau moteur ;
+- [ ] afficher nœuds ;
+- [ ] afficher unités ;
+- [ ] expliquer nuage probabiliste ;
+- [ ] expliquer phase ;
+- [ ] expliquer modèle physique actif ;
+- [ ] moderniser panneau sans surcharge décorative ;
+- [ ] finaliser sombre/clair ;
+- [ ] accessibilité clavier ;
+- [ ] responsive ;
+- [ ] `prefers-reduced-motion`.
+
+## Critère de sortie
+
+- [ ] aucun label UI ne contredit le moteur scientifique ;
+- [ ] aucune représentation n'est ambiguë sur sa signification physique.
+
+---
+
+# Phase 8 — Interactions photon–hydrogène 2D
+
+## Actions
+
+- [x] panneau visible/cachable ;
+- [x] raccourci `Q` ;
+- [x] test E2E de visibilité ;
+- [ ] supprimer le modèle de Bohr comme représentation physique principale ;
+- [ ] renommer le module ;
+- [ ] implémenter transitions énergétiques ;
+- [ ] distinguer excitation et ionisation ;
+- [ ] calculer énergie des photons ;
+- [ ] photoionisation ;
+- [ ] documenter hypothèses ;
+- [ ] ajouter tests.
+
+## Critère de sortie
+
+- [ ] le module 2D possède une signification physique définie et vérifiable.
+
+---
+
+# Phase 9 — Validation globale
+
+## Actions
+
+- [x] infrastructure Vitest ;
+- [x] infrastructure Playwright ;
+- [x] tests des fondations scientifiques ;
+- [ ] campagne fonctions d'onde ;
+- [ ] campagne sampler ;
+- [ ] campagne Worker/concurrence ;
+- [ ] régressions visuelles déterministes ;
+- [ ] Chrome ;
+- [ ] Firefox ;
+- [ ] WebKit ;
+- [ ] responsive ;
+- [ ] profilage CPU ;
+- [ ] profilage GPU ;
+- [ ] chasse aux fuites mémoire ;
+- [ ] remplir `VALIDATION.md`.
+
+## Critère de sortie
+
+- [ ] `VALIDATION.md` contient des résultats reproductibles ;
+- [ ] toutes les validations critiques passent.
+
+---
+
+# Phase 10 — Documentation, attribution et autonomie GitHub
+
+## Actions
+
+- [ ] réécrire README ;
+- [x] `CREDITS.md` initial ;
+- [ ] finaliser `CREDITS.md` ;
+- [x] `SCIENCE.md` initial ;
+- [ ] finaliser `SCIENCE.md` ;
+- [ ] créer `REFERENCES.md` ;
+- [ ] finaliser `VALIDATION.md` ;
+- [ ] clarifier licence ;
+- [ ] vérifier droits des documents redistribués ;
+- [ ] traiter le remote `upstream` ;
+- [ ] vérifier qu'`origin` ne possède que les branches voulues ;
+- [ ] décider autonomie/fork network ;
+- [ ] configurer déploiement réel ;
+- [ ] ajouter badges réels uniquement.
+
+## Critère de sortie
+
+- [ ] le dépôt public décrit exactement ce qu'il contient, ce qu'il calcule et d'où il vient.
+
+---
+
+# Phase 11 — Release 5.0
+
+## Versionnement proposé
 
 ```text
-v5.0.0-alpha.1  moteur scientifique opérationnel
+v5.0.0-alpha.1  moteur scientifique + sampler opérationnels
 v5.0.0-beta.1   rendu + UI stabilisés
 v5.0.0-rc.1     validation scientifique complète
 v5.0.0          release publique
 ```
 
-### Aucun `v5.0.0` si :
+## Aucun `v5.0.0` si
 
-- une normalisation scientifique critique échoue ;
-- les unités sont ambiguës ;
-- `m` et orbitales réelles sont encore confondus ;
-- la concurrence de génération n'est pas résolue ;
-- le README contient encore des fonctions inexistantes ;
-- le statut de licence reste présenté de manière fausse.
+- [ ] toutes les normalisations scientifiques critiques passent ;
+- [ ] toutes les unités sont non ambiguës ;
+- [ ] `m` et orbitales réelles sont séparés ;
+- [ ] les orbitales réelles sont correctes ;
+- [ ] le sampler est unique, déterministe et validé ;
+- [ ] la concurrence de génération est résolue ;
+- [ ] aucune animation ne suggère une orbite électronique classique ;
+- [ ] le module 2D est physiquement défini ;
+- [ ] le README ne contient aucune fonction inexistante ;
+- [ ] le statut de licence est présenté correctement ;
+- [ ] CI critique verte.
+
+Les cases ci-dessus doivent toutes être cochées avant la release finale.
 
 ---
 
-## 22. Definition of Done v5.0.0
+# 22. Definition of Done `v5.0.0`
 
-- [ ] `main` est la seule branche permanente.
-- [ ] Le point legacy est protégé par tag.
-- [ ] L'origine Kavan / `kavan010` est clairement créditée.
-- [ ] Le statut de licence est exact.
-- [ ] TypeScript strict passe sans erreur.
-- [ ] ESLint passe sans erreur bloquante.
-- [ ] Tous les tests Vitest passent.
-- [ ] Tous les tests scientifiques critiques passent.
-- [ ] Tous les tests Playwright critiques passent.
-- [ ] Toutes les longueurs utilisent une convention d'unité unique.
-- [ ] La conversion `a₀ ↔ pm` est centralisée et testée.
-- [ ] Aucun sampler orbital spécial incohérent ne subsiste.
+## Git / provenance
+
+- [x] `main` est la seule branche permanente de travail.
+- [x] Le point legacy est protégé par tag.
+- [x] L'origine Kavan / `kavan010` est clairement créditée.
+- [ ] Le statut de licence est exact dans toute la documentation publique.
+
+## Toolchain / qualité
+
+- [x] TypeScript compile sans erreur sur l'état actuel.
+- [x] Le noyau scientifique compile sans DOM.
+- [ ] Toutes les options TypeScript strictes finales ont été auditées.
+- [x] ESLint passe sans erreur bloquante.
+- [x] Prettier passe sur l'état actuel.
+- [x] Tous les tests Vitest actuels passent.
+- [x] Tous les tests scientifiques actuellement implémentés passent.
+- [x] Tous les tests Playwright actuels passent.
+- [x] CI est configurée sur Node 24 LTS.
+
+## Science
+
+- [x] CODATA 2022 centralisé.
+- [x] `m_e/m_p` direct CODATA utilisé pour `¹H`.
+- [x] `a₀ ↔ pm` centralisé et testé dans le nouveau noyau.
+- [x] masse réduite documentée et testée.
+- [x] énergie de Schrödinger avec masse réduite implémentée.
+- [x] Laguerre et Legendre/Ferrers de base validés.
+- [ ] `Rₙₗ` validé.
+- [ ] `Yₗᵐ` validé.
+- [ ] `ψₙₗₘ` et `|ψ|²` validés.
+- [ ] orbitales réelles correctement construites.
+- [ ] normalisation complète validée.
+- [ ] orthogonalité validée.
+- [ ] nœuds validés scientifiquement.
+
+## Sampling
+
+- [ ] toutes les longueurs du runtime utilisent une convention unique.
+- [ ] aucun sampler orbital spécial incohérent ne subsiste.
+- [ ] aucun `SAMPLER_MAP` legacy ne subsiste.
 - [ ] `m=±1` n'est plus étiqueté `p_x/p_y`.
-- [ ] Les orbitales réelles sont générées comme combinaisons réelles correctes.
-- [ ] Le nuage est explicitement décrit comme échantillonnage de probabilité.
-- [ ] Aucune animation ne représente implicitement une trajectoire classique inexistante.
-- [ ] Les jobs de génération concurrents sont sûrs et annulables.
-- [ ] Le panneau 2D fonctionne réellement.
-- [ ] Le module 2D possède un modèle physique explicite.
-- [ ] Le rendu affiche une échelle physique.
-- [ ] Le noyau schématique est signalé comme non à l'échelle.
-- [ ] Le README ne décrit que des fonctions présentes.
-- [ ] CI verte sur Node 24 LTS.
-- [ ] `VALIDATION.md` documente les tolérances et les références.
+- [ ] PRNG seedable.
+- [ ] CDF radiale validée.
+- [ ] sampling angulaire validé.
+- [ ] tests statistiques verts.
+- [ ] même pipeline pour toutes les représentations.
+
+## Runtime / concurrence
+
+- [ ] le nuage visible provient du nouveau `|ψ|²`.
+- [ ] les jobs concurrents sont sûrs et annulables.
+- [ ] aucun résultat obsolète ne peut modifier la scène.
+- [ ] buffers transférables utilisés correctement.
+
+## Rendu
+
+- [ ] aucune animation ne représente implicitement une trajectoire classique inexistante.
+- [ ] le rendu affiche une échelle physique.
+- [ ] le noyau schématique est signalé comme non à l'échelle.
+- [ ] densité et phase sont visuellement distinctes.
+- [ ] légendes scientifiques présentes.
+- [ ] régressions visuelles déterministes disponibles.
+
+## UI / 2D
+
+- [x] le panneau 2D fonctionne réellement.
+- [ ] le module 2D possède un modèle physique explicite.
+- [ ] base complexe et base réelle séparées dans l'UI.
+- [ ] aucune notation UI ne contredit le moteur.
+- [ ] accessibilité finale validée.
+
+## Documentation
+
+- [ ] README ne décrit que des fonctions présentes.
+- [ ] `SCIENCE.md` est complet.
+- [ ] `REFERENCES.md` est complet.
+- [ ] `VALIDATION.md` documente tolérances et références.
+- [ ] licence/provenance/documentation sont juridiquement cohérentes.
 
 ---
 
-## 23. Premier lot d'exécution recommandé
+# 23. Ordre d'exécution actuel
 
-Ordre exact pour commencer :
+État :
 
-1. créer le tag de sauvegarde ;
-2. ajouter `.gitattributes` et stabiliser les fins de ligne ;
-3. créer `package.json` ;
-4. installer les versions modernes du socle ;
-5. passer Three.js du CDN à un module npm ;
-6. migrer `script.js` vers TypeScript **sans changer la physique** ;
-7. ajouter Vitest et les premiers tests qui reproduisent l'état actuel ;
-8. extraire le moteur mathématique dans `src/physics` ;
-9. corriger les unités ;
-10. supprimer les samplers spéciaux ;
-11. séparer base complexe et orbitales réelles ;
-12. déplacer l'échantillonnage dans un worker ;
-13. seulement ensuite refaire le rendu et l'UI.
+1. [x] gel et tag legacy ;
+2. [x] toolchain moderne ;
+3. [x] migration TypeScript / Three.js npm ;
+4. [x] séparation des responsabilités ;
+5. [x] réparation du panneau 2D ;
+6. [x] fondations scientifiques ;
+7. [x] Micro-Lot 2.1 CODATA ;
+8. [ ] **Phase 3 : fonctions d'onde et bases orbitales** ;
+9. [ ] Phase 4 : sampler scientifique ;
+10. [ ] Phase 5 : Worker/concurrence ;
+11. [ ] Phase 6 : renderer scientifique ;
+12. [ ] Phase 7 : UI/UX scientifique ;
+13. [ ] Phase 8 : photon–hydrogène 2D ;
+14. [ ] Phase 9 : validation globale ;
+15. [ ] Phase 10 : documentation/autonomie GitHub ;
+16. [ ] Phase 11 : release `v5.0.0`.
 
-Cette séquence évite de modifier simultanément architecture, physique et apparence, ce qui rendrait les régressions difficiles à identifier.
+Règle : **ne pas commencer une phase dépendante tant que le critère de sortie scientifique de la phase précédente n'est pas atteint.**
 
 ---
 
-## 24. Sources techniques des versions du socle
+# 24. Sources techniques du socle
 
-Vérifiées le 23 août 2026 :
+Références de maintenance :
 
 - Node.js releases: https://nodejs.org/en/about/previous-releases
-- TypeScript npm: https://www.npmjs.com/package/typescript
-- Vite releases: https://vite.dev/releases
-- Vite npm: https://www.npmjs.com/package/vite
-- Three.js npm: https://www.npmjs.com/package/three
+- TypeScript: https://www.typescriptlang.org/
+- Vite: https://vite.dev/
+- Three.js: https://threejs.org/
 - Three.js migration guide: https://github.com/mrdoob/three.js/wiki/Migration-Guide
-- Vitest npm: https://www.npmjs.com/package/vitest
-- Playwright Test npm: https://www.npmjs.com/package/@playwright/test
+- Vitest: https://vitest.dev/
+- Playwright: https://playwright.dev/
 - ESLint: https://eslint.org/
-- Prettier 3.9: https://prettier.io/blog/2026/06/27/3.9.0.html
+- Prettier: https://prettier.io/
+
+Les numéros de version exacts doivent être vérifiés lors de chaque future montée de dépendance. Le plan ne doit pas forcer une mise à jour automatique simplement parce qu'une nouvelle version existe.
 
 ---
 
-## 25. Décision d'architecture
+# 25. Décision d'architecture actuelle
 
-La refonte `v5` part donc sur :
+La refonte `v5` repose désormais sur :
 
 ```text
-TypeScript 7
-Vite 8
-Three.js r185
-WebGL2 baseline
-Web Worker pour le calcul
+TypeScript
+Vite
+Three.js / WebGL2 baseline
+DOM natif
+src/science comme noyau scientifique pur
+unités atomiques et conversions centralisées
+modèle ¹H non relativiste avec masse réduite
+data CODATA 2022 / NIST
+fonctions spéciales selon NIST DLMF
 Vitest + Playwright
-DOM natif, sans framework UI
-moteur scientifique indépendant du renderer
-unités atomiques internes
-validation NIST/CODATA/DLMF
-main uniquement + tags de versions
+sampler seedable à venir
+Web Worker après validation du sampler
+main uniquement + tags de jalons
 ```
 
-Ce document fait foi pour la refonte tant qu'une décision explicite ne le remplace pas.
+Décision importante :
+
+```text
+Phase 3 = fonctions d'onde et bases orbitales
+Phase 4 = sampler scientifique
+```
+
+Le sampler ne doit pas être construit avant que `Rₙₗ`, `Yₗᵐ`, `ψₙₗₘ`, `|ψ|²` et les orbitales réelles soient validés.
+
+---
+
+# 26. Condition de changement du plan
+
+Le présent document fait foi tant qu'une décision explicite ne le remplace pas.
+
+Toute modification importante doit :
+
+- [ ] être motivée par une contrainte scientifique, technique, juridique ou de validation ;
+- [ ] être inscrite dans `PLAN.md` ;
+- [ ] mettre à jour les critères de sortie concernés ;
+- [ ] ne pas réécrire rétroactivement l'historique des décisions ;
+- [ ] conserver la distinction entre dette legacy et nouveau moteur validé.
+
+---
+
+# 27. Prochaine action officielle
+
+## Phase 3 — Fonctions d'onde et bases orbitales
+
+Avant tout sampling scientifique, implémenter et valider :
+
+```text
+Rₙₗ(r)
+Yₗᵐ(θ,φ)
+ψₙₗₘ(r,θ,φ)
+|ψₙₗₘ|²
+phase
+orbitales réelles
+normalisation
+orthogonalité
+nœuds
+symétries
+```
+
+**Interdiction de sortie prématurée :** ne pas connecter ces nouveaux modules au renderer ou au sampler legacy tant que les tests scientifiques de la Phase 3 ne sont pas validés.
+
