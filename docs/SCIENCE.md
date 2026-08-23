@@ -1,8 +1,8 @@
 # Contrat scientifique d'Atoms
 
-Ce document décrit uniquement le nouveau socle scientifique introduit au Lot 2. Le moteur
-historique reste temporairement responsable de l'application visible et n'est pas une source de
-vérité scientifique.
+Ce document décrit le noyau scientifique pur construit pendant les Lots 2, 2.1 et la Phase 3. Le
+moteur historique reste temporairement responsable de l'application visible et n'est pas une source
+de vérité scientifique.
 
 ## Domaine du modèle
 
@@ -167,9 +167,194 @@ des harmoniques sphériques ; Atoms choisit au contraire de l'intégrer dès `P_
 la convention DLMF retenue. Un futur module d'harmoniques ne devra donc pas l'appliquer une seconde
 fois.
 
-## Frontière du Lot 2
+## Fonction radiale normalisée
 
-Ce lot n'implémente pas les fonctions radiales `R_nl`, les harmoniques sphériques `Y_l^m`, les
-fonctions d'onde `ψ_nlm`, la densité `|ψ|²`, les orbitales réelles ou l'échantillonnage. Aucun module
-visible n'importe encore ce nouveau socle. L'application continue d'utiliser exclusivement
-`legacyScience.ts` jusqu'à un lot de migration explicitement autorisé.
+Le calcul spatial reçoit `rBohr = r/a₀`, une distance réelle positive ou nulle exprimée en rayons de
+Bohr conventionnels. L'échelle du problème relatif de `¹H` est représentée dans la même unité par :
+
+```text
+a = a_μ/a₀ = 1/(μ/m_e)
+ρ = 2 rBohr/(n a)
+k = n-l-1
+α = 2l+1
+```
+
+La fonction numérique renvoyée représente `a₀^(3/2) R_nl^SI` et porte donc le contrat dimensionnel
+`a₀^(-3/2)` :
+
+```text
+R_nl(rBohr) = sqrt[
+  (2/(n a))³ (n-l-1)! / (2n (n+l)!)
+] exp(-ρ/2) ρ^l L_(n-l-1)^(2l+1)(ρ)
+```
+
+Sa normalisation est définie dans la coordonnée numérique du moteur :
+
+```text
+∫₀∞ rBohr² |R_nl(rBohr)|² drBohr = 1
+```
+
+La formule et sa mesure sont celles de NIST DLMF
+[§18.39(ii), équations 18.39.35 et 18.39.37](https://dlmf.nist.gov/18.39.E37), avec `Z=1` et
+l'échelle conventionnelle remplacée explicitement par `a_μ`. Les notes MIT
+[Hydrogen Atom](references/MIT8_04S16_LecNotes22.pdf), équations (2.28), (2.33)–(2.36), confirment
+la séparation, le degré polynomial et l'exponentielle. Leur variable radiale vaut `r/(na)`, soit
+`ρ/2` dans le présent contrat ; cette différence de notation ne change pas la fonction.
+
+Les formes analytiques ponctuelles utilisées comme oracles sont :
+
+```text
+R_10 = 2 a^(-3/2) exp(-rBohr/a)
+R_20 = [1/(2 sqrt(2))] a^(-3/2)
+       (2-rBohr/a) exp[-rBohr/(2a)]
+R_21 = [1/(2 sqrt(6))] a^(-3/2)
+       (rBohr/a) exp[-rBohr/(2a)]
+```
+
+## Harmoniques sphériques complexes
+
+Atoms suit NIST DLMF [§14.30.1](https://dlmf.nist.gov/14.30.E1). Pour `m >= 0`, `theta` dans
+`[0, π]` et `phi` réel fini en radians :
+
+```text
+N_lm = sqrt[(2l+1)/(4π) (l-m)!/(l+m)!]
+Y_l^m(theta,phi) = N_lm P_l^m(cos theta) exp(i m phi)
+```
+
+`P_l^m` est la fonction de Ferrers du module précédent et contient déjà `(-1)^m`. Le module
+`Y_l^m` **n'ajoute donc aucune seconde phase de Condon–Shortley**. Cette décision suit directement
+NIST DLMF [§14.7.8](https://dlmf.nist.gov/14.7.E8). Les notes MIT
+[Quantum Mechanics in 3D / Angular Momentum](references/MIT8_04S16_LecNotes20_21.pdf), équations
+(3.26)–(3.27), utilisent une autre répartition du même signe : leur `P_l^m` n'inclut pas la phase et
+leur définition de `Y_l^m` l'ajoute ensuite.
+
+Les ordres négatifs ne sont jamais transmis au module de Ferrers. Pour `m>0`, ils sont construits
+par la relation DLMF [14.30.6](https://dlmf.nist.gov/14.30.E6) :
+
+```text
+Y_l^(-m) = (-1)^m conjugate(Y_l^m)
+```
+
+Les harmoniques sont sans dimension et orthonormées avec la mesure solide explicite :
+
+```text
+∫₀²π ∫₀π conjugate(Y_l^m) Y_l'^m' sin(theta) dtheta dphi
+  = δ_ll' δ_mm'
+```
+
+La parité adoptée est celle de DLMF [14.30.7](https://dlmf.nist.gov/14.30.E7) :
+
+```text
+Y_l^m(π-theta, phi+π) = (-1)^l Y_l^m(theta,phi)
+```
+
+`phi` est accepté sur tout le domaine réel fini. Sa réduction périodique interne avant le produit
+`m phi` préserve exactement la convention tout en évitant un débordement numérique inutile.
+
+## Fonction d'onde, densité et phase
+
+La fonction d'onde stationnaire séparée est :
+
+```text
+ψ_nlm(rBohr,theta,phi) = R_nl(rBohr) Y_l^m(theta,phi)
+```
+
+Elle est complexe, normalisée dans la mesure `rBohr² sin(theta) drBohr dtheta dphi` et possède le
+contrat `a₀^(-3/2)`. La densité volumique est strictement :
+
+```text
+|ψ_nlm|² = ψ_nlm conjugate(ψ_nlm)
+```
+
+Elle est réelle, positive ou nulle, exprimée en `a₀^(-3)` et ne contient ni `rBohr²` ni
+`sin(theta)`. Ces facteurs sont la jacobienne de la mesure sphérique et ne doivent pas être appliqués
+deux fois.
+
+La phase est `atan2(Im ψ, Re ψ)` en radians dans `[-π, π]`. Lorsque les deux composantes de `ψ`
+sont exactement nulles, la phase est physiquement indéfinie et l'API renvoie `null` plutôt qu'un
+angle arbitraire.
+
+## Orbitales réelles standard
+
+Une orbitale réelle n'est pas un renommage d'une valeur particulière de `m`. À partir des
+harmoniques complexes normalisées et pour `m>0`, Atoms fixe les combinaisons :
+
+```text
+C_lm = [Y_l^(-m) + (-1)^m Y_l^m]/sqrt(2)
+S_lm = i [Y_l^(-m) - (-1)^m Y_l^m]/sqrt(2)
+```
+
+Les signes globaux sont déterministes et choisis pour donner des coefficients cartésiens positifs :
+
+```text
+p_x = C_11          p_y = S_11          p_z = Y_1^0
+d_xz = C_21         d_yz = S_21         d_z2 = Y_2^0
+d_x2_y2 = C_22      d_xy = S_22
+```
+
+Il en résulte notamment `p_x ∝ x/r`, `p_y ∝ y/r`, `p_z ∝ z/r`, ainsi que les formes usuelles
+positives en `xy`, `xz`, `yz`, `x²-y²` et `3z²-r²`. Chaque combinaison conserve la normalisation et
+utilise exactement la même fonction radiale pour un couple `(n,l)` donné. La représentation
+complexe générique accepte tout `l` numériquement représentable ; seuls les noms réels explicites
+des familles `p` et `d`, nécessaires à cette phase, sont introduits. Aucune famille réelle `f/g/h/i`
+n'est ajoutée sans besoin actuel.
+
+## Nœuds et observables analytiques
+
+Pour un état admissible `(n,l)`, la source de vérité scientifique est :
+
+```text
+radialNodes = n-l-1
+angularNodes = l
+totalNodes = n-1
+```
+
+Le zéro de `R_nl(0)` dû au facteur `r^l` pour `l>0` n'est pas compté comme un nœud radial
+supplémentaire. Les notes MIT _Hydrogen Atom_, figure 2 et équation (2.34), identifient le degré
+`n-l-1` du polynôme radial et son nombre de nœuds.
+
+Les seules observables ajoutées en Phase 3 sont exprimées dans le contrat interne :
+
+```text
+<r>/a₀ = (a/2) [3n²-l(l+1)]
+<1/r> a₀ = 1/(a n²)
+r_most_probable(1s)/a₀ = a
+```
+
+Les deux espérances sont les formules hydrogénoïdes usuelles, documentées notamment dans le
+[corrigé institutionnel MIT 5.80, problème 7](https://ocw.mit.edu/courses/5-80-small-molecule-spectroscopy-and-dynamics-fall-2008/a6931596f907971b77a92bf01588bb6b_02pset_ans_sp94.pdf),
+adaptées de `a₀` à `a_μ`. Le maximum radial `1s` découle directement de la maximisation de
+`r²|R_10|²` ; il ne s'agit ni du maximum de `|ψ|²` ni d'une trajectoire.
+
+## Validation et domaine numériques
+
+Les quadratures de validation sont déterministes et restent exclusivement dans
+`tests/scientific/numericalIntegration.ts`. Elles utilisent Simpson composite en rayon et en
+`theta`, ainsi qu'une règle périodique en `phi`. Les jacobiennes `rBohr²` et `sin(theta)` y sont
+appliquées explicitement, jamais dans la densité de production. Les seuils partagés sont :
+
+```text
+identités analytiques composante par composante : 512 Number.EPSILON
+normalisation numérique                         : 1e-8
+orthogonalité numérique                         : 1e-8
+normalisation par quadrature 3D                 : 1e-7
+stabilité entre deux maillages 3D               : 5e-7
+```
+
+Les tests radiaux vérifient séparément la stabilité lors du raffinement du maillage et de
+l'extension du domaine fini. Les tests angulaires et 3D comparent également deux résolutions. Ces
+seuils sont des bornes absolues adaptées à des intégrales visant respectivement un ou zéro ; ils ne
+sont pas réutilisés pour les valeurs CODATA.
+
+Les fonctions rejettent les nombres non finis, les rayons négatifs, les états quantiques invalides
+et les angles polaires hors de `[0, π]`. `phi` accepte tout réel fini et est traité modulo `2π`. Les
+normalisations réutilisent la factorielle IEEE-754 du socle : une fonction radiale exige
+`n+l <= 170`, et une harmonique exige `l+|m| <= 170`. Au-delà, l'API échoue explicitement plutôt que
+de retourner une valeur sous-évaluée ou non finie.
+
+## Frontière de la Phase 3
+
+La Phase 3 ne contient aucun générateur aléatoire, sampler, CDF, Worker, rendu ou dynamique
+temporelle. Aucun module visible n'importe encore ce nouveau noyau. L'application continue
+d'utiliser exclusivement `legacyScience.ts` jusqu'à une migration explicitement autorisée par les
+phases ultérieures ; son comportement et son apparence restent donc inchangés.

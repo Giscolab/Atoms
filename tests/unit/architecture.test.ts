@@ -32,8 +32,9 @@ describe('frontières architecturales', () => {
 
     const forbiddenPatterns = [
       /(?:from\s+|import\s*\()\s*['"]three(?:\/[^'"]*)?['"]/u,
-      /\b(?:document|window|HTMLElement|HTMLCanvasElement|CanvasRenderingContext2D|OffscreenCanvas|FileReader|WebGLRenderer)\b/u,
-      /(?:from\s+|import\s*\()\s*['"](?:\.\.\/)+(?:app|data|rendering|state|ui)(?:\/|['"])/u,
+      /\b(?:document|window|HTMLElement|HTMLCanvasElement|CanvasRenderingContext2D|OffscreenCanvas|FileReader|WebGLRenderer|Worker|SharedWorker)\b/u,
+      /(?:from\s+|import\s*\()\s*['"]node:/u,
+      /(?:from\s+|import\s*\()\s*['"](?:\.\.\/)+(?:app|data|rendering|sampling|state|ui|workers)(?:\/|['"])/u,
     ];
 
     for (const path of scienceFiles) {
@@ -77,18 +78,40 @@ describe('frontières architecturales', () => {
     expect(mainSource).not.toMatch(
       /\bTHREE\b|from\s+['"]three|Math\.random|setTimeout|requestAnimationFrame|-13\.6|52\.9|5\.29/u,
     );
+    expect(existsSync(join(sourceRoot, 'sampling'))).toBe(false);
     expect(existsSync(join(sourceRoot, 'workers'))).toBe(false);
   });
 
   it('laisse le nouveau socle scientifique déconnecté du runtime visible', () => {
-    const newScienceModulePattern =
-      /(?:from\s+|import\s*\()\s*['"](?:[^'"]*\/)?science\/(?:constants|hydrogen|quantum|special|units)\//u;
+    const scienceImportPattern =
+      /(?:from\s+|import\s*\()\s*['"](?<specifier>[^'"]*\/science\/[^'"]+)['"]/gu;
     const runtimeFiles = collectTypeScriptFiles(sourceRoot).filter(
       (path) => !sourceName(path).startsWith('science/'),
     );
 
     for (const path of runtimeFiles) {
-      expect(readSource(path), sourceName(path)).not.toMatch(newScienceModulePattern);
+      for (const match of readSource(path).matchAll(scienceImportPattern)) {
+        expect(match.groups?.specifier, sourceName(path)).toMatch(/\/science\/legacyScience$/u);
+      }
+    }
+  });
+
+  it('n’introduit ni sampling ni dynamique dans le noyau scientifique de Phase 3', () => {
+    const phaseThreeDirectories = ['hydrogen', 'math'];
+    const forbiddenPatterns = [
+      /\bMath\.random\b/u,
+      /\b(?:CDF|RNG)\b/iu,
+      /\b(?:random|sample|sampler|sampling)\b/iu,
+      /\b(?:velocity|trajectory|Worker|SharedWorker)\b/iu,
+    ];
+
+    for (const directoryName of phaseThreeDirectories) {
+      for (const path of collectTypeScriptFiles(join(sourceRoot, 'science', directoryName))) {
+        const source = readSource(path);
+        for (const pattern of forbiddenPatterns) {
+          expect(source, `${sourceName(path)} contient ${String(pattern)}`).not.toMatch(pattern);
+        }
+      }
     }
   });
 });
