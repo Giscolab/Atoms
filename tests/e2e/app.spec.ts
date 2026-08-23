@@ -130,16 +130,20 @@ test('préserve les contrôles essentiels à 2 000 points', async ({ page }) => 
   await expect(page.locator('#qn-m')).toHaveText('0');
   await expect(page.locator('#iOrb')).toHaveText('1, 0, 0');
 
-  await page.locator('#btn2d').click();
-  await page.evaluate(async () => {
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          resolve();
-        });
-      });
-    });
-  });
+  const panel2d = page.locator('#panel2d');
+  const button2d = page.locator('#btn2d');
+
+  await expect(panel2d).toBeHidden();
+
+  await button2d.click();
+  await expect(panel2d).toBeVisible();
+  expect(await panel2d.evaluate((element) => element.hasAttribute('hidden'))).toBe(false);
+  await expect(button2d).toHaveClass(/active/);
+
+  await page.keyboard.press('q');
+  await expect(panel2d).toBeHidden();
+  expect(await panel2d.evaluate((element) => element.hasAttribute('hidden'))).toBe(true);
+  await expect(button2d).not.toHaveClass(/active/);
 
   expect(runtimeErrors, runtimeErrors.join('\n')).toEqual([]);
 });

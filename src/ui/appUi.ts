@@ -243,8 +243,13 @@ export function createAppUi(state: AppState): AppUi {
 
       button2d.addEventListener('click', () => {
         state.show2D = !state.show2D;
-        requireElement('panel2d', HTMLElement).classList.toggle('visible', state.show2D);
+
+        const panel2d = requireElement('panel2d', HTMLElement);
+        panel2d.hidden = !state.show2D;
+        panel2d.classList.toggle('visible', state.show2D);
+
         button2d.classList.toggle('active', state.show2D);
+
         if (state.show2D && !state.simulation2DInitialized) {
           state.simulation2DInitialized = true;
           callbacks.initialize2D();
