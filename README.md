@@ -1,5 +1,11 @@
 # Hydrogen Quantum Orbital Visualizer
 
+Atoms is an independent web reimplementation and scientific evolution of Kavan's pedagogical
+`kavan010/Atoms` project. Its pure TypeScript science core provides tested hydrogen wavefunctions,
+probability densities, and real-orbital combinations while remaining isolated from the visible
+legacy runtime. See the [scientific contract](docs/SCIENCE.md) for scope, formulas, conventions,
+units, sources, and validation boundaries.
+
 <p align="center">
   <img src="screenshot.png" width="700" alt="Aperçu du visualiseur d’orbitales">
 </p>
@@ -9,9 +15,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/votre-utilisateur/orbital-visualizer/actions"><img src="https://img.shields.io/github/actions/workflow/status/votre-utilisateur/orbital-visualizer/ci.yml?branch=main" alt="Build Status"></a>
-  <a href="https://github.com/votre-utilisateur/orbital-visualizer/stargazers"><img src="https://img.shields.io/github/stars/votre-utilisateur/orbital-visualizer" alt="Stars"></a>
-  <a href="https://github.com/votre-utilisateur/orbital-visualizer/issues"><img src="https://img.shields.io/github/issues/votre-utilisateur/orbital-visualizer" alt="Issues"></a>
+  <a href="https://github.com/Giscolab/Atoms/actions"><img src="https://img.shields.io/github/actions/workflow/status/Giscolab/Atoms/ci.yml?branch=main" alt="Build Status"></a>
+  <a href="https://github.com/Giscolab/Atoms"><img src="https://img.shields.io/github/stars/Giscolab/Atoms" alt="Stars"></a>
+  <a href="https://github.com/Giscolab/Atoms/issues"><img src="https://img.shields.io/github/issues/Giscolab/Atoms" alt="Issues"></a>
   <a href="https://threejs.org/"><img src="https://img.shields.io/badge/Three.js-r185-blue" alt="Three.js"></a>
 </p>
 
@@ -42,7 +48,8 @@ Ce projet vise à rendre la mécanique quantique plus accessible et pédagogique
 
 > **Note** : Ce projet est une réimplémentation web moderne inspirée du visualiseur original de **Kavan Anderson**. Il utilise des technologies web pour une accessibilité accrue.
 
-Démonstration en ligne : [Accéder à la démo](https://votre-utilisateur.github.io/orbital-visualizer/) .
+Dépôt public : [github.com/Giscolab/Atoms](https://github.com/Giscolab/Atoms). Aucune démonstration
+en ligne n’est annoncée tant qu’un déploiement public n’a pas été configuré et vérifié.
 
 ---
 
@@ -54,7 +61,6 @@ Démonstration en ligne : [Accéder à la démo](https://votre-utilisateur.githu
 - **Options de personnalisation** : Ajustez la résolution, les couleurs et les niveaux de transparence pour une meilleure visualisation.
 - **Mode pédagogique** : Affichage des formules et explications intégrées pour comprendre les concepts quantiques.
 - **Performances optimisées** : Exécution fluide grâce à WebGL, même sur des appareils mobiles.
-- **Exportation** : Sauvegardez des captures d’écran ou exportez des modèles 3D (format OBJ ou GLTF).
 
 ---
 
@@ -119,8 +125,8 @@ Three.js et les outils de développement sont installés de façon reproductible
 
 1. **Cloner le dépôt** :
    ```bash
-   git clone https://github.com/votre-utilisateur/orbital-visualizer.git
-   cd orbital-visualizer
+   git clone https://github.com/Giscolab/Atoms.git
+   cd Atoms
    ```
 
 2. **Installer les dépendances** :
@@ -146,24 +152,7 @@ Three.js et les outils de développement sont installés de façon reproductible
    - **Rotation** : Cliquez et glissez.
    - **Zoom** : Molette de souris ou pinch sur mobile.
    - **Déplacement** : Cliquez droit et glissez.
-4. Explorez les options : Changez la densité de points, activez les labels quantiques, ou basculez en mode fil de fer.
-
-Le point d’entrée de l’application est `src/main.ts`.
-
----
-
-## Structure du projet
-
-```
-orbital-visualizer/
-├── index.html          # Page principale
-├── style.css           # Styles CSS
-├── src/
-│   └── main.ts         # Point d’entrée TypeScript et Three.js
-├── screenshot.png      # Image d’aperçu
-├── assets/             # (Optionnel) Modèles 3D ou textures supplémentaires
-└── README.md           # Ce fichier
-```
+4. Explorez les options : Changez la densité de points, activez les labels quantiques.
 
 ---
 
@@ -186,22 +175,12 @@ Les contributions sont les bienvenues ! Suivez ces étapes :
 4. Poussez : `git push origin feature/nouvelle-fonction`.
 5. Ouvrez une Pull Request.
 
-Veuillez respecter le [Code de Conduite](CODE_OF_CONDUCT.md) (ajoutez-en un si nécessaire). Rapportez les bugs via les [Issues](https://github.com/votre-utilisateur/orbital-visualizer/issues).
+Consultez les [Issues](https://github.com/Giscolab/Atoms/issues) pour le suivi des bugs.
 
 Idées de contributions : Ajout de support pour d’autres atomes, optimisation mobile, ou internationalisation.
 
 ---
 
-## Origine du projet
-
-Ce projet est inspiré du visualiseur d’orbitales original de **Kavan Anderson** (C++ / OpenGL).
-
-- Dépôt original : [github.com/kavan010/Atoms](https://github.com/kavan010/Atoms)
-- Démo originale : [kavang.com/atom](https://www.kavang.com/atom)
-
-Cette version est une réimplémentation indépendante en technologies web, avec des améliorations pour l’interactivité et l’accessibilité.
-
----
 
 ## Objectifs
 
@@ -214,7 +193,7 @@ Cette version est une réimplémentation indépendante en technologies web, avec
 
 
 <p align="center">
-  Développé avec Three.js • Inspiré de Kavan Anderson
+  Développé avec Three.js
 </p>
 
 Si vous appréciez ce projet, donnez une ⭐ sur GitHub ! Pour toute question, ouvrez une issue.
