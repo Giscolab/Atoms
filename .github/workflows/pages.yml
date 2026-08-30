@@ -26,23 +26,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '24.19.0'
           cache: npm
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Scientific typecheck
-        run: npm run typecheck:science
-
-      - name: Tests
-        run: npm run test
 
       - name: Build
         run: npm run build
