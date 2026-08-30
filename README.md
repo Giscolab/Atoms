@@ -8,7 +8,11 @@ core through one deterministic sampler, a versioned Web Worker and a Three.js re
 for scope, formulas, conventions, units, sources, and validation boundaries.
 
 <p align="center">
-  <img src="screenshot.png" width="700" alt="Aperçu du visualiseur d’orbitales">
+  <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="1100" alt="Interface Atoms en thème sombre affichant l’orbitale réelle 3d_xy, issue des composantes m égales à plus ou moins 2, colorée selon la phase de psi en mode hybride avec 16 000 échantillons">
+</p>
+
+<p align="center">
+  <sub><strong>3d<sub>xy</sub></strong> · base réelle · n = 3, l = 2 · combinaison normalisée issue des composantes m = ±2 · phase de ψ · rendu hybride · 16 000 échantillons</sub>
 </p>
 
 <p align="center">
@@ -169,9 +173,29 @@ Three.js et les outils de développement sont installés de façon reproductible
 
 ## Captures d'écran
 
+Ces captures documentent plusieurs usages du même pipeline orbital 3D. Elles servent à présenter
+l’interface et ses conventions visuelles ; elles ne remplacent pas les futures régressions visuelles
+automatisées décrites dans le plan de validation.
+
 <p align="center">
-  <img src="Orbitale 1s.png" width="400" alt="Orbitale 1s">
-  <img src="3dx2-y2 (m=2).png" width="400" alt="Orbitale 3dx2-y2 (m=2)">
+  <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="900" alt="Orbitale réelle 3d_xy en thème sombre, phase de psi, nuage probabiliste et isosurface de densité, avec 16 000 échantillons">
+</p>
+<p align="center">
+  <sub><strong>Vue de référence.</strong> Orbitale réelle 3d<sub>xy</sub> · n = 3, l = 2 · combinaison normalisée issue des composantes m = ±2 · phase de ψ · mode hybride · 16 000 échantillons. Cette vue réunit le nuage probabiliste, l’isosurface de densité et les analyses radiale et angulaire.</sub>
+</p>
+
+<p align="center">
+  <img src="docs/captures/Atoms_8d_x2-y2_phase_nuage_n8_l2_mpm2_16000.png" width="680" alt="Orbitale réelle excitée 8d x carré moins y carré en thème sombre, colorée selon la phase de psi et affichée en nuage de 16 000 échantillons">
+</p>
+<p align="center">
+  <sub><strong>État excité étendu.</strong> Orbitale réelle 8d<sub>x²−y²</sub> · n = 8, l = 2 · combinaison normalisée issue des composantes m = ±2 · phase de ψ · nuage de points · 16 000 échantillons. Cette vue met en évidence l’extension spatiale et la structure radiale d’un état de grand n.</sub>
+</p>
+
+<p align="center">
+  <img src="docs/captures/Atoms_2p_m0_phase_nuage_n2_l1_m0_29000_legacy2D.png" width="900" alt="État 2p sélectionné dans la base complexe, de nombres quantiques n égal à 2, l égal à 1 et m égal à 0, affiché en thème clair avec un nuage de 29 000 échantillons et le panneau 2D historique ouvert séparément">
+</p>
+<p align="center">
+  <sub><strong>Frontière 3D/2D.</strong> Base complexe · état |2,1,0⟩ · 2p (m = 0) · phase de ψ · nuage de points · 29 000 échantillons. La capture montre le thème clair et l’ouverture du module 2D historique, lequel reste indépendant du calcul orbital 3D.</sub>
 </p>
 
 ---

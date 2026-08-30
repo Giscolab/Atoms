@@ -1052,6 +1052,10 @@ Créer des captures reproductibles au minimum pour :
 - [ ] `3d_xy` ;
 - [ ] un état `4f` représentatif.
 
+Les PNG rangés dans `docs/captures/` sont des captures documentaires de présentation. Ils sont
+légendés dans le README, mais ne constituent pas encore des régressions visuelles automatisées :
+les critères ci-dessus restent donc volontairement ouverts.
+
 ---
 
 # 15. Références scientifiques de validation
@@ -1250,7 +1254,7 @@ Priorités :
 
 Doit contenir uniquement ce qui existe réellement :
 
-- [ ] capture actuelle ;
+- [x] captures actuelles documentées dans le README et rangées sous `docs/captures/` ;
 - [ ] URL réelle ;
 - [ ] installation réelle ;
 - [ ] scripts npm réels ;

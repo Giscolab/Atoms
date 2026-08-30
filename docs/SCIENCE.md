@@ -392,6 +392,29 @@ avec la convention `arg(ψ) ∈ [-π, π]`. Les surfaces `ψ = 0` ne sont activ�
 réel est interprétable (`m = 0` complexe ou orbitale réelle) et restent distinctes de l'isosurface
 de densité. Le noyau est schématique et explicitement indiqué comme non à l'échelle.
 
+## Interprétation des représentations graphiques
+
+- **Points du nuage** : chaque point est un échantillon de la distribution `|ψ|² dV`. Un nuage
+  fini est une représentation de Monte-Carlo ; il ne représente ni plusieurs électrons, ni la
+  position certaine d'un électron, ni une trajectoire temporelle.
+- **Isosurface** : la surface relie les points où la densité volumique normalisée sur la grille
+  atteint le seuil d'affichage choisi. Elle ne constitue ni une frontière matérielle de l'atome,
+  ni une orbite, ni une surface de charge.
+- **Couleur de phase** : les pôles cyan et corail codent un écart de phase de `ψ`. Pour une
+  orbitale réelle, ils permettent notamment de distinguer les deux signes, équivalents à des phases
+  séparées de `π` dans la convention globale choisie. Pour un état complexe général, la palette
+  parcourt cycliquement les phases intermédiaires. Ces couleurs ne désignent donc ni deux charges,
+  ni deux électrons différents.
+- **Orbitales réelles `d`** : `d_xy` et `d_x²−y²` sont des combinaisons linéaires réelles,
+  normalisées et distinctes, construites à partir des composantes complexes `m = ±2`. Elles ne sont
+  pas le renommage d'un état complexe possédant une valeur unique de `m`.
+
+Les [captures documentaires](captures/) illustrent ces conventions avec le même moteur orbital 3D.
+Dans la capture où le panneau 2D historique est ouvert, seule la visualisation orbitale 3D relève de
+ce pipeline : le panneau 2D reste un module indépendant maintenu pour la Phase 8. Les légendes et le
+rôle de chaque image sont détaillés dans la section
+[Captures d'écran du README](../README.md#captures-décran).
+
 `legacyScience.ts` est désormais limité à la constante du panneau photon–hydrogène 2D historique.
 Il n'est pas utilisé pour la génération orbitale 3D. Toute évolution de ce module 2D doit rester dans
 la Phase 8 et documenter séparément ses hypothèses physiques.
