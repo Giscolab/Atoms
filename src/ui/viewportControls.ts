@@ -45,9 +45,18 @@ export function bindViewportControls(
     pointerId = null;
   });
 
+  const compactLayout = window.matchMedia('(max-width: 900px)');
+
   canvas.addEventListener(
     'wheel',
     (event) => {
+      // Dans le layout vertical, la molette/trackpad doit d'abord
+      // permettre le défilement naturel de la page.
+      // Ctrl/Cmd + molette conserve volontairement le zoom orbital.
+      if (compactLayout.matches && !event.ctrlKey && !event.metaKey) {
+        return;
+      }
+
       camera.zoomCamera(event.deltaY * 0.045);
       syncDistance();
       event.preventDefault();

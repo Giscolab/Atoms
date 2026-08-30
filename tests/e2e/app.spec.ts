@@ -134,3 +134,31 @@ test('reste utilisable sur mobile sans débordement horizontal', async ({ page }
   expect(layout.canvasHeight).toBeGreaterThan(0);
   await expect(page.locator('#generateButton')).toBeVisible();
 });
+
+test('permet le défilement vertical depuis le canvas dans le layout compact', async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 720 });
+  await page.goto('/');
+  await waitForGeneration(page);
+
+  const canvas = page.locator('#atomSimCanvas');
+
+  await canvas.evaluate((element) => {
+    element.scrollIntoView({ block: 'center' });
+  });
+
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+
+  const initialY = await page.evaluate(() => window.scrollY);
+
+  await page.mouse.move(
+    box!.x + box!.width / 2,
+    box!.y + box!.height / 2,
+  );
+
+  await page.mouse.wheel(0, 600);
+
+  await expect
+    .poll(async () => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(initialY);
+});
