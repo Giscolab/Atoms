@@ -102,10 +102,13 @@ export function renderRadialChart(svg: SVGSVGElement, data: RadialDistributionCh
   }
   appendLine(svg, padding, padding, padding, height - padding, 'chart-axis');
   appendLine(svg, padding, height - padding, width - padding, height - padding, 'chart-axis');
+
   const path = svgElement('path');
   path.setAttribute('d', buildLinePath(data.normalizedDensity, width, height, padding));
   path.setAttribute('class', 'chart-series radial-series');
+  path.setAttribute('vector-effect', 'non-scaling-stroke');
   svg.appendChild(path);
+
   const area = svgElement('path');
   area.setAttribute(
     'd',
@@ -113,6 +116,7 @@ export function renderRadialChart(svg: SVGSVGElement, data: RadialDistributionCh
   );
   area.setAttribute('class', 'chart-area radial-area');
   svg.insertBefore(area, path);
+
   const firstRadius = data.radiiBohr[0] ?? 0;
   const lastRadius = data.radiiBohr[data.radiiBohr.length - 1] ?? 0;
   appendText(svg, firstRadius.toFixed(0), padding, height - 8);
@@ -125,6 +129,7 @@ export function renderAngularChart(svg: SVGSVGElement, data: AngularDensityCutCh
   const centerX = width / 2;
   const centerY = 106;
   const radius = 78;
+
   for (const fraction of [0.33, 0.66, 1]) {
     const circle = svgElement('circle');
     circle.setAttribute('cx', String(centerX));
@@ -135,10 +140,13 @@ export function renderAngularChart(svg: SVGSVGElement, data: AngularDensityCutCh
   }
   appendLine(svg, centerX - radius, centerY, centerX + radius, centerY, 'chart-grid');
   appendLine(svg, centerX, centerY - radius, centerX, centerY + radius, 'chart-grid');
+
   const path = svgElement('path');
   path.setAttribute('d', buildPolarPath(data.normalizedRadius, centerX, centerY, radius));
   path.setAttribute('class', 'chart-series angular-series');
+  path.setAttribute('vector-effect', 'non-scaling-stroke');
   svg.appendChild(path);
+
   const labels: Array<[string, number, number]> = [
     ['90°', centerX, centerY - radius - 8],
     ['0°', centerX + radius + 10, centerY + 3],
