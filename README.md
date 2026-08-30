@@ -2,9 +2,10 @@
 
 Atoms is an independent web reimplementation and scientific evolution of Kavan's pedagogical
 `kavan010/Atoms` project. Its pure TypeScript science core provides tested hydrogen wavefunctions,
-probability densities, and real-orbital combinations while remaining isolated from the visible
-legacy runtime. See the [scientific contract](docs/SCIENCE.md) for scope, formulas, conventions,
-units, sources, and validation boundaries.
+probability densities, and real-orbital combinations. The visible 3D application now consumes that
+core through one deterministic sampler, a versioned Web Worker and a Three.js renderer; the historical
+2D demonstration remains explicitly isolated as Phase 8. See the [scientific contract](docs/SCIENCE.md)
+for scope, formulas, conventions, units, sources, and validation boundaries.
 
 <p align="center">
   <img src="screenshot.png" width="700" alt="Aperçu du visualiseur d’orbitales">
@@ -55,12 +56,18 @@ en ligne n’est annoncée tant qu’un déploiement public n’a pas été conf
 
 ## Fonctionnalités
 
-- **Visualisation 3D interactive** : Explorez les orbitales en temps réel avec rotation, zoom et déplacement de la caméra.
-- **Manipulation des nombres quantiques** : Changez dynamiquement les valeurs de `n`, `l` et `m` pour observer les effets sur l’orbitale.
-- **Génération procédurale** : Nuages de points représentant la densité de probabilité électronique, calculés en temps réel.
-- **Options de personnalisation** : Ajustez la résolution, les couleurs et les niveaux de transparence pour une meilleure visualisation.
-- **Mode pédagogique** : Affichage des formules et explications intégrées pour comprendre les concepts quantiques.
-- **Performances optimisées** : Exécution fluide grâce à WebGL, même sur des appareils mobiles.
+- **Visualisation 3D interactive** : explorez les orbitales avec rotation volontaire de la caméra,
+  zoom et réinitialisation du cadrage dans un repère en `a₀`.
+- **États complexes et orbitales réelles distincts** : choisissez `n`, `l`, `m` dans la base
+  complexe ou les combinaisons réelles `p`/`d` disponibles, sans assimiler un `m` isolé à `pₓ` ou `pᵧ`.
+- **Nuage probabiliste** : les positions sont échantillonnées selon `|ψ|² dV` dans un Web Worker.
+  Les points représentent une distribution, jamais des électrons individuels ou une trajectoire.
+- **Modes scientifiques** : densité, phase et mode hybride, avec isosurface de densité et surface
+  nodale `ψ = 0` uniquement lorsque cette dernière est interprétable.
+- **Analyses latérales** : courbe radiale `r²|Rₙₗ|²`, coupe géométrique de `|Yₗᵐ|²`, énergie du
+  modèle à masse réduite, rayon attendu et nombres de nœuds.
+- **Reproductibilité et thèmes** : seed `uint32` affichée, génération relançable, thèmes sombre et
+  clair équivalents, responsive et respect de `prefers-reduced-motion`.
 
 ---
 
@@ -84,7 +91,11 @@ Où :
 - Rₙₗ(r) est la partie radiale.
 - Yₗₘ(θ, φ) est la partie angulaire (harmoniques sphériques).
 
-Cette densité représente la probabilité de trouver l’électron en un point donné de l’espace.
+Cette quantité est une densité de probabilité volumique ; une probabilité finie s'obtient après
+intégration sur un volume.
+La mesure volumique utilisée pour le sampling est `|Ψ|² r² sin(θ) dr dθ dφ`, tandis que la valeur
+de densité stockée reste `|Ψ|²` sans jacobien. Les conventions et les limites du modèle sont
+détaillées dans le [contrat scientifique](docs/SCIENCE.md).
 
 ## Types d’orbitales
 
@@ -147,12 +158,12 @@ Three.js et les outils de développement sont installés de façon reproductible
 ## Utilisation
 
 1. Ouvrez l’application dans votre navigateur.
-2. Sélectionnez les nombres quantiques via l’interface (sliders ou inputs).
-3. Interagissez avec la vue 3D : 
-   - **Rotation** : Cliquez et glissez.
-   - **Zoom** : Molette de souris ou pinch sur mobile.
-   - **Déplacement** : Cliquez droit et glissez.
-4. Explorez les options : Changez la densité de points, activez les labels quantiques.
+2. Choisissez la base complexe ou une orbitale réelle, puis les nombres quantiques valides.
+3. Choisissez l’observable (densité ou phase) et le mode d’affichage ; ajustez le seuil, l’opacité
+   et le nombre de points si nécessaire.
+4. Interagissez avec la vue 3D : glisser pour orienter la caméra, molette ou pinch pour zoomer,
+   touche `0` ou bouton dédié pour réinitialiser la vue. La touche `Q` ouvre l’outil 2D historique.
+5. Pour reproduire une génération, conservez la seed affichée et relancez « Générer l’état ».
 
 ---
 

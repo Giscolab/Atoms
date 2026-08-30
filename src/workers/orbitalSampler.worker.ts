@@ -70,7 +70,7 @@ workerScope.onmessage = (event): void => {
       radialPointCount: job.options.radialChartPointCount,
     });
 
-    reportProgress(job, 'transfer', 3);
+    reportProgress(job, 'transfer', 4);
     const payload = {
       charts,
       field,

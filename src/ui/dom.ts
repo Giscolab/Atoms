@@ -1,6 +1,6 @@
-export type ElementConstructor<T extends HTMLElement> = new () => T;
+export type ElementConstructor<T extends Element> = new () => T;
 
-export function requireElement<T extends HTMLElement>(
+export function requireElement<T extends Element>(
   id: string,
   constructor: ElementConstructor<T>,
 ): T {

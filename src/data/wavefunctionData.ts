@@ -1,4 +1,4 @@
-import type { Point3 } from '../science/legacyScience';
+export type Point3 = [number, number, number];
 
 export interface WavefunctionData {
   points: Point3[];

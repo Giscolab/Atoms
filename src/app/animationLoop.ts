@@ -1,85 +1,59 @@
-import type { SceneRenderer } from '../rendering/sceneRenderer';
-import { advanceLegacyProbabilityFlowPoint } from '../science/legacyScience';
-import type { AppState } from '../state/appState';
-import type { AppUi } from '../ui/appUi';
+import type { SceneRenderer } from '../rendering/renderingContracts';
 
 export interface AnimationLoop {
   start(): void;
+  stop(): void;
 }
 
-function requireNumber(values: ArrayLike<number>, index: number): number {
-  const value = values[index];
-  if (value === undefined) {
-    throw new RangeError(`Indice numérique hors limites : ${index}.`);
-  }
-  return value;
+export interface AnimationLoopOptions {
+  readonly autoRotate: () => boolean;
+  readonly onFps?: (fps: number) => void;
 }
 
+/**
+ * Boucle de présentation : elle ne modifie jamais les échantillons. Le seul
+ * mouvement automatique est une rotation de caméra, clairement distincte de
+ * toute dynamique physique de l'état stationnaire.
+ */
 export function createAnimationLoop(
-  state: AppState,
   renderer: SceneRenderer,
-  ui: AppUi,
+  options: AnimationLoopOptions,
 ): AnimationLoop {
-  function animateFlow(): void {
-    if (!renderer.hasCloud() || !state.animating || state.quantum.m === 0) return;
-    const positionWriter = renderer.getCloudPositionWriter();
-    if (!positionWriter) return;
-    const m = state.quantum.m;
-    const availablePointCount = Math.min(
-      state.quantum.N,
-      positionWriter.count,
-      state.cloud.radii.length,
-      Math.floor(state.cloud.positions.length / 3),
-    );
-    for (let i = 0; i < availablePointCount; i++) {
-      const px = requireNumber(state.cloud.positions, i * 3),
-        py = requireNumber(state.cloud.positions, i * 3 + 1),
-        pz = requireNumber(state.cloud.positions, i * 3 + 2);
-      const [x, y, z] = advanceLegacyProbabilityFlowPoint(
-        px,
-        py,
-        pz,
-        requireNumber(state.cloud.radii, i),
-        m,
-      );
-      state.cloud.positions[i * 3] = x;
-      state.cloud.positions[i * 3 + 1] = y;
-      state.cloud.positions[i * 3 + 2] = z;
-      positionWriter.setXYZ(
-        i,
-        requireNumber(state.cloud.positions, i * 3),
-        requireNumber(state.cloud.positions, i * 3 + 1),
-        requireNumber(state.cloud.positions, i * 3 + 2),
-      );
-    }
-    positionWriter.commit();
-  }
+  let frameHandle: number | null = null;
+  let running = false;
+  let lastTime = 0;
+  let recentFrames: number[] = [];
+  let lastFpsReport = 0;
 
-  let fpsTimes: number[] = [],
-    fpsLast = performance.now();
-
-  function tickFPS(): void {
-    const now = performance.now();
-    fpsTimes.push(now);
-    fpsTimes = fpsTimes.filter((time) => now - time < 1000);
-    if (now - fpsLast > 400) {
-      ui.updateFps(fpsTimes.length);
-      fpsLast = now;
-    }
-  }
-
-  let frame = 0;
-
-  function loop3D(): void {
-    requestAnimationFrame(loop3D);
-    frame++;
-    tickFPS();
-    if (renderer.hasCloud()) {
-      if (state.animating && state.quantum.m !== 0 && frame % 2 === 0) animateFlow();
-      if (state.quantum.m === 0 && state.animating) renderer.rotateCloudY(0.002);
-    }
+  function tick(time: number): void {
+    if (!running) return;
+    frameHandle = requestAnimationFrame(tick);
+    const deltaMilliseconds = lastTime === 0 ? 16.7 : Math.min(100, Math.max(0, time - lastTime));
+    lastTime = time;
+    if (options.autoRotate()) renderer.rotateCameraAutomatically(deltaMilliseconds * 0.000045);
     renderer.renderFrame();
+
+    recentFrames.push(time);
+    recentFrames = recentFrames.filter((frameTime) => time - frameTime < 1000);
+    if (time - lastFpsReport >= 500) {
+      options.onFps?.(recentFrames.length);
+      lastFpsReport = time;
+    }
   }
 
-  return { start: loop3D };
+  return {
+    start(): void {
+      if (running) return;
+      running = true;
+      lastTime = 0;
+      lastFpsReport = performance.now();
+      recentFrames = [];
+      frameHandle = requestAnimationFrame(tick);
+    },
+    stop(): void {
+      running = false;
+      if (frameHandle !== null) cancelAnimationFrame(frameHandle);
+      frameHandle = null;
+    },
+  };
 }

@@ -6,461 +6,225 @@
     <meta name="color-scheme" content="dark light" />
     <meta
       name="description"
-      content="Laboratoire interactif et scientifique des états stationnaires de l’atome d’hydrogène."
+      content="Atoms — laboratoire interactif de visualisation des états propres de l'atome d'hydrogène."
     />
-    <title>ATOMS — Laboratoire de l’atome d’hydrogène</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <title>Atoms — laboratoire de l'atome d'hydrogène</title>
+    <link rel="stylesheet" href="/styles.css" />
   </head>
-
   <body>
     <div id="app" class="app-shell">
       <header class="topbar">
-        <a class="brand" href="#viewport" aria-label="ATOMS — accéder à la visualisation">
+        <a class="brand" href="/" aria-label="Atoms, accueil">
           <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 48 48" role="presentation">
-              <circle cx="24" cy="24" r="20.5" />
-              <path d="M12 25c4-10 20-10 24 0-4 10-20 10-24 0Z" />
-              <path d="M24 12c10 4 10 20 0 24-10-4-10-20 0-24Z" />
-              <circle class="brand-core" cx="24" cy="24" r="2.5" />
+            <svg viewBox="0 0 44 44" role="img">
+              <circle cx="22" cy="22" r="4" />
+              <ellipse cx="22" cy="22" rx="18" ry="8" />
+              <ellipse cx="22" cy="22" rx="18" ry="8" transform="rotate(60 22 22)" />
+              <ellipse cx="22" cy="22" rx="18" ry="8" transform="rotate(120 22 22)" />
             </svg>
           </span>
           <span class="brand-copy">
-            <strong>ATOMS</strong>
-            <span>Laboratoire de l’atome d’hydrogène</span>
+            <span class="brand-name">ATOMS</span>
+            <span class="brand-subtitle">Laboratoire de l'atome d'hydrogène</span>
           </span>
         </a>
-
         <div class="topbar-actions">
-          <div id="engineStatus" class="engine-status" role="status" aria-live="polite">
+          <span id="engineStatus" class="engine-status" role="status">
             <span class="status-dot" aria-hidden="true"></span>
-            <span>Moteur prêt</span>
-          </div>
-
-          <div class="theme-picker" role="group" aria-label="Thème de l’interface">
-            <button
-              id="themeDark"
-              class="theme-button"
-              type="button"
-              aria-pressed="true"
-              title="Utiliser le thème sombre"
-            >
-              Sombre
+            Moteur prêt
+          </span>
+          <div class="theme-switch" role="group" aria-label="Thème d'affichage">
+            <button id="themeDark" class="icon-button theme-choice active" type="button" aria-pressed="true" title="Thème sombre">
+              <span aria-hidden="true">☾</span><span class="sr-only">Thème sombre</span>
             </button>
-            <button
-              id="themeLight"
-              class="theme-button"
-              type="button"
-              aria-pressed="false"
-              title="Utiliser le thème clair"
-            >
-              Clair
+            <button id="themeLight" class="icon-button theme-choice" type="button" aria-pressed="false" title="Thème clair">
+              <span aria-hidden="true">☼</span><span class="sr-only">Thème clair</span>
             </button>
           </div>
+          <button id="settingsButton" class="icon-button" type="button" title="Réglages d'interface" aria-label="Réglages d'interface">
+            <span aria-hidden="true">⚙</span>
+          </button>
         </div>
       </header>
 
-      <aside class="control-panel" aria-label="Paramètres scientifiques et visuels">
-        <form class="control-form" autocomplete="off">
-          <section class="control-section" aria-labelledby="quantumHeading">
-            <header class="section-heading">
-              <div>
-                <p class="eyebrow">État quantique</p>
-                <h1 id="quantumHeading">Hydrogène stationnaire</h1>
+      <div class="workspace">
+        <aside id="panel" class="control-panel" aria-label="Paramètres scientifiques et de rendu">
+          <div class="panel-scroll">
+            <section class="panel-section state-section">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">État quantique</p>
+                  <h1 class="panel-title">Configurer l'état</h1>
+                </div>
+                <span class="live-indicator" title="Calcul scientifique actif" aria-label="Calcul scientifique actif"></span>
               </div>
-              <span class="section-index" aria-hidden="true">01</span>
-            </header>
+              <div class="quantum-grid" aria-label="Nombres quantiques affichés">
+                <div class="quantum-card"><span class="quantum-symbol">n</span><output id="quantumNValue">3</output><span class="quantum-label">principal</span></div>
+                <div class="quantum-card"><span class="quantum-symbol">l</span><output id="quantumLValue">2</output><span class="quantum-label">angulaire</span></div>
+                <div class="quantum-card"><span class="quantum-symbol">m</span><output id="quantumMValue">réelle</output><span class="quantum-label">projection</span></div>
+              </div>
+            </section>
 
-            <fieldset class="choice-fieldset">
-              <legend>Base de représentation</legend>
-              <div class="segmented-control segmented-control--two">
-                <input id="basisComplex" type="radio" name="basis" value="complex" />
-                <label for="basisComplex">État complexe</label>
-                <input id="basisReal" type="radio" name="basis" value="real" checked />
+            <section class="panel-section">
+              <div class="section-heading compact"><p class="eyebrow">Base de représentation</p></div>
+              <div class="segmented" role="radiogroup" aria-label="Base de l'état orbital">
+                <input id="basisComplex" name="basis" value="complex" type="radio" />
+                <label for="basisComplex">Base complexe <span>|n,l,m⟩</span></label>
+                <input id="basisReal" name="basis" value="real" type="radio" checked />
                 <label for="basisReal">Orbitale réelle</label>
               </div>
-            </fieldset>
-
-            <div class="quantum-grid">
-              <label class="field-card" for="quantumN">
-                <span class="field-symbol">n</span>
-                <span class="field-name">Principal</span>
-                <select id="quantumN" name="quantumN">
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3" selected>3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                </select>
-              </label>
-
-              <label class="field-card" for="quantumL">
-                <span class="field-symbol">l</span>
-                <span class="field-name">Angulaire</span>
-                <select id="quantumL" name="quantumL">
-                  <option value="0">0</option>
-                  <option value="1">1</option>
-                  <option value="2" selected>2</option>
-                </select>
-              </label>
-            </div>
-
-            <div id="complexMField" class="field-group" hidden>
-              <label for="quantumM">Nombre magnétique m</label>
-              <select id="quantumM" name="quantumM">
-                <option value="-2">−2</option>
-                <option value="-1">−1</option>
-                <option value="0">0</option>
-                <option value="1">+1</option>
-                <option value="2" selected>+2</option>
-              </select>
-              <p class="field-help">État propre complexe |n, l, m⟩.</p>
-            </div>
-
-            <div id="realOrbitalField" class="field-group">
-              <label for="realOrbital">Combinaison orbitale réelle</label>
-              <select id="realOrbital" name="realOrbital">
-                <option value="p_x">pₓ</option>
-                <option value="p_y">pᵧ</option>
-                <option value="p_z">p_z</option>
-                <option value="d_xy" selected>d_xy</option>
-                <option value="d_xz">d_xz</option>
-                <option value="d_yz">d_yz</option>
-                <option value="d_x2_y2">d_x²−y²</option>
-                <option value="d_z2">d_z²</option>
-              </select>
-              <p class="field-help">Combinaison réelle normalisée, distincte d’un état m isolé.</p>
-            </div>
-          </section>
-
-          <section class="control-section" aria-labelledby="representationHeading">
-            <header class="section-heading section-heading--compact">
-              <div>
-                <p class="eyebrow">Représentation</p>
-                <h2 id="representationHeading">Grandeur observée</h2>
+              <div class="field-grid">
+                <label class="field" for="quantumN">n <span class="field-hint">1–9</span>
+                  <select id="quantumN" aria-describedby="quantumHelp"></select>
+                </label>
+                <label class="field" for="quantumL">l <span class="field-hint">0…n−1</span>
+                  <select id="quantumL"></select>
+                </label>
               </div>
-              <span class="section-index" aria-hidden="true">02</span>
-            </header>
+              <div id="complexMField" class="field-block" hidden>
+                <label class="field" for="quantumM">m <span class="field-hint">−l…+l</span>
+                  <select id="quantumM"></select>
+                </label>
+              </div>
+              <div id="realOrbitalField" class="field-block">
+                <label class="field" for="realOrbital">Orbitale réelle
+                  <select id="realOrbital">
+                    <optgroup label="p — l = 1">
+                      <option value="p_x">pₓ</option><option value="p_y">pᵧ</option><option value="p_z">p_z</option>
+                    </optgroup>
+                    <optgroup label="d — l = 2">
+                      <option value="d_xy" selected>d_xy</option><option value="d_xz">d_xz</option><option value="d_yz">d_yz</option><option value="d_x2_y2">d_x²−y²</option><option value="d_z2">d_z²</option>
+                    </optgroup>
+                  </select>
+                </label>
+              </div>
+              <p id="quantumHelp" class="helper-text">Les contraintes de l'état propre sont contrôlées par le noyau scientifique.</p>
+            </section>
 
-            <fieldset class="choice-fieldset">
-              <legend>Couleur du rendu</legend>
-              <div class="segmented-control segmented-control--two">
-                <input
-                  id="observableDensity"
-                  type="radio"
-                  name="observable"
-                  value="density"
-                />
-                <label for="observableDensity">Densité |ψ|²</label>
-                <input
-                  id="observablePhase"
-                  type="radio"
-                  name="observable"
-                  value="phase"
-                  checked
-                />
+            <section class="panel-section">
+              <div class="section-heading compact"><p class="eyebrow">Représentation</p></div>
+              <div class="segmented" role="radiogroup" aria-label="Observable visualisé">
+                <input id="observableDensity" name="observable" value="density" type="radio" />
+                <label for="observableDensity">Densité <span>|ψ|²</span></label>
+                <input id="observablePhase" name="observable" value="phase" type="radio" checked />
                 <label for="observablePhase">Phase de ψ</label>
               </div>
-            </fieldset>
-
-            <div class="field-group">
-              <label for="displayMode">Mode d’affichage</label>
-              <select id="displayMode" name="displayMode">
-                <option value="cloud">Nuage d’échantillons</option>
-                <option value="hybrid" selected>Hybride — nuage + isodensité</option>
-                <option value="isosurface">Isosurface de densité</option>
-              </select>
-            </div>
-
-            <div class="range-control">
-              <div class="range-heading">
-                <label for="isoThreshold">Seuil d’isodensité</label>
-                <output id="isoThresholdValue" for="isoThreshold">20 %</output>
+              <label class="field" for="displayMode">Mode d'affichage
+                <select id="displayMode">
+                  <option value="cloud">Nuage de points</option>
+                  <option value="hybrid" selected>Hybride — nuage + isodensité</option>
+                  <option value="isosurface">Isodensité seule</option>
+                </select>
+              </label>
+              <div class="range-field">
+                <div class="range-header"><label for="isoThreshold">Seuil d'isodensité</label><output id="isoThresholdValue" for="isoThreshold">20 %</output></div>
+                <input id="isoThreshold" type="range" min="0.05" max="0.8" value="0.2" step="0.01" />
               </div>
-              <input
-                id="isoThreshold"
-                name="isoThreshold"
-                type="range"
-                min="0.02"
-                max="0.8"
-                step="0.01"
-                value="0.2"
-              />
-            </div>
+            </section>
 
-            <div class="range-control">
-              <div class="range-heading">
-                <label for="sampleCount">Échantillons du nuage</label>
-                <output id="sampleCountValue" for="sampleCount">15 000</output>
+            <section class="panel-section">
+              <div class="section-heading compact"><p class="eyebrow">Échantillonnage</p><span class="unit-badge">reproductible</span></div>
+              <div class="range-field">
+                <div class="range-header"><label for="sampleCount">Échantillons |ψ|² dV</label><output id="sampleCountValue" for="sampleCount">15 000</output></div>
+                <input id="sampleCount" type="range" min="2000" max="60000" value="15000" step="1000" />
               </div>
-              <input
-                id="sampleCount"
-                name="sampleCount"
-                type="range"
-                min="2000"
-                max="60000"
-                step="1000"
-                value="15000"
-              />
-            </div>
-
-            <div class="seed-control">
-              <label for="seedInput">Graine déterministe</label>
-              <div class="input-action">
-                <input
-                  id="seedInput"
-                  name="seedInput"
-                  type="number"
-                  min="0"
-                  max="4294967295"
-                  step="1"
-                  value="20260830"
-                  inputmode="numeric"
-                />
-                <button
-                  id="randomizeSeed"
-                  class="icon-button"
-                  type="button"
-                  aria-label="Choisir une nouvelle graine"
-                  title="Nouvelle graine"
-                >
-                  ↻
-                </button>
+              <div class="seed-row">
+                <label class="field" for="seedInput">Seed <span class="field-hint">uint32</span>
+                  <input id="seedInput" type="number" min="0" max="4294967295" step="1" value="1096044365" inputmode="numeric" />
+                </label>
+                <button id="randomizeSeed" class="secondary-button seed-button" type="button">Nouvelle seed</button>
               </div>
-            </div>
+            </section>
 
-            <button id="generateButton" class="primary-button" type="button">
-              <span>Générer l’état</span>
-              <span aria-hidden="true">→</span>
-            </button>
+            <section class="panel-section">
+              <div class="section-heading compact"><p class="eyebrow">Rendu</p></div>
+              <div class="range-field">
+                <div class="range-header"><label for="pointOpacity">Opacité des points</label><output id="pointOpacityValue" for="pointOpacity">85 %</output></div>
+                <input id="pointOpacity" type="range" min="0.2" max="1" value="0.85" step="0.05" />
+              </div>
+              <div class="range-field">
+                <div class="range-header"><label for="pointSize">Taille des points</label><output id="pointSizeValue" for="pointSize">1,2 px</output></div>
+                <input id="pointSize" type="range" min="0.6" max="4" value="1.2" step="0.1" />
+              </div>
+              <div class="toggle-list">
+                <label class="toggle-row" for="axesToggle"><span>Axes &amp; grille <small>repère cartésien, a₀</small></span><input id="axesToggle" type="checkbox" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+                <label class="toggle-row" for="nodesToggle"><span>Nœuds ψ = 0 <small>surface nodale si interprétable</small></span><input id="nodesToggle" type="checkbox" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+                <label class="toggle-row" for="motionToggle"><span>Rotation caméra <small>aucun mouvement de particules</small></span><input id="motionToggle" type="checkbox" checked /><span class="toggle-visual" aria-hidden="true"></span></label>
+              </div>
+            </section>
+
+            <button id="generateButton" class="primary-button" type="button"><span aria-hidden="true">↻</span> Générer l'état</button>
+
+            <section class="legacy-section" aria-label="Outil historique">
+              <div class="legacy-heading"><span>Outil historique</span><span class="unit-badge">Phase 8</span></div>
+              <p>La démonstration 2D est conservée séparément et ne modifie pas le nuage orbital.</p>
+              <button id="btn2d" class="text-button" type="button" aria-expanded="false" aria-controls="panel2d">Ouvrir la démonstration 2D</button>
+            </section>
+          </div>
+        </aside>
+
+        <main id="viewport" class="viewport" aria-label="Visualisation 3D de l'état orbital">
+          <div class="viewport-toolbar">
+            <span class="viewport-caption"><span class="caption-kicker">VISUALISATION</span><span id="orbitalCaption">3d_xy · |ψ|² dV</span></span>
+            <button id="resetCamera" class="small-button" type="button">Réinitialiser la caméra</button>
+          </div>
+          <canvas id="atomSimCanvas" tabindex="0" aria-label="Nuage probabiliste orbital interactif. Glisser pour orienter la caméra, molette pour zoomer."></canvas>
+          <div id="generationStatus" class="generation-status" role="status" aria-live="polite">Initialisation du moteur…</div>
+          <div class="progress-track" aria-hidden="true"><span id="generationProgress"></span></div>
+          <div id="visualLegend" class="visual-legend">
+            <span class="legend-title">Lecture visuelle</span>
+            <span class="legend-item"><i class="legend-swatch density-swatch"></i>géométrie / densité |ψ|²</span>
+            <span class="legend-item"><i class="legend-swatch phase-swatch"></i>couleur = phase (ou signe réel)</span>
+            <span class="legend-item"><i class="legend-nucleus"></i>noyau schématique, non à l'échelle</span>
+          </div>
+          <section id="panel2d" class="legacy-panel" aria-labelledby="panel2d-title" hidden>
+            <div class="legacy-panel-header"><h2 id="panel2d-title">Démonstration 2D historique</h2><button id="close2d" class="icon-button" type="button" aria-label="Fermer la démonstration 2D">×</button></div>
+            <p>Module pédagogique conservé pour comparaison. Il est indépendant de l'état orbital 3D actuel.</p>
+            <canvas id="c2d" width="360" height="220" aria-label="Animation 2D historique"></canvas>
+          </section>
+        </main>
+
+        <aside class="insight-panel" aria-label="Analyses de l'état orbital">
+          <section class="insight-card identity-card">
+            <div class="card-heading"><div><p class="eyebrow">État actif</p><h2 id="orbitalNotation">3d_xy</h2></div><span id="basisLabel" class="basis-chip">réelle</span></div>
+            <p id="orbitalSummary" class="card-copy">Combinaison réelle normalisée des états m = ±2.</p>
+            <dl class="metric-list">
+              <div><dt>Énergie</dt><dd id="energyValue">— <small>eV</small></dd></div>
+              <div><dt>Rayon attendu ⟨r⟩</dt><dd id="radiusValue">— <small>a₀</small></dd></div>
+              <div><dt>Échelle</dt><dd id="scaleValue">— <small>pm</small></dd></div>
+            </dl>
+            <p id="modelLabel" class="source-note">Modèle non relativiste à masse réduite.</p>
           </section>
 
-          <section class="control-section" aria-labelledby="renderHeading">
-            <header class="section-heading section-heading--compact">
-              <div>
-                <p class="eyebrow">Rendu</p>
-                <h2 id="renderHeading">Lisibilité visuelle</h2>
-              </div>
-              <span class="section-index" aria-hidden="true">03</span>
-            </header>
-
-            <div class="range-control">
-              <div class="range-heading">
-                <label for="pointOpacity">Opacité des points</label>
-                <output id="pointOpacityValue" for="pointOpacity">85 %</output>
-              </div>
-              <input
-                id="pointOpacity"
-                name="pointOpacity"
-                type="range"
-                min="0.1"
-                max="1"
-                step="0.05"
-                value="0.85"
-              />
-            </div>
-
-            <div class="range-control">
-              <div class="range-heading">
-                <label for="pointSize">Taille des points</label>
-                <output id="pointSizeValue" for="pointSize">1,5 px</output>
-              </div>
-              <input
-                id="pointSize"
-                name="pointSize"
-                type="range"
-                min="0.5"
-                max="4"
-                step="0.1"
-                value="1.5"
-              />
-            </div>
-
-            <div class="switch-list" role="group" aria-label="Éléments de la scène">
-              <label class="switch-row" for="axesToggle">
-                <span>
-                  <strong>Axes et grille</strong>
-                  <small>Repère cartésien, axe polaire z</small>
-                </span>
-                <span class="switch-control">
-                  <input id="axesToggle" type="checkbox" checked />
-                  <span class="switch-track" aria-hidden="true"></span>
-                </span>
-              </label>
-
-              <label class="switch-row" for="nodesToggle">
-                <span>
-                  <strong>Surfaces nodales</strong>
-                  <small>Disponibles pour une fonction réelle</small>
-                </span>
-                <span class="switch-control">
-                  <input id="nodesToggle" type="checkbox" />
-                  <span class="switch-track" aria-hidden="true"></span>
-                </span>
-              </label>
-
-              <label class="switch-row" for="motionToggle">
-                <span>
-                  <strong>Rotation de la caméra</strong>
-                  <small>La fonction d’onde demeure stationnaire</small>
-                </span>
-                <span class="switch-control">
-                  <input id="motionToggle" type="checkbox" checked />
-                  <span class="switch-track" aria-hidden="true"></span>
-                </span>
-              </label>
-            </div>
+          <section class="insight-card chart-card">
+            <div class="card-heading"><div><p class="eyebrow">Distribution radiale</p><h2>Probabilité selon r</h2></div><span class="info-mark" title="P(r) = r²|Rₙₗ(r)|², en a₀⁻¹">i</span></div>
+            <svg id="radialChart" class="chart" viewBox="0 0 320 190" role="img" aria-label="Distribution radiale P(r)"></svg>
+            <div class="chart-axis-labels"><span>0</span><span>r (a₀)</span><span id="radialChartLabel">—</span></div>
           </section>
 
-          <details class="legacy-tools">
-            <summary>Outil historique distinct</summary>
-            <div class="legacy-tools__body">
-              <p>
-                Démonstration photoélectrique 2D conservée à titre historique. Elle ne modélise ni
-                cette orbitale ni la photoionisation d’un atome d’hydrogène isolé.
-              </p>
-              <button id="btn2d" class="secondary-button" type="button">
-                Ouvrir la démonstration 2D
-              </button>
-            </div>
-          </details>
-        </form>
-      </aside>
+          <section class="insight-card chart-card">
+            <div class="card-heading"><div><p class="eyebrow">Distribution angulaire</p><h2>Coupe de |Y(Ω)|²</h2></div><span id="angularPlaneLabel" class="plane-label">—</span></div>
+            <svg id="angularChart" class="chart angular-chart" viewBox="0 0 320 220" role="img" aria-label="Coupe angulaire de la densité orbitale"></svg>
+            <div class="chart-footnote" id="angularChartLabel">Coupe géométrique — ce n'est pas une probabilité intégrée.</div>
+          </section>
 
-      <main id="viewport" class="viewport" aria-label="Visualisation orbitale tridimensionnelle">
-        <canvas
-          id="atomSimCanvas"
-          width="960"
-          height="720"
-          aria-label="Nuage et isosurfaces de l’état stationnaire sélectionné"
-        >
-          Votre navigateur ne prend pas en charge le canevas de visualisation 3D.
-        </canvas>
+          <section class="insight-card nodes-card">
+            <div class="card-heading"><div><p class="eyebrow">Structure nodale</p><h2>Nœuds de ψ</h2></div><span class="node-symbol" aria-hidden="true">∅</span></div>
+            <div class="node-metrics"><div><strong id="radialNodesValue">0</strong><span>radiaux</span></div><div><strong id="angularNodesValue">2</strong><span>angulaires</span></div><div><strong id="totalNodesValue">2</strong><span>total</span></div></div>
+          </section>
+        </aside>
+      </div>
 
-        <div class="viewport-toolbar" aria-label="Commandes de caméra">
-          <button id="resetCamera" class="glass-button" type="button">
-            <span class="reset-icon" aria-hidden="true">⌖</span>
-            Recentrer
-          </button>
-        </div>
-
-        <div id="visualLegend" class="visual-legend" aria-label="Légende scientifique">
-          <p>
-            <span class="legend-swatch legend-swatch--cyan" aria-hidden="true"></span>
-            <span class="legend-swatch legend-swatch--coral" aria-hidden="true"></span>
-            Cyan et corail codent la phase ou le signe de ψ.
-          </p>
-          <p>
-            Les points sont des échantillons de |ψ|² dV — ni des électrons individuels, ni des
-            trajectoires.
-          </p>
-          <p class="legend-muted">Le noyau central est schématique et n’est pas à l’échelle.</p>
-        </div>
-
-        <div class="generation-feedback">
-          <div id="generationStatus" role="status" aria-live="polite">Prêt à générer</div>
-          <progress
-            id="generationProgress"
-            max="1"
-            value="0"
-            aria-label="Progression de la génération"
-          ></progress>
-        </div>
-
-        <section id="panel2d" class="legacy-panel" aria-labelledby="panel2dTitle" hidden>
-          <header>
-            <div>
-              <span class="legacy-badge">Historique</span>
-              <h2 id="panel2dTitle">Démonstration photoélectrique 2D</h2>
-            </div>
-            <button
-              class="legacy-close"
-              type="button"
-              aria-label="Fermer la démonstration historique"
-              data-close-panel2d
-            >
-              ×
-            </button>
-          </header>
-          <p>Modèle distinct de la visualisation atomique principale.</p>
-          <canvas
-            id="c2d"
-            width="360"
-            height="220"
-            aria-label="Démonstration photoélectrique historique en deux dimensions"
-          ></canvas>
-        </section>
-      </main>
-
-      <aside class="analysis-panel" aria-label="Analyses de l’état sélectionné">
-        <article class="chart-card">
-          <header class="chart-header">
-            <div>
-              <p class="eyebrow">Profil</p>
-              <h2 id="radialChartLabel">Distribution radiale</h2>
-            </div>
-            <span class="chart-unit">r · a₀</span>
-          </header>
-          <div class="chart-frame">
-            <svg
-              id="radialChart"
-              viewBox="0 0 360 230"
-              role="img"
-              aria-labelledby="radialChartLabel"
-              preserveAspectRatio="xMidYMid meet"
-            ></svg>
-          </div>
-          <p class="chart-caption">Probabilité radiale en fonction du rayon exprimé en a₀.</p>
-        </article>
-
-        <article class="chart-card">
-          <header class="chart-header">
-            <div>
-              <p class="eyebrow">Orientation</p>
-              <h2 id="angularChartLabel">Distribution angulaire</h2>
-            </div>
-            <span class="chart-unit">θ · φ</span>
-          </header>
-          <div class="chart-frame chart-frame--polar">
-            <svg
-              id="angularChart"
-              viewBox="0 0 360 300"
-              role="img"
-              aria-labelledby="angularChartLabel"
-              preserveAspectRatio="xMidYMid meet"
-            ></svg>
-          </div>
-          <p class="chart-caption">Coupe angulaire normalisée de l’état sélectionné.</p>
-        </article>
-      </aside>
-
-      <footer class="hud" aria-label="Télémétrie de la visualisation">
-        <dl class="hud-stats">
-          <div class="hud-item">
-            <dt>FPS</dt>
-            <dd id="iFps">—</dd>
-          </div>
-          <div class="hud-item">
-            <dt>Échantillons</dt>
-            <dd id="iPts">15 000</dd>
-          </div>
-          <div class="hud-item hud-item--wide">
-            <dt>État</dt>
-            <dd id="iOrb">3d_xy · réelle</dd>
-          </div>
-          <div class="hud-item">
-            <dt>Distance caméra</dt>
-            <dd id="iDist">— a₀</dd>
-          </div>
-          <div class="hud-item">
-            <dt>Graine</dt>
-            <dd id="iSeed">20260830</dd>
-          </div>
-        </dl>
+      <footer id="hud" class="hud" aria-label="Statistiques de simulation">
+        <div class="hud-item"><span class="hud-label">FPS</span><strong id="iFps">—</strong></div>
+        <div class="hud-item"><span class="hud-label">PARTICULES</span><strong id="iPts">15 000</strong></div>
+        <div class="hud-item"><span class="hud-label">ÉTAT</span><strong id="iOrb">3d_xy</strong></div>
+        <div class="hud-item"><span class="hud-label">DIST. CAMÉRA</span><strong id="iDist">— <small>a₀</small></strong></div>
+        <div class="hud-item"><span class="hud-label">SEED</span><strong id="iSeed">ATOM</strong></div>
+        <div class="hud-spacer"></div>
+        <span class="hud-note">stationnaire · nuage probabiliste</span>
       </footer>
     </div>
-
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

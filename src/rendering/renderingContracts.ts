@@ -29,6 +29,7 @@ export interface SceneDiagnostics {
 }
 
 export interface SceneRenderer {
+  dispose(): void;
   fitCameraToOrbital(): void;
   getCameraDistance(): number;
   getDiagnostics(): SceneDiagnostics;

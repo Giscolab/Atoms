@@ -1,8 +1,9 @@
 # Contrat scientifique d'Atoms
 
-Ce document décrit le noyau scientifique pur construit pendant les Lots 2, 2.1 et la Phase 3. Le
-moteur historique reste temporairement responsable de l'application visible et n'est pas une source
-de vérité scientifique.
+Ce document décrit le noyau scientifique pur construit pendant les Lots 2, 2.1 et les Phases 3 à 7.
+Le pipeline 3D visible consomme maintenant ce noyau via le sampler, le Web Worker et le renderer
+scientifique. Le module photon–hydrogène 2D reste une démonstration historique séparée, explicitement
+maintenue en Phase 8, et ne constitue pas la source du modèle orbital 3D.
 
 ## Domaine du modèle
 
@@ -352,9 +353,45 @@ normalisations réutilisent la factorielle IEEE-754 du socle : une fonction radi
 `n+l <= 170`, et une harmonique exige `l+|m| <= 170`. Au-delà, l'API échoue explicitement plutôt que
 de retourner une valeur sous-évaluée ou non finie.
 
-## Frontière de la Phase 3
+## Pipeline 3D intégré (Phases 4 à 7)
 
-La Phase 3 ne contient aucun générateur aléatoire, sampler, CDF, Worker, rendu ou dynamique
-temporelle. Aucun module visible n'importe encore ce nouveau noyau. L'application continue
-d'utiliser exclusivement `legacyScience.ts` jusqu'à une migration explicitement autorisée par les
-phases ultérieures ; son comportement et son apparence restent donc inchangés.
+La génération visible suit un pipeline unique et versionné :
+
+```text
+état complexe ou orbitale réelle
+        ↓
+ψ, |ψ|² et phase du noyau Phase 3
+        ↓
+CDF radiale r²|Rₙₗ|² + sampling angulaire avec sin(θ) dθ dφ
+        ↓
+Web Worker (seed, jobId, versions, buffers transférables)
+        ↓
+nuage probabiliste, champ cartésien et courbes analytiques
+        ↓
+renderer Three.js / UI DOM
+```
+
+Le nuage affiché contient des positions tirées selon la mesure volumique
+`|ψ|² dV` ; ses points ne sont ni des électrons individuels ni des trajectoires. La seed
+`uint32` est déterministe à version identique du moteur. Les anciennes animations de points ont été
+retirées du rendu 3D ; seule la rotation de caméra est proposée comme outil d'observation.
+
+Le Worker utilise `radialCoverageProbability = 0,999` uniquement pour choisir l'étendue finie du
+cube de visualisation à partir de la CDF radiale. Cette convention de cadrage ne tronque ni ne
+renormalise la fonction d'onde analytique. Le champ cartésien est une grille numérique de résolution
+`32³` par défaut, indexée `x + N(y + Nz)`, et ses densités sont normalisées par le maximum de la
+grille pour l'affichage ; les maxima bruts en `a₀⁻³` et `a₀⁻³ᐟ²` restent fournis dans le contrat.
+
+Les courbes latérales séparent les grandeurs : la distribution radiale trace `r²|Rₙₗ|²` en
+`a₀⁻¹`, tandis que la coupe angulaire trace `|Yₗᵐ|²` sur le meilleur des grands cercles `xy`, `xz`
+ou `yz`. Cette dernière est une coupe géométrique, pas une probabilité angulaire intégrée.
+
+Le renderer propose trois modes d'affichage : densité, phase et hybride. La densité détermine la
+géométrie d'une isosurface positive ; la phase est colorée par une palette divergente cyan/corail
+avec la convention `arg(ψ) ∈ [-π, π]`. Les surfaces `ψ = 0` ne sont activées que lorsque le champ
+réel est interprétable (`m = 0` complexe ou orbitale réelle) et restent distinctes de l'isosurface
+de densité. Le noyau est schématique et explicitement indiqué comme non à l'échelle.
+
+`legacyScience.ts` est désormais limité à la constante du panneau photon–hydrogène 2D historique.
+Il n'est pas utilisé pour la génération orbitale 3D. Toute évolution de ce module 2D doit rester dans
+la Phase 8 et documenter séparément ses hypothèses physiques.

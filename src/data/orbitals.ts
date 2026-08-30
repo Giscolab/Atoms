@@ -1,12 +1,3 @@
-import type { NamedSamplerKey } from '../science/legacyScience';
-
-export const SAMPLER_MAP: Partial<Record<string, NamedSamplerKey>> = {
-  '2_1_0': '2p_z',
-  '2_1_1': '2p_x',
-  '2_1_-1': '2p_y',
-  '3_1_0': '3p_z',
-};
-
 const ORBITAL_LETTERS: string[] = ['s', 'p', 'd', 'f', 'g', 'h', 'i'];
 
 const ORBITAL_FAMILY: Record<string, string> = {

@@ -1,4 +1,4 @@
-import type { Color3 } from './orbitalColors';
+type Color3 = [number, number, number];
 
 export interface Vector2 {
   x: number;

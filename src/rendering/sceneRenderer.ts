@@ -388,10 +388,10 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     const material = new THREE.MeshBasicMaterial({
       color: themeColors(appearance.theme).node,
       depthWrite: false,
-      opacity: appearance.theme === 'dark' ? 0.3 : 0.4,
+      // Les surfaces nodales sont un guide discret, jamais une seconde opaque.
+      opacity: appearance.theme === 'dark' ? 0.11 : 0.18,
       side: THREE.DoubleSide,
       transparent: true,
-      wireframe: true,
     });
     const surface = new MarchingCubes(
       field.resolution,
@@ -436,6 +436,16 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
   updateCamera();
 
   return {
+    dispose(): void {
+      removeCloud();
+      removeDensitySurface();
+      removeNodeSurface();
+      removeGuides();
+      dotTexture.dispose();
+      nucleusGeometry.dispose();
+      nucleusMaterial.dispose();
+      renderer.dispose();
+    },
     fitCameraToOrbital,
     getCameraDistance(): number {
       return orbit.distanceBohr;

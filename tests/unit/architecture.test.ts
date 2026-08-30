@@ -97,19 +97,29 @@ describe('frontières architecturales', () => {
     }
   });
 
-  it('laisse le nouveau socle scientifique déconnecté du runtime visible', () => {
-    const scienceImportPattern =
-      /(?:from\s+|import\s*\()\s*['"](?<specifier>[^'"]*\/science\/[^'"]+)['"]/gu;
-    const runtimeFiles = collectTypeScriptFiles(sourceRoot).filter(
-      (path) =>
-        !sourceName(path).startsWith('science/') && !sourceName(path).startsWith('sampling/'),
-    );
-
+  it('branche le nouveau noyau dans les frontières applicatives prévues', () => {
+    const runtimeFiles = collectTypeScriptFiles(sourceRoot).filter((path) => {
+      const name = sourceName(path);
+      return !name.startsWith('science/') && !name.startsWith('sampling/');
+    });
+    const legacyBoundaryFiles = new Set([
+      'main.ts',
+      'rendering/photoelectric2d.ts',
+      'rendering/legacyPhotoelectricModel.ts',
+    ]);
     for (const path of runtimeFiles) {
-      for (const match of readSource(path).matchAll(scienceImportPattern)) {
-        expect(match.groups?.specifier, sourceName(path)).toMatch(/\/science\/legacyScience$/u);
+      const name = sourceName(path);
+      const source = readSource(path);
+      if (!legacyBoundaryFiles.has(name)) {
+        expect(source, `${name} ne doit pas importer la couche legacy`).not.toMatch(
+          /(?:from\s+|import\s*\()\s*['"][^'"]*\/science\/legacyScience['"]/u,
+        );
       }
     }
+    expect(readSource(join(sourceRoot, 'app', 'orbitalPresentation.ts'))).toMatch(
+      /\/science\/hydrogen\//u,
+    );
+    expect(readSource(join(sourceRoot, 'app', 'orbitalWorkerClient.ts'))).toMatch(/\/sampling\//u);
   });
 
   it('confine le Worker à l’orchestration du sampler et garde Three.js hors de sa couche', () => {
