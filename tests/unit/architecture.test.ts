@@ -73,25 +73,58 @@ describe('frontières architecturales', () => {
     }
   });
 
-  it('laisse main comme point de composition et ne crée aucun Worker prématuré', () => {
+  it('laisse main comme point de composition et isole le sampler scientifique', () => {
     const mainSource = readSource(join(sourceRoot, 'main.ts'));
     expect(mainSource).not.toMatch(
       /\bTHREE\b|from\s+['"]three|Math\.random|setTimeout|requestAnimationFrame|-13\.6|52\.9|5\.29/u,
     );
-    expect(existsSync(join(sourceRoot, 'sampling'))).toBe(false);
-    expect(existsSync(join(sourceRoot, 'workers'))).toBe(false);
+
+    const samplingDirectory = join(sourceRoot, 'sampling');
+    expect(existsSync(samplingDirectory)).toBe(true);
+    const forbiddenSamplingPatterns = [
+      /(?:from\s+|import\s*\()\s*['"]three(?:\/[^'"]*)?['"]/u,
+      /\b(?:document|window|HTMLElement|HTMLCanvasElement|CanvasRenderingContext2D|OffscreenCanvas|FileReader|WebGLRenderer|Worker|SharedWorker)\b/u,
+      /(?:from\s+|import\s*\()\s*['"]node:/u,
+      /(?:from\s+|import\s*\()\s*['"](?:\.\.\/)+(?:app|data|rendering|state|ui|workers)(?:\/|['"])/u,
+      /\bMath\.random\b/u,
+      /\b(?:SAMPLER_MAP|NAMED_SAMPLERS|legacyScience)\b/u,
+    ];
+    for (const path of collectTypeScriptFiles(samplingDirectory)) {
+      const source = readSource(path);
+      for (const pattern of forbiddenSamplingPatterns) {
+        expect(source, `${sourceName(path)} contient ${String(pattern)}`).not.toMatch(pattern);
+      }
+    }
   });
 
   it('laisse le nouveau socle scientifique déconnecté du runtime visible', () => {
     const scienceImportPattern =
       /(?:from\s+|import\s*\()\s*['"](?<specifier>[^'"]*\/science\/[^'"]+)['"]/gu;
     const runtimeFiles = collectTypeScriptFiles(sourceRoot).filter(
-      (path) => !sourceName(path).startsWith('science/'),
+      (path) =>
+        !sourceName(path).startsWith('science/') && !sourceName(path).startsWith('sampling/'),
     );
 
     for (const path of runtimeFiles) {
       for (const match of readSource(path).matchAll(scienceImportPattern)) {
         expect(match.groups?.specifier, sourceName(path)).toMatch(/\/science\/legacyScience$/u);
+      }
+    }
+  });
+
+  it('confine le Worker à l’orchestration du sampler et garde Three.js hors de sa couche', () => {
+    const workersDirectory = join(sourceRoot, 'workers');
+    expect(existsSync(workersDirectory)).toBe(true);
+    const forbiddenPatterns = [
+      /(?:from\s+|import\s*\()\s*['"]three(?:\/[^'"]*)?['"]/u,
+      /(?:from\s+|import\s*\()\s*['"](?:\.\.\/)+(?:data|rendering|state|ui)(?:\/|['"])/u,
+      /\b(?:document|window|HTMLElement|HTMLCanvasElement|WebGLRenderer|Math\.random)\b/u,
+      /\b(?:SAMPLER_MAP|NAMED_SAMPLERS|legacyScience)\b/u,
+    ];
+    for (const path of collectTypeScriptFiles(workersDirectory)) {
+      const source = readSource(path);
+      for (const pattern of forbiddenPatterns) {
+        expect(source, `${sourceName(path)} contient ${String(pattern)}`).not.toMatch(pattern);
       }
     }
   });
