@@ -45,25 +45,25 @@ export function bindViewportControls(
     pointerId = null;
   });
 
-if ('scrollRestoration' in history) {
-  history.scrollRestoration = 'manual';
-}
-
-const compactLayout = window.matchMedia('(max-width: 900px)');
-
-const resetDesktopDocumentScroll = (): void => {
-  if (!compactLayout.matches) {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'auto',
-    });
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
   }
-};
 
-resetDesktopDocumentScroll();
+  const compactLayout = window.matchMedia('(max-width: 900px)');
 
-compactLayout.addEventListener('change', resetDesktopDocumentScroll);
+  const resetDesktopDocumentScroll = (): void => {
+    if (!compactLayout.matches) {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'auto',
+      });
+    }
+  };
+
+  resetDesktopDocumentScroll();
+
+  compactLayout.addEventListener('change', resetDesktopDocumentScroll);
 
   canvas.addEventListener(
     'wheel',

@@ -146,22 +146,17 @@ test('permet le défilement vertical depuis le canvas dans le layout compact', a
     element.scrollIntoView({ block: 'center' });
   });
 
-const box = await canvas.boundingBox();
+  const box = await canvas.boundingBox();
 
-if (box === null) {
-  throw new Error('Le canvas orbital doit avoir une boîte englobante.');
-}
+  if (box === null) {
+    throw new Error('Le canvas orbital doit avoir une boîte englobante.');
+  }
 
-const initialY = await page.evaluate(() => window.scrollY);
+  const initialY = await page.evaluate(() => window.scrollY);
 
-await page.mouse.move(
-  box.x + box.width / 2,
-  box.y + box.height / 2,
-);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
 
   await page.mouse.wheel(0, 600);
 
-  await expect
-    .poll(async () => page.evaluate(() => window.scrollY))
-    .toBeGreaterThan(initialY);
+  await expect.poll(async () => page.evaluate(() => window.scrollY)).toBeGreaterThan(initialY);
 });
