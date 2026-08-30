@@ -14,14 +14,15 @@ import { bindViewportControls } from './ui/viewportControls';
 
 /**
  * Gestion contextuelle du scroll.
- * - Mobile (≤ 900px) : scroll global autorisé, restauration automatique conservée.
- * - Desktop (> 900px) : scroll forcé à 0, y compris lors du passage mobile → desktop.
+ *
+ * - Mobile (≤ 900px) : le document conserve son défilement natif.
+ * - Desktop (> 900px) : le document lui-même ne doit jamais défiler ;
+ *   seuls les panneaux latéraux possèdent leurs scrolls internes.
  */
 const compactLayout = window.matchMedia('(max-width: 900px)');
 
-function resetDocumentScrollForDesktop(): void {
+function syncDocumentScrollBehavior(): void {
   if (compactLayout.matches) {
-    // En mode mobile, on restaure le comportement natif du navigateur.
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'auto';
     }
@@ -32,11 +33,37 @@ function resetDocumentScrollForDesktop(): void {
     history.scrollRestoration = 'manual';
   }
 
-  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  if (window.scrollX !== 0 || window.scrollY !== 0) {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'auto',
+    });
+  }
 }
 
-resetDocumentScrollForDesktop();
-compactLayout.addEventListener('change', resetDocumentScrollForDesktop);
+syncDocumentScrollBehavior();
+
+compactLayout.addEventListener('change', syncDocumentScrollBehavior);
+
+/*
+ * Certains changements de contrôles peuvent provoquer un scroll programmatique
+ * du document malgré overflow:hidden. Sur desktop, on rétablit immédiatement
+ * l'origine sans affecter les scrolls internes des panneaux.
+ */
+window.addEventListener(
+  'scroll',
+  () => {
+    if (!compactLayout.matches && (window.scrollX !== 0 || window.scrollY !== 0)) {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'auto',
+      });
+    }
+  },
+  { passive: true },
+);
 
 let state: AppState = createAppState();
 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -181,7 +208,9 @@ async function generateCurrentOrbital(): Promise<void> {
 
 const animationLoop = createAnimationLoop(renderer, {
   autoRotate: () => state.rendering.cameraRotationEnabled,
-  onFps: (fps) => ui.updateFps(fps),
+  onFps: (fps) => {
+    ui.updateFps(fps);
+  },
 });
 
 ui.bind({
