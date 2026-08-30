@@ -51,8 +51,9 @@ Ce projet vise à rendre la mécanique quantique plus accessible et pédagogique
 
 > **Note** : Ce projet est une réimplémentation web moderne inspirée du visualiseur original de **Kavan Anderson**. Il utilise des technologies web pour une accessibilité accrue.
 
-Dépôt public : [github.com/Giscolab/Atoms](https://github.com/Giscolab/Atoms). Aucune démonstration
-en ligne n’est annoncée tant qu’un déploiement public n’a pas été configuré et vérifié.
+Dépôt public : [github.com/Giscolab/Atoms](https://github.com/Giscolab/Atoms).
+
+**Démonstration en ligne : [giscolab.github.io/Atoms](https://giscolab.github.io/Atoms/)**
 
 ---
 
