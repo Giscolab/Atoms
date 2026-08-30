@@ -37,10 +37,8 @@ for scope, formulas, conventions, units, sources, and validation boundaries.
 - [Pile technologique](#pile-technologique)
 - [Installation](#installation)
 - [Utilisation](#utilisation)
-- [Structure du projet](#structure-du-projet)
 - [Captures d'écran](#captures-décran)
 - [Contribution](#contribution)
-- [Origine du projet](#origine-du-projet)
 - [Objectifs](#objectifs)
 
 ---
