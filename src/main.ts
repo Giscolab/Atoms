@@ -12,6 +12,32 @@ import { createAppUi } from './ui/appUi';
 import { requireElement } from './ui/dom';
 import { bindViewportControls } from './ui/viewportControls';
 
+/**
+ * Gestion contextuelle du scroll.
+ * - Mobile (≤ 900px) : scroll global autorisé, restauration automatique conservée.
+ * - Desktop (> 900px) : scroll forcé à 0, y compris lors du passage mobile → desktop.
+ */
+const compactLayout = window.matchMedia('(max-width: 900px)');
+
+function resetDocumentScrollForDesktop(): void {
+  if (compactLayout.matches) {
+    // En mode mobile, on restaure le comportement natif du navigateur.
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'auto';
+    }
+    return;
+  }
+
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+}
+
+resetDocumentScrollForDesktop();
+compactLayout.addEventListener('change', resetDocumentScrollForDesktop);
+
 let state: AppState = createAppState();
 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   state = normalizeAppState({
@@ -25,9 +51,12 @@ const viewport = requireElement('viewport', HTMLElement);
 const renderer = createSceneRenderer(canvas3d);
 const ui = createAppUi(state);
 const workerClient = createOrbitalWorkerClient();
+
+// État runtime impératif : le canvas 2D a-t-il été réellement créé ?
+let photoelectricInitialized = false;
+// Variables partagées (contexte unique)
 let lastNodesAvailable = state.orbital.basis === 'real' || state.orbital.m === 0;
 let generationSequence = 0;
-let photoelectricInitialized = false;
 
 function sameOrbitalState(left: AppState['orbital'], right: AppState['orbital']): boolean {
   if (left.basis !== right.basis || left.n !== right.n) return false;
@@ -46,18 +75,31 @@ function updateState(next: AppState): void {
   state = normalizeAppState(next);
   lastNodesAvailable = state.orbital.basis === 'real' || state.orbital.m === 0;
   renderer.setAppearance(state.rendering);
-  renderState();
-  ui.updateHud(state, renderer.getCameraDistance());
+  renderState(); // Inclut déjà ui.updateHud()
 }
 
 function initializeLegacy2DIfNeeded(): void {
   if (photoelectricInitialized) return;
-  photoelectricInitialized = true;
+
   createPhotoelectric2D(
     requireElement('c2d', HTMLCanvasElement),
     () => state.legacy.showLegacy2D,
     LEGACY_PHOTOELECTRIC_ENERGY,
   ).init();
+
+  photoelectricInitialized = true;
+
+  if (!state.legacy.legacy2DInitialized) {
+    updateState(
+      normalizeAppState({
+        ...state,
+        legacy: {
+          ...state.legacy,
+          legacy2DInitialized: true,
+        },
+      }),
+    );
+  }
 }
 
 function setLegacy2DVisible(visible: boolean): void {
@@ -67,17 +109,27 @@ function setLegacy2DVisible(visible: boolean): void {
       legacy: {
         ...state.legacy,
         showLegacy2D: visible,
-        legacy2DInitialized: visible || state.legacy.legacy2DInitialized,
       },
     }),
   );
-  if (visible) initializeLegacy2DIfNeeded();
+
+  if (visible) {
+    initializeLegacy2DIfNeeded();
+  }
+}
+
+function showGenerationError(message: string): void {
+  ui.setEngineStatus('Erreur de calcul', 'error');
+  ui.showGeneration(`Erreur : ${message}`);
+  const status = requireElement('generationStatus', HTMLElement);
+  status.dataset.visible = 'true';
 }
 
 async function generateCurrentOrbital(): Promise<void> {
   const requestState = state;
   const jobId = `orbital-${++generationSequence}`;
   ui.showGeneration('Échantillonnage de |ψ|²…');
+
   try {
     const payload = await workerClient.generate(
       {
@@ -98,13 +150,15 @@ async function generateCurrentOrbital(): Promise<void> {
       },
     );
 
-    // Une modification d'état non relancée ne doit jamais remplacer la vue courante.
+    // Résultat obsolète si l'état a changé pendant le calcul.
     if (
       !sameOrbitalState(state.orbital, requestState.orbital) ||
       state.sampling.sampleCount !== requestState.sampling.sampleCount ||
       state.sampling.seed !== requestState.sampling.seed
-    )
+    ) {
       return;
+    }
+
     renderer.setOrbital({
       field: payload.field,
       samples: {
@@ -112,6 +166,7 @@ async function generateCurrentOrbital(): Promise<void> {
         positionsBohr: payload.sampleSet.positionsBohr,
       },
     });
+
     lastNodesAvailable = payload.field.nodesAvailable;
     renderer.setAppearance(state.rendering);
     ui.renderState(state, buildOrbitalPresentation(state.orbital), lastNodesAvailable);
@@ -120,19 +175,13 @@ async function generateCurrentOrbital(): Promise<void> {
     ui.finishGeneration('État prêt');
   } catch (error) {
     if (error instanceof OrbitalWorkerCancellationError) return;
-    const message = error instanceof Error ? error.message : String(error);
-    ui.setEngineStatus('Erreur de calcul', 'error');
-    ui.showGeneration(`Erreur : ${message}`);
-    const status = requireElement('generationStatus', HTMLElement);
-    status.dataset.visible = 'true';
+    showGenerationError(error instanceof Error ? error.message : String(error));
   }
 }
 
 const animationLoop = createAnimationLoop(renderer, {
   autoRotate: () => state.rendering.cameraRotationEnabled,
-  onFps: (fps) => {
-    ui.updateFps(fps);
-  },
+  onFps: (fps) => ui.updateFps(fps),
 });
 
 ui.bind({
@@ -159,15 +208,16 @@ ui.bind({
 bindViewportControls(canvas3d, renderer, (distance) => {
   ui.updateHud(state, distance);
 });
-renderer.resize(viewport);
-window.addEventListener('resize', () => {
+
+function handleResize(): void {
   renderer.resize(viewport);
-});
-if ('ResizeObserver' in window) {
-  new ResizeObserver(() => {
-    renderer.resize(viewport);
-  }).observe(viewport);
 }
+renderer.resize(viewport);
+window.addEventListener('resize', handleResize);
+if ('ResizeObserver' in window) {
+  new ResizeObserver(handleResize).observe(viewport);
+}
+
 window.addEventListener('beforeunload', () => {
   animationLoop.stop();
   workerClient.dispose();
