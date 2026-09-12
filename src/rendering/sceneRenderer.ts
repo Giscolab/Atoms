@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { MarchingCubes } from 'three/examples/jsm/objects/MarchingCubes.js';
 import { DENSITY_COLOR_SRGB, phaseColorSrgb, type SrgbColor } from './phasePalette';
+import { ORBIT_CAMERA_ELEVATION_LIMIT_RADIANS } from './renderingContracts';
 import type {
+  OrbitCameraState,
   OrbitalAppearance,
   OrbitalRenderDataset,
   RenderTheme,
@@ -21,7 +23,6 @@ const DEFAULT_APPEARANCE: OrbitalAppearance = {
 };
 
 const CAMERA_FIELD_OF_VIEW_DEGREES = 48;
-const CAMERA_ELEVATION_LIMIT_RADIANS = Math.PI / 2 - 0.02;
 const CAMERA_FIT_MARGIN = 1.16;
 const MINIMUM_RENDER_DIMENSION_PIXELS = 1;
 const MAXIMUM_DEVICE_PIXEL_RATIO = 2;
@@ -29,7 +30,7 @@ const GRID_DIVISION_COUNT = 12;
 
 type OrbitalCloud = THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>;
 
-interface OrbitCameraState {
+interface MutableOrbitCameraState {
   azimuthRadians: number;
   distanceBohr: number;
   elevationRadians: number;
@@ -223,7 +224,7 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
   const camera = new THREE.PerspectiveCamera(CAMERA_FIELD_OF_VIEW_DEGREES, 1, 0.01, 1000);
   // Le repère scientifique conserve z comme axe polaire vertical.
   camera.up.set(0, 0, 1);
-  const orbit: OrbitCameraState = {
+  const orbit: MutableOrbitCameraState = {
     azimuthRadians: 0.65,
     distanceBohr: 20,
     elevationRadians: 0.42,
@@ -254,8 +255,8 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
   function updateCamera(): void {
     orbit.elevationRadians = THREE.MathUtils.clamp(
       orbit.elevationRadians,
-      -CAMERA_ELEVATION_LIMIT_RADIANS,
-      CAMERA_ELEVATION_LIMIT_RADIANS,
+      -ORBIT_CAMERA_ELEVATION_LIMIT_RADIANS,
+      ORBIT_CAMERA_ELEVATION_LIMIT_RADIANS,
     );
     const equatorialDistance = orbit.distanceBohr * Math.cos(orbit.elevationRadians);
     camera.position.set(
@@ -436,6 +437,15 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
   updateCamera();
 
   return {
+    capturePng(): Promise<Blob> {
+      renderer.render(scene, camera);
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('La capture PNG du renderer a échoué.'));
+        }, 'image/png');
+      });
+    },
     dispose(): void {
       removeCloud();
       removeDensitySurface();
@@ -449,6 +459,9 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     fitCameraToOrbital,
     getCameraDistance(): number {
       return orbit.distanceBohr;
+    },
+    getCameraState(): OrbitCameraState {
+      return { ...orbit };
     },
     getDiagnostics(): SceneDiagnostics {
       const materials = new Set<THREE.Material>();
@@ -536,6 +549,21 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
       if (previousAppearance.showAxes !== appearance.showAxes && guides) {
         guides.visible = appearance.showAxes;
       }
+    },
+    setCameraState(nextCamera): void {
+      if (
+        !Number.isFinite(nextCamera.azimuthRadians) ||
+        !Number.isFinite(nextCamera.elevationRadians) ||
+        Math.abs(nextCamera.elevationRadians) > ORBIT_CAMERA_ELEVATION_LIMIT_RADIANS ||
+        !Number.isFinite(nextCamera.distanceBohr) ||
+        nextCamera.distanceBohr <= 0
+      ) {
+        throw new RangeError('État caméra invalide.');
+      }
+      orbit.azimuthRadians = nextCamera.azimuthRadians;
+      orbit.distanceBohr = nextCamera.distanceBohr;
+      orbit.elevationRadians = nextCamera.elevationRadians;
+      updateCamera();
     },
     setOrbital(nextDataset): void {
       validateDataset(nextDataset);

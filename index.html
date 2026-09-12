@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="fr" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
@@ -134,6 +134,22 @@
                 </label>
                 <button id="randomizeSeed" class="secondary-button seed-button" type="button">Nouvelle seed</button>
               </div>
+              <p class="helper-text">Identifiant du tirage pseudo-aléatoire. Même état, même seed et mêmes versions numériques reproduisent le même nuage.</p>
+            </section>
+
+            <section class="panel-section data-section">
+              <div class="section-heading compact">
+                <div><p class="eyebrow">Données scientifiques</p><h2 class="section-title">Reproduire &amp; partager</h2></div>
+                <span class="unit-badge">JSON v1</span>
+              </div>
+              <p class="helper-text data-description">Le snapshot conserve l’état orbital, le rendu, la caméra, les unités et la provenance numérique du calcul.</p>
+              <div class="data-actions" role="group" aria-label="Import, export et capture scientifique">
+                <button id="importSnapshotButton" class="secondary-button" type="button">Importer JSON</button>
+                <button id="exportSnapshotButton" class="secondary-button" type="button">Exporter JSON</button>
+                <button id="capturePngButton" class="secondary-button" type="button">Capture PNG</button>
+              </div>
+              <input id="snapshotImportInput" type="file" accept=".json,application/json" hidden />
+              <p id="transferStatus" class="transfer-status" role="status" aria-live="polite">Prêt pour l’import ou l’export.</p>
             </section>
 
             <section class="panel-section">

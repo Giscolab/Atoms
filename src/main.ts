@@ -5,9 +5,15 @@ import {
   OrbitalWorkerCancellationError,
 } from './app/orbitalWorkerClient';
 import { createSceneRenderer } from './rendering/sceneRenderer';
+import {
+  createScientificSnapshot,
+  parseScientificSnapshotJson,
+  serializeScientificSnapshot,
+} from './state/scientificSnapshot';
 import { createAppState, normalizeAppState, type AppState } from './state/appState';
 import { createAppUi } from './ui/appUi';
 import { requireElement } from './ui/dom';
+import { downloadBlob, downloadText, safeFileStem } from './ui/fileDownloads';
 import { bindViewportControls } from './ui/viewportControls';
 
 /**
@@ -114,7 +120,7 @@ function showGenerationError(message: string): void {
   status.dataset.visible = 'true';
 }
 
-async function generateCurrentOrbital(): Promise<void> {
+async function generateCurrentOrbital(): Promise<boolean> {
   const requestState = state;
   const jobId = `orbital-${++generationSequence}`;
   ui.showGeneration('Échantillonnage de |ψ|²…');
@@ -145,7 +151,7 @@ async function generateCurrentOrbital(): Promise<void> {
       state.sampling.sampleCount !== requestState.sampling.sampleCount ||
       state.sampling.seed !== requestState.sampling.seed
     ) {
-      return;
+      return false;
     }
 
     renderer.setOrbital({
@@ -162,9 +168,11 @@ async function generateCurrentOrbital(): Promise<void> {
     ui.renderCharts(payload.charts);
     ui.updateHud(state, renderer.getCameraDistance());
     ui.finishGeneration('État prêt');
+    return true;
   } catch (error) {
-    if (error instanceof OrbitalWorkerCancellationError) return;
+    if (error instanceof OrbitalWorkerCancellationError) return false;
     showGenerationError(error instanceof Error ? error.message : String(error));
+    return false;
   }
 }
 
@@ -175,9 +183,30 @@ const animationLoop = createAnimationLoop(renderer, {
   },
 });
 
+function exportFileStem(): string {
+  const notation = buildOrbitalPresentation(state.orbital).notation;
+  return `atoms-${safeFileStem(notation)}-seed-${state.sampling.seed >>> 0}`;
+}
 ui.bind({
+  capturePng: async () => {
+    const blob = await renderer.capturePng();
+    downloadBlob(blob, `${exportFileStem()}.png`);
+  },
+  exportSnapshot: () => {
+    const snapshot = createScientificSnapshot(state, renderer.getCameraState());
+    downloadText(serializeScientificSnapshot(snapshot), `${exportFileStem()}.atoms.json`);
+  },
   generate: () => {
     void generateCurrentOrbital();
+  },
+  importSnapshot: async (text) => {
+    const snapshot = parseScientificSnapshotJson(text);
+    updateState(snapshot.state);
+    if (!(await generateCurrentOrbital())) {
+      throw new Error('La régénération du snapshot importé a échoué.');
+    }
+    renderer.setCameraState(snapshot.view.camera);
+    renderState();
   },
   resetCamera: () => {
     renderer.fitCameraToOrbital();

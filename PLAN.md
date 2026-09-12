@@ -9,16 +9,7 @@ Ce document contient uniquement le travail encore ouvert. Toute tâche implémen
 
 - [ ] soumettre Atoms au Showcase OpenAI.
 
-## 2. Import / export scientifique — évolution non bloquante
-
-- [ ] définir un schéma JSON versionné avec unités, base, état quantique, paramètres de rendu et seed explicites ;
-- [ ] valider strictement les imports et refuser les unités ou états ambigus ;
-- [ ] raccorder l’import à l’interface uniquement lorsque le schéma est stabilisé ;
-- [ ] permettre l’export d’un état JSON reproductible incluant les paramètres et la seed ;
-- [ ] permettre une capture PNG depuis l’application ;
-- [ ] ajouter un export scientifique CSV/JSON seulement s’il apporte une utilité réelle.
-
-## 3. Évolutions facultatives
+## 2. Évolutions facultatives
 
 Ces pistes ne bloquent pas le Showcase et peuvent être traitées après `v5.0.0`.
 

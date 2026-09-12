@@ -5,6 +5,8 @@ export type RenderTheme = 'dark' | 'light';
 export type OrbitalObservable = 'density' | 'phase';
 export type OrbitalDisplayMode = 'cloud' | 'hybrid' | 'isosurface';
 
+export const ORBIT_CAMERA_ELEVATION_LIMIT_RADIANS = Math.PI / 2 - 0.02;
+
 export interface OrbitalRenderDataset {
   readonly field: OrbitalFieldGrid;
   readonly samples: Pick<OrbitalSampleSet, 'phaseRadians' | 'positionsBohr'>;
@@ -22,6 +24,12 @@ export interface OrbitalAppearance {
   readonly theme: RenderTheme;
 }
 
+export interface OrbitCameraState {
+  readonly azimuthRadians: number;
+  readonly distanceBohr: number;
+  readonly elevationRadians: number;
+}
+
 export interface SceneDiagnostics {
   readonly geometries: number;
   readonly materials: number;
@@ -31,9 +39,11 @@ export interface SceneDiagnostics {
 }
 
 export interface SceneRenderer {
+  capturePng(): Promise<Blob>;
   dispose(): void;
   fitCameraToOrbital(): void;
   getCameraDistance(): number;
+  getCameraState(): OrbitCameraState;
   getDiagnostics(): SceneDiagnostics;
   hasOrbital(): boolean;
   renderFrame(): void;
@@ -41,6 +51,7 @@ export interface SceneRenderer {
   rotateCamera(azimuthDelta: number, elevationDelta: number): void;
   rotateCameraAutomatically(deltaRadians: number): void;
   setAppearance(appearance: OrbitalAppearance): void;
+  setCameraState(camera: OrbitCameraState): void;
   setOrbital(dataset: OrbitalRenderDataset): void;
   zoomCamera(distanceDelta: number): void;
 }

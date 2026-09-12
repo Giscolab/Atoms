@@ -9,9 +9,13 @@ import { randomUint32 } from './randomSeed';
 
 const THEME_STORAGE_KEY = 'atoms-theme';
 const UI_MAX_N = 9;
+const MAX_SNAPSHOT_FILE_BYTES = 512 * 1024;
 
 export interface UiCallbacks {
+  capturePng(): Promise<void>;
+  exportSnapshot(): void;
   generate(): void;
+  importSnapshot(text: string, sourceName: string): Promise<void>;
   resetCamera(): void;
   setOrbital(orbital: OrbitalSamplingState): void;
   setSampling(sampling: AppState['sampling']): void;
@@ -92,11 +96,18 @@ export function createAppUi(initialState: AppState): AppUi {
   const pointSize = requireElement('pointSize', HTMLInputElement);
   const nodesToggle = requireElement('nodesToggle', HTMLInputElement);
   const generationStatus = requireElement('generationStatus', HTMLElement);
+  const snapshotImportInput = requireElement('snapshotImportInput', HTMLInputElement);
+  const transferStatus = requireElement('transferStatus', HTMLElement);
   const progressTrack = generationStatus.parentElement?.querySelector('.progress-track');
 
   function requireCallbacks(): UiCallbacks {
     if (!callbacks) throw new Error('L’interface Atoms doit être liée avant utilisation.');
     return callbacks;
+  }
+
+  function setTransferStatus(message: string, state: 'idle' | 'success' | 'error' = 'idle'): void {
+    transferStatus.textContent = message;
+    transferStatus.dataset.state = state;
   }
 
   function applyTheme(theme: 'dark' | 'light'): void {
@@ -268,6 +279,49 @@ export function createAppUi(initialState: AppState): AppUi {
     });
     requireElement('generateButton', HTMLButtonElement).addEventListener('click', () => {
       bound.generate();
+    });
+    requireElement('importSnapshotButton', HTMLButtonElement).addEventListener('click', () => {
+      snapshotImportInput.click();
+    });
+    snapshotImportInput.addEventListener('change', () => {
+      void (async () => {
+        const file = snapshotImportInput.files?.[0];
+        snapshotImportInput.value = '';
+        if (!file) return;
+        if (file.size > MAX_SNAPSHOT_FILE_BYTES) {
+          setTransferStatus('Import refusé : le snapshot dépasse 512 Kio.', 'error');
+          return;
+        }
+        setTransferStatus(`Validation de ${file.name}…`);
+        try {
+          await bound.importSnapshot(await file.text(), file.name);
+          setTransferStatus(`Snapshot importé : ${file.name}`, 'success');
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          setTransferStatus(`Import refusé : ${message}`, 'error');
+        }
+      })();
+    });
+    requireElement('exportSnapshotButton', HTMLButtonElement).addEventListener('click', () => {
+      try {
+        bound.exportSnapshot();
+        setTransferStatus('Snapshot JSON exporté.', 'success');
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        setTransferStatus(`Export impossible : ${message}`, 'error');
+      }
+    });
+    requireElement('capturePngButton', HTMLButtonElement).addEventListener('click', () => {
+      void (async () => {
+        setTransferStatus('Capture PNG en cours…');
+        try {
+          await bound.capturePng();
+          setTransferStatus('Capture PNG exportée.', 'success');
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          setTransferStatus(`Capture impossible : ${message}`, 'error');
+        }
+      })();
     });
     requireElement('resetCamera', HTMLButtonElement).addEventListener('click', () => {
       bound.resetCamera();

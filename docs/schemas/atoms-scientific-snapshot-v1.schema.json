@@ -1,0 +1,445 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Giscolab/Atoms/main/docs/schemas/atoms-scientific-snapshot-v1.schema.json",
+  "title": "Atoms scientific snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "provenance", "schemaVersion", "state", "units", "view"],
+  "properties": {
+    "format": {
+      "const": "atoms-scientific-snapshot"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["angle", "isoDensity", "length", "pointSize"],
+      "properties": {
+        "angle": {
+          "const": "radian"
+        },
+        "isoDensity": {
+          "const": "fraction-of-grid-maximum"
+        },
+        "length": {
+          "const": "bohr"
+        },
+        "pointSize": {
+          "const": "css-pixel"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fieldVersion",
+        "prngVersion",
+        "samplerVersion",
+        "scienceEngineVersion",
+        "workerOptions",
+        "workerProtocolVersion"
+      ],
+      "properties": {
+        "fieldVersion": {
+          "const": "hydrogen-orbital-field-v1"
+        },
+        "prngVersion": {
+          "const": "xorshift32-marsaglia-seed-v1"
+        },
+        "samplerVersion": {
+          "const": "hydrogen-orbital-sampler-v1"
+        },
+        "scienceEngineVersion": {
+          "const": "hydrogen-wavefunctions-phase3-v1"
+        },
+        "workerProtocolVersion": {
+          "const": "orbital-worker-protocol-v2"
+        },
+        "workerOptions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "angularChartPointCount",
+            "fieldResolution",
+            "planeExplorationPointCount",
+            "radialChartPointCount",
+            "radialCoverageProbability"
+          ],
+          "properties": {
+            "angularChartPointCount": {
+              "const": 361
+            },
+            "fieldResolution": {
+              "const": 32
+            },
+            "planeExplorationPointCount": {
+              "const": 720
+            },
+            "radialChartPointCount": {
+              "const": 301
+            },
+            "radialCoverageProbability": {
+              "const": 0.999
+            }
+          }
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["orbital", "rendering", "sampling"],
+      "properties": {
+        "orbital": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["basis", "l", "m", "n"],
+              "properties": {
+                "basis": {
+                  "const": "complex"
+                },
+                "n": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9
+                },
+                "l": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 8
+                },
+                "m": {
+                  "type": "integer",
+                  "minimum": -8,
+                  "maximum": 8
+                }
+              },
+              "allOf": [
+                {
+                  "anyOf": [
+                    {
+                      "properties": {
+                        "l": {
+                          "const": 0
+                        },
+                        "m": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 0
+                        },
+                        "n": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9
+                        }
+                      },
+                      "required": ["l", "m", "n"]
+                    },
+                    {
+                      "properties": {
+                        "l": {
+                          "const": 1
+                        },
+                        "m": {
+                          "type": "integer",
+                          "minimum": -1,
+                          "maximum": 1
+                        },
+                        "n": {
+                          "type": "integer",
+                          "minimum": 2,
+                          "maximum": 9
+                        }
+                      },
+                      "required": ["l", "m", "n"]
+                    },
+                    {
+                      "properties": {
+                        "l": {
+                          "const": 2
+                        },
+                        "m": {
+                          "type": "integer",
+                          "minimum": -2,
+                          "maximum": 2
+                        },
+                        "n": {
+                          "type": "integer",
+                          "minimum": 3,
+                          "maximum": 9
+                        }
+                      },
+                      "required": ["l", "m", "n"]
+                    },
+                    {
+                      "properties": {
+                        "l": {
+                          "const": 3
+                        },
+                        "m": {
+                          "type": "integer",
+                          "minimum": -3,
+                          "maximum": 3
+                        },
+                        "n": {
+                          "type": "integer",
+                          "minimum": 4,
+                          "maximum": 9
+                        }
+                      },
+                      "required": ["l", "m", "n"]
+                    },
+                    {
+                      "properties": {
+                        "l": {
+                          "const": 4
+                        },
+                        "m": {
+                          "type": "integer",
+                          "minimum": -4,
+                          "maximum": 4
+                        },
+                        "n": {
+                          "type": "integer",
+                          "minimum": 5,
+                          "maximum": 9
+                        }
+                      },
+                      "required": ["l", "m", "n"]
+                    },
+                    {
+                      "properties": {
+                        "l": {
+                          "const": 5
+                        },
+                        "m": {
+                          "type": "integer",
+                          "minimum": -5,
+                          "maximum": 5
+                        },
+                        "n": {
+                          "type": "integer",
+                          "minimum": 6,
+                          "maximum": 9
+                        }
+                      },
+                      "required": ["l", "m", "n"]
+                    },
+                    {
+                      "properties": {
+                        "l": {
+                          "const": 6
+                        },
+                        "m": {
+                          "type": "integer",
+                          "minimum": -6,
+                          "maximum": 6
+                        },
+                        "n": {
+                          "type": "integer",
+                          "minimum": 7,
+                          "maximum": 9
+                        }
+                      },
+                      "required": ["l", "m", "n"]
+                    },
+                    {
+                      "properties": {
+                        "l": {
+                          "const": 7
+                        },
+                        "m": {
+                          "type": "integer",
+                          "minimum": -7,
+                          "maximum": 7
+                        },
+                        "n": {
+                          "type": "integer",
+                          "minimum": 8,
+                          "maximum": 9
+                        }
+                      },
+                      "required": ["l", "m", "n"]
+                    },
+                    {
+                      "properties": {
+                        "l": {
+                          "const": 8
+                        },
+                        "m": {
+                          "type": "integer",
+                          "minimum": -8,
+                          "maximum": 8
+                        },
+                        "n": {
+                          "type": "integer",
+                          "minimum": 9,
+                          "maximum": 9
+                        }
+                      },
+                      "required": ["l", "m", "n"]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["basis", "n", "orbital"],
+              "properties": {
+                "basis": {
+                  "const": "real"
+                },
+                "n": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 9
+                },
+                "orbital": {
+                  "enum": ["p_x", "p_y", "p_z", "d_xy", "d_xz", "d_yz", "d_x2_y2", "d_z2"]
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "orbital": {
+                        "enum": ["p_x", "p_y", "p_z"]
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "n": {
+                        "minimum": 2
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "orbital": {
+                        "enum": ["d_xy", "d_xz", "d_yz", "d_x2_y2", "d_z2"]
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "n": {
+                        "minimum": 3
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "sampling": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sampleCount", "seed"],
+          "properties": {
+            "sampleCount": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 60000,
+              "multipleOf": 1000
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          }
+        },
+        "rendering": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cameraRotationEnabled",
+            "displayMode",
+            "isoDensityFraction",
+            "observable",
+            "pointOpacity",
+            "pointSizePixels",
+            "showAxes",
+            "showNodes",
+            "theme"
+          ],
+          "properties": {
+            "cameraRotationEnabled": {
+              "type": "boolean"
+            },
+            "displayMode": {
+              "enum": ["cloud", "hybrid", "isosurface"]
+            },
+            "isoDensityFraction": {
+              "type": "number",
+              "minimum": 0.05,
+              "maximum": 0.8,
+              "multipleOf": 0.01
+            },
+            "observable": {
+              "enum": ["density", "phase"]
+            },
+            "pointOpacity": {
+              "type": "number",
+              "minimum": 0.2,
+              "maximum": 1,
+              "multipleOf": 0.05
+            },
+            "pointSizePixels": {
+              "type": "number",
+              "minimum": 0.6,
+              "maximum": 4,
+              "multipleOf": 0.1
+            },
+            "showAxes": {
+              "type": "boolean"
+            },
+            "showNodes": {
+              "type": "boolean"
+            },
+            "theme": {
+              "enum": ["dark", "light"]
+            }
+          }
+        }
+      }
+    },
+    "view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["camera"],
+      "properties": {
+        "camera": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["azimuthRadians", "distanceBohr", "elevationRadians"],
+          "properties": {
+            "azimuthRadians": {
+              "type": "number"
+            },
+            "distanceBohr": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "elevationRadians": {
+              "type": "number",
+              "minimum": -1.5507963267948965,
+              "maximum": 1.5507963267948965
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -74,6 +74,9 @@ Dépôt public : [github.com/Giscolab/Atoms](https://github.com/Giscolab/Atoms).
   modèle à masse réduite, rayon attendu et nombres de nœuds.
 - **Reproductibilité et thèmes** : seed `uint32` affichée, génération relançable, thèmes sombre et
   clair équivalents, responsive et respect de `prefers-reduced-motion`.
+- **Snapshots scientifiques** : import/export JSON v1 strict avec unités, provenance numérique,
+  état orbital, rendu, seed et caméra, plus capture PNG de la vue 3D courante. Voir le
+  [contrat des snapshots](docs/SCIENTIFIC_SNAPSHOTS.md).
 
 ---
 
@@ -169,7 +172,11 @@ Three.js et les outils de développement sont installés de façon reproductible
    et le nombre de points si nécessaire.
 4. Interagissez avec la vue 3D : glisser pour orienter la caméra, molette ou pinch pour zoomer,
    touche `0` ou bouton dédié pour réinitialiser la vue.
-5. Pour reproduire une génération, conservez la seed affichée et relancez « Générer l’état ».
+5. Pour reproduire une génération isolée, conservez la seed affichée et relancez « Générer l’état ».
+6. Pour archiver ou partager l'état complet, utilisez **Exporter JSON** ; **Importer JSON** valide
+   strictement le snapshot avant régénération et restauration de la caméra.
+7. Utilisez **Capture PNG** pour exporter la frame 3D courante. Le PNG est une illustration ; le
+   snapshot JSON reste la référence reproductible.
 
 ---
 

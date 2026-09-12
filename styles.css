@@ -984,6 +984,53 @@
     padding: 0 10px;
   }
 
+  .section-title {
+    margin-top: 4px;
+
+    color: var(--ink);
+
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 400;
+  }
+
+  .data-description {
+    margin-top: 0;
+  }
+
+  .data-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 7px;
+
+    margin-top: 12px;
+  }
+
+  .data-actions .secondary-button:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .transfer-status {
+    min-height: 1.45em;
+
+    margin-top: 9px;
+
+    color: var(--faint);
+
+    font-family: var(--mono);
+    font-size: 9px;
+    line-height: 1.45;
+  }
+
+  .transfer-status[data-state="success"] {
+    color: var(--green);
+  }
+
+  .transfer-status[data-state="error"] {
+    color: var(--coral);
+  }
+
   .primary-button,
   .secondary-button,
   .small-button,

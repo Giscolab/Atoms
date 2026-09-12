@@ -24,9 +24,10 @@ La qualification performance reste séparée car ses temps dépendent du matéri
 
 ## Validation scientifique
 
-La suite Vitest contient actuellement 293 tests dans 27 fichiers. Elle couvre notamment les nombres
+La suite Vitest contient actuellement 310 tests dans 28 fichiers. Elle couvre notamment les nombres
 quantiques, constantes CODATA, unités, énergie, fonctions spéciales, partie radiale, harmoniques
-sphériques complexes, orbitales réelles, fonction d'onde, observables, sampling et Worker.
+sphériques complexes, orbitales réelles, fonction d'onde, observables, sampling, Worker et le
+contrat des snapshots scientifiques versionnés.
 
 ### Tolérances numériques
 
@@ -54,6 +55,19 @@ La seed `uint32` rend les campagnes déterministes à version identique du moteu
 
 Les tests du sampler vérifient les distributions radiales et angulaires, les moments attendus, les
 valeurs finies, les domaines autorisés et la reproductibilité.
+
+### Snapshots scientifiques
+
+Le format `atoms-scientific-snapshot` v1 est couvert par 17 tests unitaires dédiés. Ils vérifient le
+round-trip déterministe, les unités, la provenance numérique, les paramètres internes du Worker,
+les champs inconnus, les bases orbitales, le domaine `n = 1…9`, les plages/pas représentables par
+l'interface, la caméra et les erreurs JSON.
+
+Le flux navigateur est qualifié sous Chromium, Firefox et WebKit : export JSON puis réimport réel,
+refus d'une version incompatible sans altération de l'état courant, et export d'un PNG dont la
+signature binaire est contrôlée. Le schéma public est documenté dans
+[`SCIENTIFIC_SNAPSHOTS.md`](SCIENTIFIC_SNAPSHOTS.md) et
+[`schemas/atoms-scientific-snapshot-v1.schema.json`](schemas/atoms-scientific-snapshot-v1.schema.json).
 
 ## Validation navigateur et accessibilité
 
