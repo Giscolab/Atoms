@@ -31,9 +31,14 @@ export interface OrbitCameraState {
 }
 
 export interface SceneDiagnostics {
+  readonly cloudPoints: number;
   readonly geometries: number;
   readonly materials: number;
   readonly programs: number;
+  /** Position-buffer fingerprint only: independent of phase, theme and material. */
+  readonly surfaceFingerprint: string;
+  readonly surfaceTriangles: number;
+  readonly surfaceVertices: number;
   readonly textures: number;
   readonly triangles: number;
 }

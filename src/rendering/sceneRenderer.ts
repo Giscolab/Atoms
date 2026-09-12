@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { MarchingCubes } from 'three/examples/jsm/objects/MarchingCubes.js';
+import { createIsosurfaceGeometry } from './isosurfaceGeometry';
+import { createIsosurfaceLighting, createIsosurfaceMaterial } from './isosurfaceMaterial';
 import { DENSITY_COLOR_SRGB, phaseColorSrgb, type SrgbColor } from './phasePalette';
 import { ORBIT_CAMERA_ELEVATION_LIMIT_RADIANS } from './renderingContracts';
 import type {
@@ -151,6 +153,7 @@ function createPointsMaterial(
     size: appearance.pointSizePixels,
     // Le contrôle est explicitement exprimé en pixels, indépendamment de la distance caméra.
     sizeAttenuation: false,
+    toneMapped: false,
     transparent: appearance.pointOpacity < 1,
     vertexColors: true,
   });
@@ -218,6 +221,8 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     powerPreference: 'high-performance',
   });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAXIMUM_DEVICE_PIXEL_RATIO));
 
   const scene = new THREE.Scene();
@@ -230,10 +235,8 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     elevationRadians: 0.42,
   };
 
-  const ambientLight = new THREE.HemisphereLight(0xe8f7ff, 0x18252b, 1.35);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.7);
-  directionalLight.position.set(4, -3, 6);
-  scene.add(ambientLight, directionalLight);
+  const lighting = createIsosurfaceLighting();
+  scene.add(lighting.rig);
 
   const nucleusGeometry = new THREE.SphereGeometry(1, 20, 14);
   const nucleusMaterial = new THREE.MeshStandardMaterial({ roughness: 0.25 });
@@ -245,7 +248,8 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
   let appearance: OrbitalAppearance = { ...DEFAULT_APPEARANCE };
   let dataset: OrbitalRenderDataset | null = null;
   let cloud: OrbitalCloud | null = null;
-  let densitySurface: MarchingCubes | null = null;
+  let densitySurface: THREE.Mesh<THREE.BufferGeometry, THREE.MeshPhysicalMaterial> | null = null;
+  let densityFingerprint = '';
   let nodeSurface: MarchingCubes | null = null;
   let guides: THREE.Group | null = null;
   let guideGeometries: THREE.BufferGeometry[] = [];
@@ -267,6 +271,7 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     camera.near = Math.max(0.001, currentOrbitalRadiusBohr / 1000);
     camera.far = Math.max(100, orbit.distanceBohr + currentOrbitalRadiusBohr * 6);
     camera.lookAt(0, 0, 0);
+    lighting.rig.quaternion.copy(camera.quaternion);
     camera.updateProjectionMatrix();
   }
 
@@ -274,8 +279,7 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     const colors = themeColors(appearance.theme);
     renderer.setClearColor(colors.background, 1);
     nucleusMaterial.color.set(colors.nucleus);
-    ambientLight.intensity = appearance.theme === 'dark' ? 1.35 : 1.65;
-    directionalLight.intensity = appearance.theme === 'dark' ? 1.7 : 1.35;
+    lighting.setTheme(appearance.theme);
   }
 
   function removeCloud(): void {
@@ -292,6 +296,7 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     densitySurface.geometry.dispose();
     disposeMaterials(densitySurface.material);
     densitySurface = null;
+    densityFingerprint = '';
   }
 
   function removeNodeSurface(): void {
@@ -327,7 +332,7 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     // GridHelper est construit dans xz ; le plan scientifique équatorial est xy.
     grid.rotation.x = Math.PI / 2;
     grid.material.transparent = true;
-    grid.material.opacity = appearance.theme === 'dark' ? 0.34 : 0.48;
+    grid.material.opacity = appearance.theme === 'dark' ? 0.22 : 0.34;
     const axes = new THREE.AxesHelper(dataset.field.extentBohr * 1.08);
     guideGeometries = [grid.geometry, axes.geometry];
     guideMaterials = [...materialList(grid.material), ...materialList(axes.material)];
@@ -355,32 +360,32 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     scene.add(cloud);
   }
 
-  function createDensitySurface(): MarchingCubes {
+  function createDensitySurface(): THREE.Mesh<THREE.BufferGeometry, THREE.MeshPhysicalMaterial> {
     if (!dataset) throw new Error('Aucun champ orbital à trianguler.');
-    const { field } = dataset;
-    const material = new THREE.MeshStandardMaterial({
-      depthWrite: false,
-      metalness: 0,
-      opacity: 0.48,
-      roughness: 0.58,
-      side: THREE.DoubleSide,
-      transparent: true,
-      vertexColors: true,
-    });
-    const surface = new MarchingCubes(
-      field.resolution,
-      material,
-      false,
-      true,
-      maximumMarchingCubeTriangleCount(field.resolution),
+    const geometry = createIsosurfaceGeometry(
+      dataset.field,
+      appearance.isoDensityFraction,
+      appearance.observable,
     );
-    surface.field.set(field.densityNormalized);
-    surface.palette.set(colorBufferForPhases(field.phaseRadians, appearance.observable));
-    surface.isolation = appearance.isoDensityFraction;
-    applyPhysicalGridTransform(surface, field.extentBohr);
-    surface.renderOrder = 1;
-    surface.update();
+    // Stable read-only diagnostics, computed once, never while drawing a frame.
+    const positions = geometry.getAttribute('position').array;
+    const bytes = new Uint8Array(positions.buffer, positions.byteOffset, positions.byteLength);
+    let hash = 2166136261;
+    for (const byte of bytes) hash = Math.imul(hash ^ byte, 16777619) >>> 0;
+    densityFingerprint = `${positions.length}:${hash.toString(16)}`;
+    const surface = new THREE.Mesh(
+      geometry,
+      createIsosurfaceMaterial(appearance.displayMode, appearance.theme),
+    );
+    surface.renderOrder = appearance.displayMode === 'hybrid' ? 1 : 0;
     return surface;
+  }
+
+  function updateDensityMaterial(): void {
+    if (!densitySurface) return;
+    densitySurface.material.dispose();
+    densitySurface.material = createIsosurfaceMaterial(appearance.displayMode, appearance.theme);
+    densitySurface.renderOrder = appearance.displayMode === 'hybrid' ? 1 : 0;
   }
 
   function createNodeSurface(): MarchingCubes {
@@ -390,7 +395,7 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
       color: themeColors(appearance.theme).node,
       depthWrite: false,
       // Les surfaces nodales sont un guide discret, jamais une seconde opaque.
-      opacity: appearance.theme === 'dark' ? 0.11 : 0.18,
+      opacity: appearance.theme === 'dark' ? 0.065 : 0.11,
       side: THREE.DoubleSide,
       transparent: true,
     });
@@ -409,15 +414,18 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
     return surface;
   }
 
-  function rebuildSurfaces(): void {
+  function rebuildDensitySurface(): void {
     removeDensitySurface();
-    removeNodeSurface();
     if (!dataset) return;
-
     if (appearance.displayMode !== 'cloud') {
       densitySurface = createDensitySurface();
       scene.add(densitySurface);
     }
+  }
+
+  function rebuildNodeSurface(): void {
+    removeNodeSurface();
+    if (!dataset) return;
     if (appearance.showNodes && dataset.field.nodesAvailable) {
       nodeSurface = createNodeSurface();
       scene.add(nodeSurface);
@@ -483,9 +491,13 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
         }
       });
       return {
+        cloudPoints: cloud?.geometry.getAttribute('position').count ?? 0,
         geometries: renderer.info.memory.geometries,
         materials: materials.size,
         programs: renderer.info.programs?.length ?? 0,
+        surfaceFingerprint: densityFingerprint,
+        surfaceTriangles: (densitySurface?.geometry.getAttribute('position').count ?? 0) / 3,
+        surfaceVertices: densitySurface?.geometry.getAttribute('position').count ?? 0,
         textures: renderer.info.memory.textures,
         triangles: renderer.info.render.triangles,
       };
@@ -526,12 +538,10 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
       const cloudMaterialChanged =
         previousAppearance.pointOpacity !== appearance.pointOpacity ||
         previousAppearance.pointSizePixels !== appearance.pointSizePixels;
-      const surfacesChanged =
-        previousAppearance.displayMode !== appearance.displayMode ||
+      const densityGeometryChanged =
+        (previousAppearance.displayMode === 'cloud') !== (appearance.displayMode === 'cloud') ||
         previousAppearance.isoDensityFraction !== appearance.isoDensityFraction ||
-        previousAppearance.observable !== appearance.observable ||
-        previousAppearance.showNodes !== appearance.showNodes ||
-        themeChanged;
+        previousAppearance.observable !== appearance.observable;
 
       if (themeChanged) {
         applyTheme();
@@ -545,7 +555,11 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
         cloud.material.transparent = appearance.pointOpacity < 1;
         cloud.material.needsUpdate = true;
       }
-      if (surfacesChanged) rebuildSurfaces();
+      if (densityGeometryChanged) rebuildDensitySurface();
+      else if (themeChanged || previousAppearance.displayMode !== appearance.displayMode)
+        updateDensityMaterial();
+      if (previousAppearance.showNodes !== appearance.showNodes || themeChanged)
+        rebuildNodeSurface();
       if (previousAppearance.showAxes !== appearance.showAxes && guides) {
         guides.visible = appearance.showAxes;
       }
@@ -577,7 +591,8 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
       schematicNucleus.scale.setScalar(Math.max(0.08, nextDataset.field.extentBohr * 0.006));
       rebuildGuides();
       rebuildCloud();
-      rebuildSurfaces();
+      rebuildDensitySurface();
+      rebuildNodeSurface();
       fitCameraToOrbital();
     },
     zoomCamera(distanceDelta): void {

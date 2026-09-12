@@ -24,10 +24,10 @@ La qualification performance reste séparée car ses temps dépendent du matéri
 
 ## Validation scientifique
 
-La suite Vitest contient actuellement 310 tests dans 28 fichiers. Elle couvre notamment les nombres
+La suite Vitest contient actuellement 321 tests dans 30 fichiers. Elle couvre notamment les nombres
 quantiques, constantes CODATA, unités, énergie, fonctions spéciales, partie radiale, harmoniques
-sphériques complexes, orbitales réelles, fonction d'onde, observables, sampling, Worker et le
-contrat des snapshots scientifiques versionnés.
+sphériques complexes, orbitales réelles, fonction d'onde, observables, sampling, Worker, le
+contrat des snapshots scientifiques versionnés et la tessellation/présentation des isodensités.
 
 ### Tolérances numériques
 
@@ -68,6 +68,19 @@ refus d'une version incompatible sans altération de l'état courant, et export 
 signature binaire est contrôlée. Le schéma public est documenté dans
 [`SCIENTIFIC_SNAPSHOTS.md`](SCIENTIFIC_SNAPSHOTS.md) et
 [`schemas/atoms-scientific-snapshot-v1.schema.json`](schemas/atoms-scientific-snapshot-v1.schema.json).
+
+### Isodensités
+
+Onze tests unitaires dédiés qualifient la tessellation et sa présentation : seuil physique en `a₀`,
+normales unitaires orientées vers l'extérieur, fermeture des composantes, deux lobes séparés pour
+`p_z`, quatre pour `d_xy`, interpolation de phase complexe à la couture `−π/π`, cas de phase
+indéfinie, grilles invalides et bornes du matériau/éclairage. Le champ scientifique Worker reste
+inchangé à 32³ ; la subdivision 2× est uniquement une tessellation de l'interpolant trilinéaire.
+
+Un E2E dédié passe sous Chromium, Firefox et WebKit. Il vérifie les modes nuage/hybride/isodensité,
+le changement réel de géométrie avec le seuil, l'identité de la géométrie entre thèmes/observables,
+la stabilité des ressources après cinq cycles et l'absence d'erreurs WebGL/Three.js. Le contrat et
+ses limites sont détaillés dans [`ISOSURFACES.md`](ISOSURFACES.md).
 
 ## Validation navigateur et accessibilité
 
@@ -110,6 +123,13 @@ les temps et la cadence ne représentent donc pas une promesse de performance GP
 | 15 000 |                    47,4 ms |            54,2 ms |     829 104 octets |
 | 60 000 |                 1 022,7 ms |         1 047,0 ms |   2 089 104 octets |
 
+La qualification ciblée de l'isodensité sur le même poste, toujours sous SwiftShader, mesure pour
+`3d_xy`, 15 000 points et seuil 0,2 : 5 600 triangles / 16 800 sommets de surface. Les trois modes
+ont une médiane `requestAnimationFrame` de 16,7 ms (~60 Hz) ; le mode hybride a présenté un p95 à
+33,3 ms sur ce run. Un changement de seuil et sa retessellation synchrone prennent 19,7 ms en
+médiane et 21,4 ms au p95. Ces valeurs caractérisent ce run, pas un GPU matériel ni une garantie de
+framerate.
+
 Le stress a observé 76 jobs : 58 résultats, 18 annulations par supersession, zéro erreur et un seul
 Worker actif au maximum. Après warm-up, quatre cycles revenus au même état conservent exactement
 6 géométries, 6 matériaux, 8 programmes et 2 textures Three.js, ainsi que 15 buffers et 6 textures
@@ -119,8 +139,10 @@ Le heap V8 principal mesuré après collecte explicite passe d'environ 10,58 à 
 cycles. Cette variation bornée n'est ni une preuve de fuite ni une preuve universelle d'absence de
 fuite. Aucun accroissement des compteurs de ressources Three.js/WebGL n'a été observé au même état.
 
-La cadence `requestAnimationFrame` observée est d'environ 30 FPS sous SwiftShader. Elle inclut le
-navigateur et le compositeur et ne mesure pas directement le temps GPU.
+La qualification globale antérieure observait environ 30 FPS sous SwiftShader avec un scénario de
+stress différent. Cette mesure et la qualification ciblée ci-dessus incluent navigateur/compositeur
+et ne mesurent pas directement le temps GPU ; elles ne doivent donc pas être comparées comme un
+benchmark avant/après strict.
 
 ## Qualité TypeScript et dépendances
 

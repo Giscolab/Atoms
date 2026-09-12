@@ -70,6 +70,9 @@ Dépôt public : [github.com/Giscolab/Atoms](https://github.com/Giscolab/Atoms).
   Les points représentent une distribution, jamais des électrons individuels ou une trajectoire.
 - **Modes scientifiques** : densité, phase et mode hybride, avec isosurface de densité et surface
   nodale `ψ = 0` uniquement lorsque cette dernière est interprétable.
+- **Isodensité raffinée côté rendu** : extraction Marching Cubes sur subdivision trilinéaire du champ
+  scientifique inchangé, normales issues du gradient, matériau dédié et éclairage contrôlé. Voir
+  [Rendu des isodensités](docs/ISOSURFACES.md).
 - **Analyses latérales** : courbe radiale `r²|Rₙₗ|²`, coupe géométrique de `|Yₗᵐ|²`, énergie du
   modèle à masse réduite, rayon attendu et nombres de nœuds.
 - **Reproductibilité et thèmes** : seed `uint32` affichée, génération relançable, thèmes sombre et
