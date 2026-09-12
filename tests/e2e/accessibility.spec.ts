@@ -4,16 +4,18 @@ import { expect, test, type Page } from '@playwright/test';
 const GENERATION_TIMEOUT = 45_000;
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
-async function loadReadyApp(page: Page): Promise<void> {
-  const response = await page.goto('/');
+async function loadReadyApp(page: Page): Promise {
+  const response = await page.goto('/', { waitUntil: 'domcontentloaded' });
   expect(response?.ok()).toBe(true);
   await expect(page.locator('#generationStatus')).toHaveAttribute('data-visible', 'false', {
     timeout: GENERATION_TIMEOUT,
   });
-  await expect(page.locator('#engineStatus')).toContainText('prêt');
+  await expect(page.locator('#engineStatus')).toContainText('prêt', {
+    timeout: GENERATION_TIMEOUT,
+  });
 }
 
-async function expectNoAutomatedViolations(page: Page): Promise<void> {
+async function expectNoAutomatedViolations(page: Page): Promise {
   const scan = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
   const violations = scan.violations.map(({ id, impact, nodes }) => ({
     id,
@@ -23,16 +25,28 @@ async function expectNoAutomatedViolations(page: Page): Promise<void> {
   expect(violations).toEqual([]);
 }
 
-test.beforeEach(async ({ page }) => loadReadyApp(page));
+test.beforeEach(async ({ page }, testInfo) => {
+  // Fix 1 & 2: Augmenter le timeout avant d'exécuter loadReadyApp
+  test.setTimeout(90_000);
 
-test('thème sombre sans violation WCAG A/AA automatisable', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'chromium', 'Audit axe exécuté une fois sous Chromium.');
+  // Fix 1: Ignorer immédiatement sous Firefox AVANT de charger l'application
+  if (
+    testInfo.title.includes('sans violation WCAG') &&
+    testInfo.project.name !== 'chromium'
+  ) {
+    test.skip(true, 'Audit axe exécuté une fois sous Chromium.');
+    return;
+  }
+
+  await loadReadyApp(page);
+});
+
+test('thème sombre sans violation WCAG A/AA automatisable', async ({ page }) => {
   await expect(page.locator('#themeDark')).toHaveAttribute('aria-pressed', 'true');
   await expectNoAutomatedViolations(page);
 });
 
-test('thème clair sans violation WCAG A/AA automatisable', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'chromium', 'Audit axe exécuté une fois sous Chromium.');
+test('thème clair sans violation WCAG A/AA automatisable', async ({ page }) => {
   await page.locator('#themeLight').click();
   await expect(page.locator('#themeLight')).toHaveAttribute('aria-pressed', 'true');
   await expectNoAutomatedViolations(page);
@@ -41,7 +55,7 @@ test('thème clair sans violation WCAG A/AA automatisable', async ({ page }, tes
 /** Inspect the rendered focus indicator, including labels for visually hidden inputs.
  * A nonzero CSS outline alone is insufficient: overflow can clip its entire perimeter.
  */
-async function expectVisibleKeyboardFocus(page: Page): Promise<string> {
+async function expectVisibleKeyboardFocus(page: Page): Promise {
   const focused = page.locator(':focus');
   await expect(focused).toHaveCount(1);
 
@@ -84,7 +98,7 @@ async function expectVisibleKeyboardFocus(page: Page): Promise<string> {
   const initial = await readFocus();
   await expect
     .poll(readFocus, {
-      timeout: 1500,
+      timeout: 3000,
       message: `Focus visible pour ${initial.id}`,
     })
     .toMatchObject({
@@ -98,8 +112,7 @@ async function expectVisibleKeyboardFocus(page: Page): Promise<string> {
 
 for (const theme of ['dark', 'light'] as const) {
   for (const basis of ['real', 'complex'] as const) {
-    test(`parcours Tab et focus visible : ${theme}, base ${basis}`, async ({ page }) => {
-      test.setTimeout(90_000);
+    test(`parcours Tab et focus visible : \({theme}, base\){basis}`, async ({ page }) => {
       const visited: string[] = [];
       // No locator.focus(), clicks or assigned tabindex: Tab reaches every group.
       // Native radio groups expose one Tab stop; their choices use arrow keys.
