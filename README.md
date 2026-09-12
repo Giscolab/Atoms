@@ -1,4 +1,4 @@
-﻿# Hydrogen Quantum Orbital Visualizer
+# Hydrogen Quantum Orbital Visualizer
 
 Atoms is an independent web application built around a tested TypeScript scientific core. It provides hydrogen wavefunctions, probability
 densities, real-orbital combinations, deterministic sampling, Web Worker execution and Three.js
@@ -130,7 +130,7 @@ Three.js et les outils de développement sont installés de façon reproductible
 ## Installation
 
 ### Prérequis
-- Un navigateur web moderne (Chrome, Firefox, Edge) avec support WebGL.
+- Un navigateur web moderne (Chrome/Edge, Firefox ou Safari) avec support WebGL2.
 - Node.js 24.19.0 LTS et npm.
 
 ### Étapes

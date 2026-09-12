@@ -152,5 +152,4 @@ describe('état applicatif scientifique de Phase 7', () => {
       expect(() => normalizeSamplingConfiguration(invalidConfiguration)).toThrow();
     }
   });
-
 });

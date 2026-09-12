@@ -44,46 +44,56 @@ test('thème clair sans violation WCAG A/AA automatisable', async ({ page }, tes
 async function expectVisibleKeyboardFocus(page: Page): Promise<string> {
   const focused = page.locator(':focus');
   await expect(focused).toHaveCount(1);
-  const focus = await focused.evaluate((element) => {
-    const indicator = element.matches('.toggle-row input')
-      ? element.closest('.toggle-row')
-      : element.matches('.segmented input')
-        ? element.nextElementSibling
-        : element;
-    if (!(indicator instanceof HTMLElement)) throw new Error('Indicateur de focus absent.');
-    const style = getComputedStyle(indicator);
-    const rect = indicator.getBoundingClientRect();
-    return {
-      id:
-        element.id ||
-        (element.matches('.insight-panel')
-          ? 'analyses'
-          : element.matches('.panel-scroll')
-            ? 'controls'
-            : element.tagName),
-      keyboard: element.matches(':focus-visible'),
-      visible:
-        style.visibility === 'visible' &&
-        Number(style.opacity) > 0 &&
-        rect.width > 0 &&
-        rect.height > 0 &&
-        rect.right > 0 &&
-        rect.bottom > 0 &&
-        rect.left < innerWidth &&
-        rect.top < innerHeight,
-      outline:
-        style.outlineStyle !== 'none' &&
-        Number.parseFloat(style.outlineWidth) >= 2 &&
-        style.outlineColor !== 'transparent' &&
-        style.outlineColor !== 'rgba(0, 0, 0, 0)',
-    };
-  });
-  expect(focus, `Focus visible pour ${focus.id}: ${JSON.stringify(focus)}`).toMatchObject({
-    keyboard: true,
-    visible: true,
-    outline: true,
-  });
-  return focus.id;
+
+  const readFocus = async () =>
+    focused.evaluate((element) => {
+      const indicator = element.matches('.toggle-row input')
+        ? element.closest('.toggle-row')
+        : element.matches('.segmented input')
+          ? element.nextElementSibling
+          : element;
+      if (!(indicator instanceof HTMLElement)) throw new Error('Indicateur de focus absent.');
+      const style = getComputedStyle(indicator);
+      const rect = indicator.getBoundingClientRect();
+      return {
+        id:
+          element.id ||
+          (element.matches('.insight-panel')
+            ? 'analyses'
+            : element.matches('.panel-scroll')
+              ? 'controls'
+              : element.tagName),
+        keyboard: element.matches(':focus-visible'),
+        visible:
+          style.visibility === 'visible' &&
+          Number(style.opacity) > 0 &&
+          rect.width > 0 &&
+          rect.height > 0 &&
+          rect.right > 0 &&
+          rect.bottom > 0 &&
+          rect.left < innerWidth &&
+          rect.top < innerHeight,
+        outline:
+          style.outlineStyle !== 'none' &&
+          Number.parseFloat(style.outlineWidth) >= 2 &&
+          style.outlineColor !== 'transparent' &&
+          style.outlineColor !== 'rgba(0, 0, 0, 0)',
+      };
+    });
+
+  const initial = await readFocus();
+  await expect
+    .poll(readFocus, {
+      timeout: 1500,
+      message: `Focus visible pour ${initial.id}`,
+    })
+    .toMatchObject({
+      id: initial.id,
+      keyboard: true,
+      visible: true,
+      outline: true,
+    });
+  return initial.id;
 }
 
 for (const theme of ['dark', 'light'] as const) {

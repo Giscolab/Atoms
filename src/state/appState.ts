@@ -36,7 +36,6 @@ export interface OrbitalRenderingState {
   readonly theme: RenderTheme;
 }
 
-
 /**
  * État applicatif sérialisable de Phase 7. Les grands buffers transférables du
  * sampler et du champ orbital restent la propriété du Worker et du renderer.
@@ -181,7 +180,6 @@ export function normalizeSamplingConfiguration(value: unknown): OrbitalSamplingC
     seed: createSeededRandom(sampling.seed).normalizedSeed,
   };
 }
-
 
 /** Normalisation pure : validation et copie profonde des trois sous-états. */
 export function normalizeAppState(value: unknown): AppState {

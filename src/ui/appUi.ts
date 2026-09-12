@@ -281,7 +281,6 @@ export function createAppUi(initialState: AppState): AppUi {
     requireElement('settingsButton', HTMLButtonElement).addEventListener('click', () => {
       quantumN.focus();
     });
-
   }
 
   const api: AppUi = {

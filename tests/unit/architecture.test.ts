@@ -43,7 +43,6 @@ describe('frontières architecturales', () => {
         expect(source, `${sourceName(path)} contient ${String(pattern)}`).not.toMatch(pattern);
       }
     }
-
   });
 
   it('confine Three.js au rendu et les formules physiques hors du rendu et de l’UI', () => {
@@ -64,7 +63,6 @@ describe('frontières architecturales', () => {
         expect(readSource(path), sourceName(path)).not.toMatch(formulaDefinitionPattern);
       }
     }
-
   });
 
   it('laisse main comme point de composition et isole le sampler scientifique', () => {

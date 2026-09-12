@@ -1,11 +1,11 @@
-﻿import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  ...(process.env.CI ? { workers: 1 } : {}),
+  workers: process.env.CI ? 1 : 3,
   reporter: 'list',
   outputDir: 'test-results',
   snapshotPathTemplate: '{testDir}/snapshots/{testFilePath}/{arg}{ext}',

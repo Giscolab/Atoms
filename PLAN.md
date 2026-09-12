@@ -1,106 +1,39 @@
 # Atoms — Plan restant
 
-Ce document ne recense plus les étapes déjà réalisées. Le travail validé appartient à l’historique Git, au README et à la documentation scientifique.
+Ce document contient uniquement le travail encore ouvert. Toute tâche implémentée et validée doit en disparaître.
 
 **Projet :** `Giscolab/Atoms`
-**Cible :** finalisation `v5.0.0` et préparation Showcase
-**Règle :** une tâche disparaît de ce fichier dès qu’elle est implémentée et validée.
+**Cible :** Showcase puis release `v5.0.0`
 
----
+## 1. Showcase
 
-# 1. Validation globale
+- [ ] finaliser le dossier de soumission : couverture, titre, tagline, description, cas d’usage, stack, processus de construction avec Codex/GPT et URLs publiques ;
+- [ ] soumettre Atoms au Showcase OpenAI.
 
-## 1.1 Régressions visuelles
+## 2. Statut de licence
 
-- [ ] ajouter des régressions visuelles déterministes ;
-- [ ] couvrir au minimum `1s`, `2s`, `2p_z`, `2p` complexe `m=+1`, `3d_z²`, `3d_xy` et un état `4f` représentatif ;
-- [ ] conserver des captures scientifiques stables et reproductibles.
+- [ ] décider explicitement du statut de licence du dépôt : publier une licence choisie par le propriétaire ou conserver volontairement l’absence de licence.
 
-## 1.2 Navigateurs
+Cette décision appartient au propriétaire du projet et ne doit pas être prise automatiquement par un agent.
 
-- [ ] exécuter et qualifier les scénarios E2E sous Firefox ;
-- [ ] exécuter et qualifier les scénarios E2E sous WebKit.
+## 3. Import / export scientifique — évolution non bloquante
 
-## 1.3 Performance et ressources
-
-- [ ] profiler CPU ;
-- [ ] profiler GPU ;
-- [ ] mesurer le coût de conversion `Float64 → Float32` avant rendu ;
-- [ ] vérifier l’absence de fuite mémoire lors de changements répétés d’état ;
-- [ ] vérifier l’absence de fuite de ressources Three.js ;
-- [ ] documenter les mesures reproductibles avant toute optimisation.
-
-## 1.4 Accessibilité finale
-
-- [ ] valider la navigation clavier complète ;
-- [ ] auditer le focus visible ;
-- [ ] vérifier les labels explicites et l’usage pertinent de `aria-live` ;
-- [ ] vérifier les contrastes ;
-- [ ] vérifier qu’aucun contrôle n’est identifié uniquement par la couleur ;
-- [ ] confirmer que la palette reste exploitable autant que possible en cas de déficience de perception des couleurs.
-
-## 1.5 Validation scientifique documentée
-
-- [ ] créer puis remplir `docs/VALIDATION.md` ;
-- [ ] y documenter les tolérances numériques utilisées ;
-- [ ] y documenter les valeurs analytiques de référence ;
-- [ ] y documenter normalisations, orthogonalités et tests statistiques ;
-- [ ] y documenter les navigateurs qualifiés, les performances mesurées et les limites connues ;
-- [ ] vérifier que les résultats publiés sont reproductibles.
-
----
-
-# 2. Documentation et statut juridique
-
-- [ ] effectuer l’audit final de `docs/SCIENCE.md` ;
-- [ ] auditer `docs/REFERENCES.md` avant release ;
-- [ ] clarifier le statut de licence exact du dépôt ;
-- [ ] vérifier que README, `SCIENCE.md`, `REFERENCES.md` et futur `VALIDATION.md` décrivent uniquement des fonctions réellement présentes ;
-- [ ] vérifier que les limites scientifiques sont explicites ;
-- [ ] vérifier que provenance, attribution et licence restent formulées sans ambiguïté.
-
----
-
-# 3. Import / export scientifique
-
-## 3.1 Import JSON
-
-- [ ] définir une version de schéma obligatoire ;
-- [ ] déclarer explicitement les unités ;
-- [ ] valider l’état quantique importé ;
-- [ ] déclarer explicitement la base complexe ou réelle ;
-- [ ] rendre la seed explicite lorsque le format l’exige ;
-- [ ] refuser les unités ambiguës.
-
-## 3.2 Export
-
-- [ ] permettre une capture PNG ;
-- [ ] permettre un état JSON reproductible ;
-- [ ] inclure paramètres et seed ;
+- [ ] définir un schéma JSON versionné avec unités, base, état quantique, paramètres de rendu et seed explicites ;
+- [ ] valider strictement les imports et refuser les unités ou états ambigus ;
+- [ ] raccorder l’import à l’interface uniquement lorsque le schéma est stabilisé ;
+- [ ] permettre l’export d’un état JSON reproductible incluant les paramètres et la seed ;
+- [ ] permettre une capture PNG depuis l’application ;
 - [ ] ajouter un export scientifique CSV/JSON seulement s’il apporte une utilité réelle.
 
----
+## 4. Évolutions facultatives
 
-# 4. Audits de qualité restants
-
-- [ ] auditer les options TypeScript strictes finales ;
-- [ ] effectuer un audit final TypeScript/ESLint ciblant notamment promesses oubliées, conversions douteuses et `any` non justifiés ;
-- [ ] étendre la CI aux futures régressions visuelles/scientifiques critiques.
-
----
-
-# 5. Évolutions facultatives hors blocage `v5.0.0`
-
-Ces éléments restent des pistes et ne doivent pas retarder la release s’ils ne sont pas retenus.
+Ces pistes ne bloquent ni le Showcase ni la release si elles ne sont pas retenues.
 
 - [ ] représenter un éventuel courant de probabilité comme **champ de courant**, jamais comme trajectoires individuelles ;
-- [ ] ajouter plusieurs niveaux d’isosurface uniquement après validation visuelle sur cas connus ;
-- [ ] étendre les familles d’orbitales réelles si l’UI en a réellement besoin ;
-- [ ] toute future expérience de spectroscopie ou de transitions photon–hydrogène doit repartir d’un modèle neuf, documenté et testé.
+- [ ] ajouter plusieurs niveaux d’isosurface uniquement après validation visuelle sur des cas connus ;
+- [ ] étendre les familles d’orbitales réelles seulement si l’interface en a réellement besoin ;
+- [ ] toute future expérience de spectroscopie ou de transitions photon–hydrogène doit repartir d’un modèle scientifique autonome, documenté et testé.
 
----
+## 5. Release `v5.0.0`
 
-# 6. Release `v5.0.0`
-
-- [ ] créer les tags de jalon encore nécessaires ;
-- [ ] publier `v5.0.0` uniquement lorsque validation globale, accessibilité, Firefox/WebKit, régressions visuelles, performance, documentation scientifique, licence et CI critique sont qualifiées.
+- [ ] créer le tag `v5.0.0` et publier la release lorsque le statut de licence est décidé et que le dernier commit destiné à la release est vert en CI et sur GitHub Pages.

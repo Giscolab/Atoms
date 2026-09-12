@@ -88,16 +88,16 @@ les temps et la cadence ne représentent donc pas une promesse de performance GP
 
 | Points | Worker → résultat, médiane | État prêt, médiane | Buffers transférés |
 | -----: | -------------------------: | -----------------: | -----------------: |
-|  2 000 |                    17,2 ms |            23,4 ms |     465 104 octets |
-| 15 000 |                    47,1 ms |            54,0 ms |     829 104 octets |
-| 60 000 |                 1 017,6 ms |         1 042,3 ms |   2 089 104 octets |
+|  2 000 |                    17,0 ms |            23,5 ms |     465 104 octets |
+| 15 000 |                    47,4 ms |            54,2 ms |     829 104 octets |
+| 60 000 |                 1 022,7 ms |         1 047,0 ms |   2 089 104 octets |
 
 Le stress a observé 76 jobs : 58 résultats, 18 annulations par supersession, zéro erreur et un seul
 Worker actif au maximum. Après warm-up, quatre cycles revenus au même état conservent exactement
 6 géométries, 6 matériaux, 8 programmes et 2 textures Three.js, ainsi que 15 buffers et 6 textures
 WebGL comptés par le probe.
 
-Le heap V8 principal mesuré après collecte explicite passe d'environ 10,58 à 10,79 Mio sur cinq
+Le heap V8 principal mesuré après collecte explicite passe d'environ 10,58 à 10,78 Mio sur cinq
 cycles. Cette variation bornée n'est ni une preuve de fuite ni une preuve universelle d'absence de
 fuite. Aucun accroissement des compteurs de ressources Three.js/WebGL n'a été observé au même état.
 
