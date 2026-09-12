@@ -3,15 +3,9 @@
 Ce document contient uniquement le travail encore ouvert. Toute tâche implémentée et validée doit en disparaître.
 
 **Projet :** `Giscolab/Atoms`
-**Cible :** Showcase OpenAI puis évolutions non bloquantes.
+**Cible :** évolutions facultatives post-`v5.0.0` et post-soumission Showcase.
 
-## 1. Showcase
-
-- [ ] soumettre Atoms au Showcase OpenAI.
-
-## 2. Évolutions facultatives
-
-Ces pistes ne bloquent pas le Showcase et peuvent être traitées après `v5.0.0`.
+## Évolutions facultatives
 
 - [ ] représenter un éventuel courant de probabilité comme **champ de courant**, jamais comme trajectoires individuelles ;
 - [ ] ajouter plusieurs niveaux d’isosurface uniquement après validation visuelle sur des cas connus ;
