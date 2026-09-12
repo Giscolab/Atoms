@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
@@ -56,7 +56,7 @@
                   <p class="eyebrow">État quantique</p>
                   <h1 class="panel-title">Configurer l'état</h1>
                 </div>
-                <span class="live-indicator" title="Calcul scientifique actif" aria-label="Calcul scientifique actif"></span>
+                <span class="live-indicator" title="Calcul scientifique actif" aria-hidden="true"></span>
               </div>
               <div class="quantum-grid" aria-label="Nombres quantiques affichés">
                 <div class="quantum-card"><span class="quantum-symbol">n</span><output id="quantumNValue">3</output><span class="quantum-label">principal</span></div>
@@ -162,7 +162,7 @@
             <span class="viewport-caption"><span class="caption-kicker">VISUALISATION</span><span id="orbitalCaption">3d_xy · |ψ|² dV</span></span>
             <button id="resetCamera" class="small-button" type="button">Réinitialiser la caméra</button>
           </div>
-          <canvas id="atomSimCanvas" tabindex="0" aria-label="Nuage probabiliste orbital interactif. Glisser pour orienter la caméra, molette pour zoomer."></canvas>
+          <canvas id="atomSimCanvas" tabindex="0" aria-label="Nuage probabiliste orbital interactif. Glisser ou utiliser les flèches pour orienter la caméra. Molette ou touches + et − pour zoomer. Touche 0 pour réinitialiser la caméra."></canvas>
           <div id="generationStatus" class="generation-status" role="status" aria-live="polite">Initialisation du moteur…</div>
           <div class="progress-track" aria-hidden="true"><span id="generationProgress"></span></div>
           <div id="visualLegend" class="visual-legend">
@@ -173,7 +173,7 @@
           </div>
         </main>
 
-        <aside class="insight-panel" aria-label="Analyses de l'état orbital">
+        <aside class="insight-panel" tabindex="0" aria-label="Analyses de l'état orbital">
           <section class="insight-card identity-card">
             <div class="card-heading"><div><p class="eyebrow">État actif</p><h2 id="orbitalNotation">3d_xy</h2></div><span id="basisLabel" class="basis-chip">réelle</span></div>
             <p id="orbitalSummary" class="card-copy">Combinaison réelle normalisée des états m = ±2.</p>
@@ -217,3 +217,4 @@
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+

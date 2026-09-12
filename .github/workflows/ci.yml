@@ -1,4 +1,4 @@
-name: CI
+﻿name: CI
 
 on:
   push:
@@ -44,7 +44,7 @@ jobs:
         run: npm run build
 
   e2e:
-    name: Smoke Chromium
+    name: E2E multi-navigateurs
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -62,11 +62,11 @@ jobs:
       - name: Installer les dépendances
         run: npm ci
 
-      - name: Installer Chromium et ses dépendances système
-        run: npx playwright install --with-deps chromium
+      - name: Installer les navigateurs Playwright et leurs dépendances système
+        run: npx playwright install --with-deps chromium firefox webkit
 
-      - name: Exécuter le smoke test Chromium
-        run: npm run test:e2e -- --project=chromium
+      - name: Exécuter les tests E2E multi-navigateurs
+        run: npm run test:e2e
 
       - name: Conserver le rapport Playwright en cas d'échec
         if: failure()

@@ -74,6 +74,12 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 const canvas3d = requireElement('atomSimCanvas', HTMLCanvasElement);
 const viewport = requireElement('viewport', HTMLElement);
 const renderer = createSceneRenderer(canvas3d);
+// Lecture seule, activée explicitement pour la qualification locale et retirée du build.
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('diagnostics') === '1') {
+  Object.defineProperty(window, '__atomsDiagnostics', {
+    value: () => renderer.getDiagnostics(),
+  });
+}
 const ui = createAppUi(state);
 const workerClient = createOrbitalWorkerClient();
 

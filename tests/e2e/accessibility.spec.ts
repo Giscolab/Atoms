@@ -1,0 +1,192 @@
+import AxeBuilder from '@axe-core/playwright';
+import { expect, test, type Page } from '@playwright/test';
+
+const GENERATION_TIMEOUT = 45_000;
+const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
+
+async function loadReadyApp(page: Page): Promise<void> {
+  const response = await page.goto('/');
+  expect(response?.ok()).toBe(true);
+  await expect(page.locator('#generationStatus')).toHaveAttribute('data-visible', 'false', {
+    timeout: GENERATION_TIMEOUT,
+  });
+  await expect(page.locator('#engineStatus')).toContainText('prêt');
+}
+
+async function expectNoAutomatedViolations(page: Page): Promise<void> {
+  const scan = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+  const violations = scan.violations.map(({ id, impact, nodes }) => ({
+    id,
+    impact,
+    targets: nodes.map((node) => node.target),
+  }));
+  expect(violations).toEqual([]);
+}
+
+test.beforeEach(async ({ page }) => loadReadyApp(page));
+
+test('thème sombre sans violation WCAG A/AA automatisable', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Audit axe exécuté une fois sous Chromium.');
+  await expect(page.locator('#themeDark')).toHaveAttribute('aria-pressed', 'true');
+  await expectNoAutomatedViolations(page);
+});
+
+test('thème clair sans violation WCAG A/AA automatisable', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Audit axe exécuté une fois sous Chromium.');
+  await page.locator('#themeLight').click();
+  await expect(page.locator('#themeLight')).toHaveAttribute('aria-pressed', 'true');
+  await expectNoAutomatedViolations(page);
+});
+
+/** Inspect the rendered focus indicator, including labels for visually hidden inputs.
+ * A nonzero CSS outline alone is insufficient: overflow can clip its entire perimeter.
+ */
+async function expectVisibleKeyboardFocus(page: Page): Promise<string> {
+  const focused = page.locator(':focus');
+  await expect(focused).toHaveCount(1);
+  const focus = await focused.evaluate((element) => {
+    const indicator = element.matches('.segmented input, .toggle-row input')
+      ? element.nextElementSibling
+      : element;
+    if (!(indicator instanceof HTMLElement)) throw new Error('Indicateur de focus absent.');
+    const style = getComputedStyle(indicator);
+    const rect = indicator.getBoundingClientRect();
+    const inset =
+      Number.parseFloat(style.outlineOffset) + Number.parseFloat(style.outlineWidth) / 2;
+    const edgeCenters = [
+      [rect.left - inset, (rect.top + rect.bottom) / 2],
+      [rect.right + inset, (rect.top + rect.bottom) / 2],
+      [(rect.left + rect.right) / 2, rect.top - inset],
+      [(rect.left + rect.right) / 2, rect.bottom + inset],
+    ];
+    let left = 0;
+    let top = 0;
+    let right = innerWidth;
+    let bottom = innerHeight;
+    for (let parent = indicator.parentElement; parent; parent = parent.parentElement) {
+      const parentStyle = getComputedStyle(parent);
+      const parentRect = parent.getBoundingClientRect();
+      if (parentStyle.overflowX !== 'visible') {
+        left = Math.max(left, parentRect.left);
+        right = Math.min(right, parentRect.right);
+      }
+      if (parentStyle.overflowY !== 'visible') {
+        top = Math.max(top, parentRect.top);
+        bottom = Math.min(bottom, parentRect.bottom);
+      }
+    }
+    return {
+      id: element.id || (element.matches('.insight-panel') ? 'analyses' : element.tagName),
+      keyboard: element.matches(':focus-visible'),
+      visible:
+        style.visibility === 'visible' &&
+        Number(style.opacity) > 0 &&
+        rect.width > 0 &&
+        rect.height > 0,
+      outline:
+        style.outlineStyle !== 'none' &&
+        Number.parseFloat(style.outlineWidth) >= 2 &&
+        style.outlineColor !== 'transparent' &&
+        style.outlineColor !== 'rgba(0, 0, 0, 0)',
+      unclipped: edgeCenters.some(
+        ([x = -1, y = -1]) => x >= left && x <= right && y >= top && y <= bottom,
+      ),
+    };
+  });
+  expect(focus, `Focus visible pour ${focus.id}`).toMatchObject({
+    keyboard: true,
+    visible: true,
+    outline: true,
+    unclipped: true,
+  });
+  return focus.id;
+}
+
+for (const theme of ['dark', 'light'] as const) {
+  for (const basis of ['real', 'complex'] as const) {
+    test(`parcours Tab et focus visible : ${theme}, base ${basis}`, async ({ page }) => {
+      test.setTimeout(90_000);
+      const visited: string[] = [];
+      // No locator.focus(), clicks or assigned tabindex: Tab reaches every group.
+      // Native radio groups expose one Tab stop; their choices use arrow keys.
+      for (let step = 0; step < 80; step += 1) {
+        await page.keyboard.press('Tab');
+        let id = await expectVisibleKeyboardFocus(page);
+        if (id === (theme === 'dark' ? 'themeDark' : 'themeLight')) {
+          await page.keyboard.press('Enter');
+          await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+          await expectVisibleKeyboardFocus(page);
+        }
+        if (id === 'basisReal' || id === 'basisComplex') {
+          await page.keyboard.press('ArrowLeft');
+          await expect(page.locator('#basisComplex')).toBeChecked();
+          await expectVisibleKeyboardFocus(page);
+          if (basis === 'real') {
+            await page.keyboard.press('ArrowRight');
+            await expect(page.locator('#basisReal')).toBeChecked();
+          }
+          id = await expectVisibleKeyboardFocus(page);
+        }
+        if (id === 'observablePhase') {
+          await page.keyboard.press('ArrowLeft');
+          await expect(page.locator('#observableDensity')).toBeChecked();
+          await expectVisibleKeyboardFocus(page);
+          await page.keyboard.press('ArrowRight');
+          await expect(page.locator('#observablePhase')).toBeChecked();
+        }
+        visited.push(id);
+        if (id === 'generateButton') {
+          await page.keyboard.press('Enter');
+          await expect(page.locator('#generationStatus')).toHaveAttribute('data-visible', 'false', {
+            timeout: GENERATION_TIMEOUT,
+          });
+          await expect(page.locator('#engineStatus')).toContainText('prêt');
+        }
+        if (id === 'resetCamera') await page.keyboard.press('Enter');
+        if (id === 'atomSimCanvas') {
+          const distance = await page.locator('#iDist').textContent();
+          await page.keyboard.press('+');
+          await expect(page.locator('#iDist')).not.toHaveText(distance ?? '');
+          await page.keyboard.press('0');
+          await expect(page.locator('#iDist')).toHaveText(distance ?? '');
+        }
+        if (id === 'analyses') break;
+      }
+      const groups = [
+        ['themeDark', 'themeLight', 'settingsButton'],
+        [
+          basis === 'real' ? 'basisReal' : 'basisComplex',
+          'quantumN',
+          ...(basis === 'real' ? ['realOrbital'] : ['quantumL', 'quantumM']),
+        ],
+        ['observablePhase', 'displayMode', 'isoThreshold'],
+        ['sampleCount', 'seedInput', 'randomizeSeed'],
+        ['pointOpacity', 'pointSize', 'axesToggle', 'nodesToggle', 'motionToggle'],
+        ['generateButton'],
+        ['resetCamera', 'atomSimCanvas'],
+        ['analyses'],
+      ];
+      let previousGroupEnd = -1;
+      for (const group of groups) {
+        for (const id of group) expect(visited, `${id} accessible par Tab`).toContain(id);
+        const positions = group.map((id) => visited.indexOf(id));
+        expect(
+          Math.min(...positions),
+          `Ordre logique du groupe ${group.join(', ')}`,
+        ).toBeGreaterThan(previousGroupEnd);
+        previousGroupEnd = Math.max(...positions);
+      }
+      expect(visited).not.toContain(basis === 'real' ? 'quantumM' : 'realOrbital');
+      if (basis === 'real') expect(visited).not.toContain('quantumL'); // Derived from real orbital.
+      const analyses = page.locator('.insight-panel');
+      const initialScroll = await analyses.evaluate((element) => element.scrollTop);
+      await page.keyboard.press('ArrowDown');
+      await expect
+        .poll(() => analyses.evaluate((element) => element.scrollTop))
+        .toBeGreaterThan(initialScroll);
+      await page.keyboard.press('Shift+Tab');
+      await expect(page.locator('#atomSimCanvas')).toBeFocused();
+      await expectVisibleKeyboardFocus(page);
+    });
+  }
+}

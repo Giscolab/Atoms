@@ -67,6 +67,102 @@ function result(jobId: string, seed = 7): OrbitalWorkerResponse {
 }
 
 describe('client Worker orbital', () => {
+  it('valide le job avant toute allocation de Worker', () => {
+    const workers: FakeWorker[] = [];
+    const client = createOrbitalWorkerClient(() => {
+      const worker = new FakeWorker();
+      workers.push(worker);
+      return worker;
+    });
+
+    expect(() =>
+      client.generate({
+        jobId: ' ',
+        sampleCount: 1,
+        seed: 7,
+        state: { basis: 'complex', n: 1, l: 0, m: 0 },
+      }),
+    ).toThrow(/identifiant/u);
+    expect(workers).toHaveLength(0);
+    client.dispose();
+  });
+
+  it('conserve la propriété du Worker inactif après un job invalide', async () => {
+    const worker = new FakeWorker();
+    const client = createOrbitalWorkerClient(() => worker);
+    const pending = client.generate({
+      jobId: 'valide',
+      options: { fieldResolution: 8 },
+      sampleCount: 1,
+      seed: 7,
+      state: { basis: 'complex', n: 1, l: 0, m: 0 },
+    });
+    worker.emit(result('valide'));
+    await pending;
+
+    expect(() =>
+      client.generate({
+        jobId: '',
+        sampleCount: 1,
+        seed: 7,
+        state: { basis: 'complex', n: 1, l: 0, m: 0 },
+      }),
+    ).toThrow(/identifiant/u);
+    client.dispose();
+    expect(worker.terminated).toBe(true);
+  });
+
+  it('termine le Worker immédiatement si postMessage échoue et permet une nouvelle génération', async () => {
+    class UnsendableWorker extends FakeWorker {
+      override postMessage(): void {
+        throw new Error('DataCloneError simulée');
+      }
+    }
+    const failedWorker = new UnsendableWorker();
+    const nextWorker = new FakeWorker();
+    let workerCount = 0;
+    const client = createOrbitalWorkerClient(() =>
+      workerCount++ === 0 ? failedWorker : nextWorker,
+    );
+    const request = {
+      jobId: 'envoi',
+      options: { fieldResolution: 8 },
+      sampleCount: 1,
+      seed: 7,
+      state: { basis: 'complex', n: 1, l: 0, m: 0 },
+    } as const;
+
+    await expect(client.generate(request)).rejects.toThrow(/DataCloneError/u);
+    expect(failedWorker.terminated).toBe(true);
+    const next = client.generate({ ...request, jobId: 'suivant' });
+    nextWorker.emit(result('suivant'));
+    await expect(next).resolves.toMatchObject({ sampleSet: { metadata: { seed: 7 } } });
+    client.dispose();
+  });
+
+  it('rejette un payload tronqué sans laisser la promesse en attente', async () => {
+    const worker = new FakeWorker();
+    const client = createOrbitalWorkerClient(() => worker);
+    const pending = client.generate({
+      jobId: 'tronqué',
+      options: { fieldResolution: 8 },
+      sampleCount: 1,
+      seed: 7,
+      state: { basis: 'complex', n: 1, l: 0, m: 0 },
+    });
+    // Simule une réponse reçue à la frontière Worker dont le champ manque.
+    const malformed = {
+      ...result('tronqué'),
+      field: undefined,
+    } as unknown as OrbitalWorkerResponse;
+    expect(() => {
+      worker.emit(malformed);
+    }).not.toThrow();
+    await expect(pending).rejects.toThrow(/Échec du Worker orbital/u);
+    expect(worker.terminated).toBe(true);
+    client.dispose();
+  });
+
   it('transmet le contrat versionné et résout le résultat complet courant', async () => {
     const workers: FakeWorker[] = [];
     const client = createOrbitalWorkerClient(() => {

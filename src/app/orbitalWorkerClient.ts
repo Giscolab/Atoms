@@ -145,11 +145,11 @@ export function createOrbitalWorkerClient(
 
     generate(request, onProgress): Promise<OrbitalGenerationPayload> {
       if (disposed) return Promise.reject(new OrbitalWorkerCancellationError('disposed'));
+      const job = createOrbitalWorkerJob(request);
       if (active) terminateActive('superseded');
 
       const worker = idleWorker ?? workerFactory();
       idleWorker = null;
-      const job = createOrbitalWorkerJob(request);
 
       return new Promise<OrbitalGenerationPayload>((resolve, reject) => {
         active = {
@@ -166,38 +166,52 @@ export function createOrbitalWorkerClient(
 
         worker.onmessage = (event): void => {
           if (active?.worker !== worker) return;
-          const response = event.data;
-          if (response.jobId !== active.jobId) return;
+          try {
+            const response = event.data;
+            if (response.jobId !== active.jobId) return;
 
-          if (response.kind === 'progress') {
-            onProgress?.(response);
-            return;
-          }
-          if (response.kind === 'error') {
-            failActive(worker, workerFailure(response.message));
-            return;
-          }
-          if (!hasCompatiblePayload(response, active)) {
-            failActive(worker, workerFailure('versions ou métadonnées de résultat incompatibles'));
-            return;
-          }
+            if (response.kind === 'progress') {
+              onProgress?.(response);
+              return;
+            }
+            if (response.kind === 'error') {
+              failActive(worker, workerFailure(response.message));
+              return;
+            }
+            if (!hasCompatiblePayload(response, active)) {
+              failActive(
+                worker,
+                workerFailure('versions ou métadonnées de résultat incompatibles'),
+              );
+              return;
+            }
 
-          const completed = active;
-          active = null;
-          idleWorker = worker;
-          completed.resolve({
-            charts: response.charts,
-            field: response.field,
-            radialCoverageProbability: response.radialCoverageProbability,
-            sampleSet: response.sampleSet,
-          });
+            const completed = active;
+            active = null;
+            idleWorker = worker;
+            completed.resolve({
+              charts: response.charts,
+              field: response.field,
+              radialCoverageProbability: response.radialCoverageProbability,
+              sampleSet: response.sampleSet,
+            });
+          } catch (error) {
+            failActive(
+              worker,
+              workerFailure(error instanceof Error ? error.message : String(error)),
+            );
+          }
         };
 
         worker.onerror = (event): void => {
           failActive(worker, workerFailure(event.message));
         };
 
-        worker.postMessage(job);
+        try {
+          worker.postMessage(job);
+        } catch (error) {
+          failActive(worker, workerFailure(error instanceof Error ? error.message : String(error)));
+        }
       });
     },
   };

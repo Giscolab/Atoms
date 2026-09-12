@@ -451,8 +451,27 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
       return orbit.distanceBohr;
     },
     getDiagnostics(): SceneDiagnostics {
+      const materials = new Set<THREE.Material>();
+      scene.traverse((object) => {
+        if (
+          object instanceof THREE.Mesh ||
+          object instanceof THREE.Points ||
+          object instanceof THREE.Line
+        ) {
+          // Les génériques Three.js par défaut sont permissifs ; valider la valeur observée.
+          const objectMaterial: unknown = object.material;
+          if (objectMaterial instanceof THREE.Material) materials.add(objectMaterial);
+          else if (Array.isArray(objectMaterial)) {
+            for (const material of objectMaterial) {
+              if (material instanceof THREE.Material) materials.add(material);
+            }
+          }
+        }
+      });
       return {
         geometries: renderer.info.memory.geometries,
+        materials: materials.size,
+        programs: renderer.info.programs?.length ?? 0,
         textures: renderer.info.memory.textures,
         triangles: renderer.info.render.triangles,
       };

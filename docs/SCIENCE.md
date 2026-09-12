@@ -1,6 +1,6 @@
 ## Domaine du modèle
 
-Le modèle cible représente l'atome d'hydrogène neutre `¹H` comme un système électron-proton dans
+Le modèle implémenté représente l'atome d'hydrogène neutre `¹H` comme un système électron-proton dans
 l'approximation coulombienne non relativiste de Schrödinger. Le passage aux coordonnées du centre
 de masse et de mouvement relatif remplace le problème à deux corps par un mouvement libre du
 centre de masse et un problème coulombien relatif utilisant la masse réduite.
@@ -124,8 +124,8 @@ des phénomènes absents du modèle.
 ## Polynômes de Laguerre généralisés
 
 Atoms adopte les polynômes `L_k^(α)(x)` de la convention NIST DLMF. Le domaine exposé est `k`
-entier non négatif, `α > -1` réel et fini, et `x` réel fini. Les orbitales hydrogénoïdes du lot
-suivant utiliseront `α = 2l + 1`.
+entier non négatif, `α > -1` réel et fini, et `x` réel fini. Les orbitales hydrogénoïdes
+utilisent `α = 2l + 1`.
 
 Initialisation et récurrence :
 
@@ -158,8 +158,7 @@ Références : NIST DLMF [§14.7.8](https://dlmf.nist.gov/14.7.E8), définition 
 [§14.10.3](https://dlmf.nist.gov/14.10.E3), récurrence en degré. Les notes MIT
 [Lectures 20–21](https://ocw.mit.edu/courses/8-04-quantum-physics-i-spring-2016/resources/mit8_04s16_lecnotes20_21/) placent leur facteur `(-1)^m` au niveau
 des harmoniques sphériques ; Atoms choisit au contraire de l'intégrer dès `P_l^m`, conformément à
-la convention DLMF retenue. Un futur module d'harmoniques ne devra donc pas l'appliquer une seconde
-fois.
+la convention DLMF retenue. Le module d'harmoniques ne l'applique donc pas une seconde fois.
 
 ## Fonction radiale normalisée
 
@@ -290,12 +289,12 @@ Il en résulte notamment `p_x ∝ x/r`, `p_y ∝ y/r`, `p_z ∝ z/r`, ainsi que 
 positives en `xy`, `xz`, `yz`, `x²-y²` et `3z²-r²`. Chaque combinaison conserve la normalisation et
 utilise exactement la même fonction radiale pour un couple `(n,l)` donné. La représentation
 complexe générique accepte tout `l` numériquement représentable ; seuls les noms réels explicites
-des familles `p` et `d`, nécessaires à cette phase, sont introduits. Aucune famille réelle `f/g/h/i`
+des familles `p` et `d` sont exposés. Aucune famille réelle `f/g/h/i`
 n'est ajoutée sans besoin actuel.
 
 ## Nœuds et observables analytiques
 
-Pour un état admissible `(n,l)`, la source de vérité scientifique est :
+Le panneau reprend les comptes pédagogiques usuels pour un état admissible `(n,l)` :
 
 ```text
 radialNodes = n-l-1
@@ -303,11 +302,18 @@ angularNodes = l
 totalNodes = n-1
 ```
 
+Les comptes `angularNodes` et `totalNodes` ne décrivent pas le nombre de surfaces nodales
+de toute fonction complexe. En particulier, la dépendance azimutale `exp(i m phi)` ne
+s'annule pas : un état complexe `2p, m=±1` n'a pas le plan nodal d'une orbitale réelle
+`p_x` ou `p_y`. L'affichage d'une surface `ψ=0` est donc limité aux champs réels
+(`m=0` ou combinaison réelle) ; les compteurs ne constituent pas une reconstruction
+topologique des nœuds. Voir la définition des harmoniques [DLMF §14.30.1](https://dlmf.nist.gov/14.30.E1).
+
 Le zéro de `R_nl(0)` dû au facteur `r^l` pour `l>0` n'est pas compté comme un nœud radial
 supplémentaire. Les notes MIT _Hydrogen Atom_, figure 2 et équation (2.34), identifient le degré
 `n-l-1` du polynôme radial et son nombre de nœuds.
 
-Les seules observables ajoutées en Phase 3 sont exprimées dans le contrat interne :
+Les observables analytiques suivantes sont exprimées dans le contrat interne :
 
 ```text
 <r>/a₀ = (a/2) [3n²-l(l+1)]
@@ -379,9 +385,11 @@ Les courbes latérales séparent les grandeurs : la distribution radiale trace `
 `a₀⁻¹`, tandis que la coupe angulaire trace `|Yₗᵐ|²` sur le meilleur des grands cercles `xy`, `xz`
 ou `yz`. Cette dernière est une coupe géométrique, pas une probabilité angulaire intégrée.
 
-Le renderer propose trois modes d'affichage : densité, phase et hybride. La densité détermine la
-géométrie d'une isosurface positive ; la phase est colorée par une palette divergente cyan/corail
-avec la convention `arg(ψ) ∈ [-π, π]`. Les surfaces `ψ = 0` ne sont activées que lorsque le champ
+Le renderer sépare le choix de l'observable (densité ou phase) du mode d'affichage
+(nuage, isodensité seule ou hybride). La densité détermine la géométrie d'une isosurface
+positive ; la phase utilise une palette cyclique bleu ciel, vert bleuté, vermillon et mauve,
+avec la convention `arg(ψ) ∈ [-π, π]` ramenée modulo `2π` pour la couleur.
+Une phase indéfinie reçoit une couleur neutre. Les surfaces `ψ = 0` ne sont activées que lorsque le champ
 réel est interprétable (`m = 0` complexe ou orbitale réelle) et restent distinctes de l'isosurface
 de densité. Le noyau est schématique et explicitement indiqué comme non à l'échelle.
 
@@ -393,14 +401,24 @@ de densité. Le noyau est schématique et explicitement indiqué comme non à l'
 - **Isosurface** : la surface relie les points où la densité volumique normalisée sur la grille
   atteint le seuil d'affichage choisi. Elle ne constitue ni une frontière matérielle de l'atome,
   ni une orbite, ni une surface de charge.
-- **Couleur de phase** : les pôles cyan et corail codent un écart de phase de `ψ`. Pour une
+- **Couleur de phase** : les couleurs bleu ciel et vermillon codent un écart de phase de `ψ`. Pour une
   orbitale réelle, ils permettent notamment de distinguer les deux signes, équivalents à des phases
   séparées de `π` dans la convention globale choisie. Pour un état complexe général, la palette
   parcourt cycliquement les phases intermédiaires. Ces couleurs ne désignent donc ni deux charges,
   ni deux électrons différents.
+- **Phase globale** : le choix global de phase fixe la légende des couleurs ; il ne change
+  pas `|ψ|²`. L'application affiche la partie spatiale d'un état stationnaire, sans animer
+  son facteur temporel global.
 - **Orbitales réelles `d`** : `d_xy` et `d_x²−y²` sont des combinaisons linéaires réelles,
   normalisées et distinctes, construites à partir des composantes complexes `m = ±2`. Elles ne sont
   pas le renommage d'un état complexe possédant une valeur unique de `m`.
 
 Les [captures documentaires](captures/) illustrent ces conventions avec le même moteur orbital 3D.
 Une future expérience de spectroscopie ou de transitions devra repartir d'un modèle scientifique autonome, documenté et testé.
+
+La grille finie et les buffers `Float32` du rendu sont des approximations numériques de
+visualisation : les isosurfaces ne prouvent ni une masse de probabilité enfermée exacte,
+ni la convergence de leur géométrie pour tous les états de l'interface. La normalisation
+par le maximum de chaque grille empêche aussi de comparer directement les intensités
+visuelles de deux orbitales comme des densités absolues. Les tests et leurs limites sont
+documentés dans [VALIDATION.md](VALIDATION.md).

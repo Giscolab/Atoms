@@ -50,7 +50,7 @@
 
     --ink: #edf3f6;
     --muted: #98a5ae;
-    --faint: #65747e;
+    --faint: #8798a2;
 
     --line: rgba(177, 204, 214, 0.16);
     --line-strong: rgba(177, 204, 214, 0.28);
@@ -98,7 +98,7 @@
 
     --ink: #10212a;
     --muted: #50616b;
-    --faint: #71828a;
+    --faint: #556770;
 
     --line: rgba(27, 55, 66, 0.15);
     --line-strong: rgba(27, 55, 66, 0.27);
@@ -139,12 +139,19 @@
     cursor: pointer;
   }
 
+  a:focus-visible,
   button:focus-visible,
   select:focus-visible,
   input:focus-visible,
-  canvas:focus-visible {
+  canvas:focus-visible,
+  .insight-panel:focus-visible {
     outline: 2px solid var(--cyan);
     outline-offset: 3px;
+  }
+
+  canvas:focus-visible,
+  .insight-panel:focus-visible {
+    outline-offset: -3px;
   }
 
   .segmented input:focus-visible + label,
@@ -1153,6 +1160,11 @@
     letter-spacing: 0.06em;
 
     text-transform: uppercase;
+  }
+
+  [data-theme="light"] .basis-chip,
+  [data-theme="light"] .plane-label {
+    color: var(--cyan-deep);
   }
 
   .text-button {

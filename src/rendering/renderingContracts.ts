@@ -24,6 +24,8 @@ export interface OrbitalAppearance {
 
 export interface SceneDiagnostics {
   readonly geometries: number;
+  readonly materials: number;
+  readonly programs: number;
   readonly textures: number;
   readonly triangles: number;
 }

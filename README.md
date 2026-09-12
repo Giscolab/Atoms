@@ -1,4 +1,4 @@
-# Hydrogen Quantum Orbital Visualizer
+﻿# Hydrogen Quantum Orbital Visualizer
 
 Atoms is an independent web application built around a tested TypeScript scientific core. It provides hydrogen wavefunctions, probability
 densities, real-orbital combinations, deterministic sampling, Web Worker execution and Three.js
@@ -47,7 +47,7 @@ sources, and validation boundaries.
 
 Ce projet vise à rendre la mécanique quantique plus accessible et pédagogique, en offrant une expérience interactive directement dans un navigateur web moderne, sans besoin d’installation lourde. Il est idéal pour les étudiants, enseignants et passionnés de physique quantique.
 
-> **Note** : Ce projet est une réimplémentation web moderne inspirée du visualiseur original de **Kavan Anderson**. Il utilise des technologies web pour une accessibilité cohérente.
+> **Note** : Atoms est une application web scientifique autonome conçue pour une exploration interactive et reproductible des orbitales quantiques de l’atome d’hydrogène.
 
 Dépôt public : [github.com/Giscolab/Atoms](https://github.com/Giscolab/Atoms).
 
@@ -223,3 +223,4 @@ Idées de contributions : Ajout de support pour d’autres atomes, optimisation 
 </p>
 
 Si vous appréciez ce projet, donnez une ⭐ sur GitHub ! Pour toute question, ouvrez une issue.
+
