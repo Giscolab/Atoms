@@ -1,11 +1,6 @@
 # Hydrogen Quantum Orbital Visualizer
 
-Atoms is an independent web reimplementation and scientific evolution of Kavan's pedagogical
-`kavan010/Atoms` project. Its pure TypeScript science core provides tested hydrogen wavefunctions,
-probability densities, and real-orbital combinations. The visible 3D application now consumes that
-core through one deterministic sampler, a versioned Web Worker and a Three.js renderer; the historical
-2D demonstration remains explicitly isolated as Phase 8. See the [scientific contract](docs/SCIENCE.md)
-for scope, formulas, conventions, units, sources, and validation boundaries.
+Atoms is an interactive web application for exploring the quantum orbitals of the hydrogen atom. It visualizes electron probability densities and wavefunction phase in 3D, helping users understand orbital structure and the different ways it can be represented. Inspired by Kavan’s educational kavan010/Atoms project, Atoms is an independent reimplementation built around a tested TypeScript scientific core. The [scientific documentation](docs/SCIENCE.md) describes the models, formulas, conventions, and validation limits.
 
 <p align="center">
   <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="1100" alt="Interface Atoms en thème sombre affichant l’orbitale réelle 3d_xy, issue des composantes m égales à plus ou moins 2, colorée selon la phase de psi en mode hybride avec 16 000 échantillons">
@@ -49,7 +44,7 @@ for scope, formulas, conventions, units, sources, and validation boundaries.
 
 Ce projet vise à rendre la mécanique quantique plus accessible et pédagogique, en offrant une expérience interactive directement dans un navigateur web moderne, sans besoin d’installation lourde. Il est idéal pour les étudiants, enseignants et passionnés de physique quantique.
 
-> **Note** : Ce projet est une réimplémentation web moderne inspirée du visualiseur original de **Kavan Anderson**. Il utilise des technologies web pour une accessibilité accrue.
+> **Note** : Ce projet est une réimplémentation web moderne inspirée du visualiseur original de **Kavan Anderson**. Il utilise des technologies web pour une accessibilité cohérente.
 
 Dépôt public : [github.com/Giscolab/Atoms](https://github.com/Giscolab/Atoms).
 
