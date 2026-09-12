@@ -1,6 +1,6 @@
 {
   "name": "atoms",
-  "version": "0.0.0",
+  "version": "5.0.0",
   "private": true,
   "description": "Visualiseur web d'orbitales de l'atome d'hydrogène.",
   "type": "module",

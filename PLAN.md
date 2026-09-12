@@ -30,5 +30,4 @@ Ces pistes ne bloquent ni le Showcase ni la release si elles ne sont pas retenue
 
 ## 4. Release `v5.0.0`
 
-- [ ] synchroniser la version de `package.json` et `package-lock.json` avec `5.0.0` au moment de préparer la release ;
 - [ ] créer le tag `v5.0.0` et publier la release lorsque le dernier commit destiné à la release est vert en CI et sur GitHub Pages.
