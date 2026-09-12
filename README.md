@@ -2,8 +2,8 @@
 
 Atoms is an independent web application built around a tested TypeScript scientific core. It provides hydrogen wavefunctions, probability
 densities, real-orbital combinations, deterministic sampling, Web Worker execution and Three.js
-rendering. See the [scientific contract](docs/SCIENCE.md) for scope, formulas, conventions, units,
-sources, and validation boundaries.
+rendering. See the [scientific contract](docs/SCIENCE.md), the [institutional references](docs/REFERENCES.md)
+and the [validation report](docs/VALIDATION.md) for scope, formulas, conventions, sources and reproducible qualification.
 
 <p align="center">
   <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="1100" alt="Interface Atoms en thème sombre affichant l’orbitale réelle 3d_xy, issue des composantes m égales à plus ou moins 2, colorée selon la phase de psi en mode hybride avec 16 000 échantillons">
@@ -170,9 +170,9 @@ Three.js et les outils de développement sont installés de façon reproductible
 
 ## Captures d'écran
 
-Ces captures documentent plusieurs usages du même pipeline orbital 3D. Elles servent à présenter
-l’interface et ses conventions visuelles ; elles ne remplacent pas les futures régressions visuelles
-automatisées décrites dans le plan de validation.
+Ces captures documentent plusieurs usages du m?me pipeline orbital 3D. Elles servent ? pr?senter
+l?interface et ses conventions visuelles. Les r?gressions scientifiques d?terministes versionn?es et
+leur protocole sont d?crits dans [VALIDATION.md](docs/VALIDATION.md).
 
 <p align="center">
   <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="900" alt="Orbitale réelle 3d_xy en thème sombre, phase de psi, nuage probabiliste et isosurface de densité, avec 16 000 échantillons">

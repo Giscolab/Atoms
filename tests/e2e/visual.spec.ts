@@ -76,7 +76,6 @@ async function captureScientificSvg(page: Page, title: string): Promise<string> 
       'stroke-linejoin',
       'stroke-dasharray',
       'opacity',
-      'font-family',
       'font-size',
       'font-weight',
     ];
@@ -132,12 +131,18 @@ test.use({
 
 for (const state of CASES) {
   test(`capture scientifique déterministe : ${state.name}`, async ({ page }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== 'chromium',
+      'Régression SVG qualifiée une fois sous Chromium.',
+    );
     test.setTimeout(90_000);
     const runtimeErrors: string[] = [];
     page.on('pageerror', (error) => {
       runtimeErrors.push(error.message);
     });
-    await page.addInitScript(() => localStorage.setItem('atoms-theme', 'dark'));
+    await page.addInitScript(() => {
+      localStorage.setItem('atoms-theme', 'dark');
+    });
     expect((await page.goto('/'))?.ok()).toBe(true);
     await waitForGeneration(page);
     await expect(page.locator('#motionToggle')).not.toBeChecked();

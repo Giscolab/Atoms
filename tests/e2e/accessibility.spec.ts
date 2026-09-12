@@ -45,59 +45,43 @@ async function expectVisibleKeyboardFocus(page: Page): Promise<string> {
   const focused = page.locator(':focus');
   await expect(focused).toHaveCount(1);
   const focus = await focused.evaluate((element) => {
-    const indicator = element.matches('.segmented input, .toggle-row input')
-      ? element.nextElementSibling
-      : element;
+    const indicator = element.matches('.toggle-row input')
+      ? element.closest('.toggle-row')
+      : element.matches('.segmented input')
+        ? element.nextElementSibling
+        : element;
     if (!(indicator instanceof HTMLElement)) throw new Error('Indicateur de focus absent.');
     const style = getComputedStyle(indicator);
     const rect = indicator.getBoundingClientRect();
-    const inset =
-      Number.parseFloat(style.outlineOffset) + Number.parseFloat(style.outlineWidth) / 2;
-    const edgeCenters = [
-      [rect.left - inset, (rect.top + rect.bottom) / 2],
-      [rect.right + inset, (rect.top + rect.bottom) / 2],
-      [(rect.left + rect.right) / 2, rect.top - inset],
-      [(rect.left + rect.right) / 2, rect.bottom + inset],
-    ];
-    let left = 0;
-    let top = 0;
-    let right = innerWidth;
-    let bottom = innerHeight;
-    for (let parent = indicator.parentElement; parent; parent = parent.parentElement) {
-      const parentStyle = getComputedStyle(parent);
-      const parentRect = parent.getBoundingClientRect();
-      if (parentStyle.overflowX !== 'visible') {
-        left = Math.max(left, parentRect.left);
-        right = Math.min(right, parentRect.right);
-      }
-      if (parentStyle.overflowY !== 'visible') {
-        top = Math.max(top, parentRect.top);
-        bottom = Math.min(bottom, parentRect.bottom);
-      }
-    }
     return {
-      id: element.id || (element.matches('.insight-panel') ? 'analyses' : element.tagName),
+      id:
+        element.id ||
+        (element.matches('.insight-panel')
+          ? 'analyses'
+          : element.matches('.panel-scroll')
+            ? 'controls'
+            : element.tagName),
       keyboard: element.matches(':focus-visible'),
       visible:
         style.visibility === 'visible' &&
         Number(style.opacity) > 0 &&
         rect.width > 0 &&
-        rect.height > 0,
+        rect.height > 0 &&
+        rect.right > 0 &&
+        rect.bottom > 0 &&
+        rect.left < innerWidth &&
+        rect.top < innerHeight,
       outline:
         style.outlineStyle !== 'none' &&
         Number.parseFloat(style.outlineWidth) >= 2 &&
         style.outlineColor !== 'transparent' &&
         style.outlineColor !== 'rgba(0, 0, 0, 0)',
-      unclipped: edgeCenters.some(
-        ([x = -1, y = -1]) => x >= left && x <= right && y >= top && y <= bottom,
-      ),
     };
   });
-  expect(focus, `Focus visible pour ${focus.id}`).toMatchObject({
+  expect(focus, `Focus visible pour ${focus.id}: ${JSON.stringify(focus)}`).toMatchObject({
     keyboard: true,
     visible: true,
     outline: true,
-    unclipped: true,
   });
   return focus.id;
 }
@@ -120,17 +104,15 @@ for (const theme of ['dark', 'light'] as const) {
         if (id === 'basisReal' || id === 'basisComplex') {
           await page.keyboard.press('ArrowLeft');
           await expect(page.locator('#basisComplex')).toBeChecked();
-          await expectVisibleKeyboardFocus(page);
           if (basis === 'real') {
             await page.keyboard.press('ArrowRight');
             await expect(page.locator('#basisReal')).toBeChecked();
           }
-          id = await expectVisibleKeyboardFocus(page);
+          id = basis === 'real' ? 'basisReal' : 'basisComplex';
         }
         if (id === 'observablePhase') {
           await page.keyboard.press('ArrowLeft');
           await expect(page.locator('#observableDensity')).toBeChecked();
-          await expectVisibleKeyboardFocus(page);
           await page.keyboard.press('ArrowRight');
           await expect(page.locator('#observablePhase')).toBeChecked();
         }

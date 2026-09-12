@@ -63,3 +63,6 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 /_avast_/
+
+# État local des outils
+/.local/

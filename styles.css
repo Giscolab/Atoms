@@ -144,20 +144,22 @@
   select:focus-visible,
   input:focus-visible,
   canvas:focus-visible,
+  .panel-scroll:focus-visible,
   .insight-panel:focus-visible {
     outline: 2px solid var(--cyan);
     outline-offset: 3px;
   }
 
   canvas:focus-visible,
+  .panel-scroll:focus-visible,
   .insight-panel:focus-visible {
     outline-offset: -3px;
   }
 
   .segmented input:focus-visible + label,
-  .toggle-row input:focus-visible + .toggle-visual {
+  .toggle-row:has(input:focus-visible) {
     outline: 2px solid var(--cyan);
-    outline-offset: 3px;
+    outline-offset: -2px;
   }
 
 .sr-only {
@@ -914,7 +916,6 @@
 
     color: var(--ink);
 
-    outline: none;
   }
 
   .field select:hover,
@@ -1065,6 +1066,8 @@
   }
 
   .toggle-row {
+    position: relative;
+
     display: grid;
     grid-template-columns:
       minmax(0, 1fr)
@@ -1090,6 +1093,14 @@
 
   .toggle-row input {
     position: absolute;
+    top: 50%;
+    right: 0;
+
+    width: 34px;
+    height: 24px;
+    margin: 0;
+
+    transform: translateY(-50%);
 
     opacity: 0;
 

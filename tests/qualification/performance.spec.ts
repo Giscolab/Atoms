@@ -1,6 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { cpus, platform, release, totalmem } from 'node:os';
-import type { OrbitalWorkerJob, OrbitalWorkerResponse } from '../../src/workers/orbitalSamplingProtocol';
+import type {
+  OrbitalWorkerJob,
+  OrbitalWorkerResponse,
+} from '../../src/workers/orbitalSamplingProtocol';
 import type { SceneDiagnostics } from '../../src/rendering/renderingContracts';
 
 interface ObservedJob {
@@ -35,8 +38,13 @@ declare global {
 // This observer retains scalar metadata only, never Worker payloads or WebGL handles.
 function installProbe(): void {
   const probe: QualificationProbe = {
-    jobs: [], liveWorkers: 0, peakWorkers: 0,
-    buffersCreated: 0, buffersDeleted: 0, texturesCreated: 0, texturesDeleted: 0,
+    jobs: [],
+    liveWorkers: 0,
+    peakWorkers: 0,
+    buffersCreated: 0,
+    buffersDeleted: 0,
+    texturesCreated: 0,
+    texturesDeleted: 0,
     readyAtMs: null,
   };
   window.__qualificationProbe = probe;
@@ -73,12 +81,22 @@ function installProbe(): void {
       });
     }
 
-    override postMessage(message: unknown, options?: Transferable[] | StructuredSerializeOptions): void {
+    override postMessage(
+      message: unknown,
+      options?: Transferable[] | StructuredSerializeOptions,
+    ): void {
       // The app owns this Worker and sends only its explicit generation protocol.
       const job = message as OrbitalWorkerJob;
       this.observedJob = {
-        jobId: job.jobId, sampleCount: job.sampleCount, seed: job.seed, state: job.state,
-        startedMs: performance.now(), stages: {}, finishedMs: null, status: 'pending', transferBytes: 0,
+        jobId: job.jobId,
+        sampleCount: job.sampleCount,
+        seed: job.seed,
+        state: job.state,
+        startedMs: performance.now(),
+        stages: {},
+        finishedMs: null,
+        status: 'pending',
+        transferBytes: 0,
       };
       probe.jobs.push(this.observedJob);
       if (Array.isArray(options)) super.postMessage(message, options);
@@ -99,42 +117,59 @@ function installProbe(): void {
   };
 
   const gl = WebGL2RenderingContext.prototype;
+  // Intentionally retain native methods unbound; wrappers below reapply the live WebGL context via call().
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const createBuffer = gl.createBuffer;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const deleteBuffer = gl.deleteBuffer;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const createTexture = gl.createTexture;
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const deleteTexture = gl.deleteTexture;
-  gl.createBuffer = function (): WebGLBuffer | null {
+  gl.createBuffer = function (): WebGLBuffer {
     const buffer = createBuffer.call(this);
-    if (buffer) probe.buffersCreated++;
+    probe.buffersCreated++;
     return buffer;
   };
   gl.deleteBuffer = function (buffer): void {
     if (buffer) probe.buffersDeleted++;
     deleteBuffer.call(this, buffer);
   };
-  gl.createTexture = function (): WebGLTexture | null {
+  gl.createTexture = function (): WebGLTexture {
     const texture = createTexture.call(this);
-    if (texture) probe.texturesCreated++;
+    probe.texturesCreated++;
     return texture;
   };
   gl.deleteTexture = function (texture): void {
     if (texture) probe.texturesDeleted++;
     deleteTexture.call(this, texture);
   };
+  let wasReady = false;
   new MutationObserver(() => {
-    if (document.querySelector('#engineStatus')?.textContent?.includes('prêt') &&
-        document.querySelector<HTMLElement>('#generationStatus')?.dataset.visible === 'false') {
-      probe.readyAtMs = performance.now();
-    }
+    const engineStatus = document.querySelector<HTMLElement>('#engineStatus');
+    const generationStatus = document.querySelector<HTMLElement>('#generationStatus');
+    const isReady =
+      engineStatus?.dataset.state === 'ready' && generationStatus?.dataset.visible === 'false';
+    if (isReady && !wasReady) probe.readyAtMs = performance.now();
+    wasReady = isReady;
   }).observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
 }
 
 async function ready(page: Page): Promise<void> {
-  await expect(page.locator('#generationStatus')).toHaveAttribute('data-visible', 'false', { timeout: 60_000 });
+  await expect(page.locator('#generationStatus')).toHaveAttribute('data-visible', 'false', {
+    timeout: 60_000,
+  });
   await expect(page.locator('#engineStatus')).toContainText('prêt');
-  await page.evaluate(() => new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-  }));
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            resolve();
+          });
+        });
+      }),
+  );
   const active = await page.evaluate(() => ({
     workers: window.__qualificationProbe.liveWorkers,
     pending: window.__qualificationProbe.jobs.filter((job) => job.status === 'pending').length,
@@ -142,20 +177,74 @@ async function ready(page: Page): Promise<void> {
   expect(active).toEqual({ workers: 1, pending: 0 });
 }
 
-async function regenerate(page: Page): Promise<ObservedJob & { readyMs: number; receiveToReadyMs: number }> {
-  await page.locator('#generateButton').click();
+async function waitForNewCompletedGeneration(page: Page, previousJobCount: number): Promise<void> {
+  await expect
+    .poll(
+      () =>
+        page.evaluate((previousCount) => {
+          const jobs = window.__qualificationProbe.jobs.slice(previousCount);
+          return {
+            hasNew: jobs.length > 0,
+            pending: jobs.filter((job) => job.status === 'pending').length,
+            last: jobs.at(-1)?.status ?? null,
+          };
+        }, previousJobCount),
+      { timeout: 60_000 },
+    )
+    .toEqual({ hasNew: true, pending: 0, last: 'result' });
   await ready(page);
-  return page.evaluate(() => {
-    const probe = window.__qualificationProbe;
-    const job = probe.jobs.at(-1);
-    if (!job || job.status !== 'result' || job.finishedMs === null || probe.readyAtMs === null) {
-      throw new Error('Missing completed generation measurement');
-    }
-    return { ...job, readyMs: probe.readyAtMs - job.startedMs, receiveToReadyMs: probe.readyAtMs - job.finishedMs };
+}
+
+async function triggerMeasuredGeneration(page: Page, action: () => Promise<void>): Promise<number> {
+  const previousJobCount = await page.evaluate(() => window.__qualificationProbe.jobs.length);
+  await page.evaluate(() => {
+    window.__qualificationProbe.readyAtMs = null;
+  });
+  await action();
+  await waitForNewCompletedGeneration(page, previousJobCount);
+  return previousJobCount;
+}
+
+async function setMeasuredSampleCount(page: Page, sampleCount: number): Promise<void> {
+  await triggerMeasuredGeneration(page, async () => {
+    await page.locator('#sampleCount').fill(String(sampleCount));
+    await page.locator('#sampleCount').press('Tab');
   });
 }
 
-function quantiles(values: number[]): { median: number; p95: number; minimum: number; maximum: number } {
+async function setMeasuredSeed(page: Page, seed: number): Promise<void> {
+  await triggerMeasuredGeneration(page, async () => {
+    await page.locator('#seedInput').fill(String(seed));
+    await page.locator('#seedInput').press('Tab');
+  });
+}
+
+async function regenerate(
+  page: Page,
+): Promise<ObservedJob & { readyMs: number; receiveToReadyMs: number }> {
+  const previousJobCount = await triggerMeasuredGeneration(page, async () => {
+    await page.locator('#generateButton').click();
+  });
+  return page.evaluate((previousCount) => {
+    const probe = window.__qualificationProbe;
+    const job = probe.jobs.slice(previousCount).at(-1);
+    if (!job || job.status !== 'result' || job.finishedMs === null || probe.readyAtMs === null) {
+      throw new Error('Missing completed generation measurement');
+    }
+    return {
+      ...job,
+      readyMs: probe.readyAtMs - job.startedMs,
+      receiveToReadyMs: probe.readyAtMs - job.finishedMs,
+    };
+  }, previousJobCount);
+}
+
+function quantiles(values: number[]): {
+  median: number;
+  p95: number;
+  minimum: number;
+  maximum: number;
+} {
   const sorted = [...values].sort((a, b) => a - b);
   return {
     median: sorted[Math.floor(sorted.length / 2)] ?? 0,
@@ -165,11 +254,17 @@ function quantiles(values: number[]): { median: number; p95: number; minimum: nu
   };
 }
 
-test('qualifie génération, CPU, cadence et ressources sur des cycles réels', async ({ page, browser, context }, testInfo) => {
+test('qualifie génération, CPU, cadence et ressources sur des cycles réels', async ({
+  page,
+  browser,
+  context,
+}, testInfo) => {
   test.setTimeout(360_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
   await page.addInitScript(installProbe);
   const cdp = await context.newCDPSession(page);
   await cdp.send('HeapProfiler.enable');
@@ -187,54 +282,85 @@ test('qualifie génération, CPU, cadence et ressources sur des cycles réels', 
       hardwareConcurrency: navigator.hardwareConcurrency,
       devicePixelRatio: window.devicePixelRatio,
       viewport: { width: innerWidth, height: innerHeight },
-      gpu: debug ? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)) : String(gl.getParameter(gl.RENDERER)),
+      gpu: debug
+        ? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL))
+        : String(gl.getParameter(gl.RENDERER)),
       gpuTimerExtension: gl.getExtension('EXT_disjoint_timer_query_webgl2') !== null,
     };
   });
   const sampleMaximum = Number(await page.locator('#sampleCount').getAttribute('max'));
   expect(sampleMaximum).toBe(60_000);
-  const generations = [];
+  const generations: (ObservedJob & {
+    repetition: number;
+    readyMs: number;
+    receiveToReadyMs: number;
+  })[] = [];
   await cdp.send('Profiler.enable');
   await cdp.send('Profiler.start');
   for (const sampleCount of [2000, 15000, sampleMaximum]) {
-    await page.locator('#sampleCount').fill(String(sampleCount));
-    await ready(page);
+    await setMeasuredSampleCount(page, sampleCount);
     for (let repetition = 0; repetition < 3; repetition++) {
-      generations.push({ repetition, ...await regenerate(page) });
+      generations.push({ repetition, ...(await regenerate(page)) });
     }
   }
   const { profile } = await cdp.send('Profiler.stop');
-  await testInfo.attach('main-thread-cpu.cpuprofile', { body: JSON.stringify(profile), contentType: 'application/json' });
+  await testInfo.attach('main-thread-cpu.cpuprofile', {
+    body: JSON.stringify(profile),
+    contentType: 'application/json',
+  });
 
   // Source doubles are synthetic; the runtime writes doubles directly to Float32 sampling arrays.
   // This isolated allocation+conversion experiment is NOT a separately timed production stage.
-  const conversion = await page.evaluate(() => [2000, 15000, 60000].map((count) => {
-    const source = Float64Array.from({ length: count * 3 }, (_, index) => 100 * Math.sin(index * 0.71));
-    const elapsedMs: number[] = [];
-    let maximumAbsoluteError = 0;
-    for (let repeat = 0; repeat < 20; repeat++) {
-      const start = performance.now();
-      const converted = new Float32Array(source);
-      elapsedMs.push(performance.now() - start);
-      for (let index = 0; index < source.length; index++) {
-        maximumAbsoluteError = Math.max(maximumAbsoluteError, Math.abs((source[index] ?? 0) - (converted[index] ?? 0)));
+  const conversion = await page.evaluate(() =>
+    [2000, 15000, 60000].map((count) => {
+      const source = Float64Array.from(
+        { length: count * 3 },
+        (_, index) => 100 * Math.sin(index * 0.71),
+      );
+      const elapsedMs: number[] = [];
+      let maximumAbsoluteError = 0;
+      for (let repeat = 0; repeat < 20; repeat++) {
+        const start = performance.now();
+        const converted = new Float32Array(source);
+        elapsedMs.push(performance.now() - start);
+        for (let index = 0; index < source.length; index++) {
+          maximumAbsoluteError = Math.max(
+            maximumAbsoluteError,
+            Math.abs((source[index] ?? 0) - (converted[index] ?? 0)),
+          );
+        }
       }
-    }
-    return { count, elapsedMs, maximumAbsoluteError, sourceBytes: source.byteLength, destinationBytes: source.length * 4 };
-  }));
-  const frameIntervals = await page.evaluate(() => new Promise<number[]>((resolve) => {
-    const intervals: number[] = [];
-    let previous = performance.now();
-    const frame = (now: number): void => {
-      intervals.push(now - previous);
-      previous = now;
-      if (intervals.length >= 61) resolve(intervals.slice(1));
-      else requestAnimationFrame(frame);
-    };
-    requestAnimationFrame(frame);
-  }));
+      return {
+        count,
+        elapsedMs,
+        maximumAbsoluteError,
+        sourceBytes: source.byteLength,
+        destinationBytes: source.length * 4,
+      };
+    }),
+  );
+  const frameIntervals = await page.evaluate(
+    () =>
+      new Promise<number[]>((resolve) => {
+        const intervals: number[] = [];
+        let previous = performance.now();
+        const frame = (now: number): void => {
+          intervals.push(now - previous);
+          previous = now;
+          if (intervals.length >= 61) resolve(intervals.slice(1));
+          else requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
 
-  const resourceSeries: ({ cycle: number; heapBytes: number; resources: SceneDiagnostics; buffers: number; textures: number })[] = [];
+  const resourceSeries: {
+    cycle: number;
+    heapBytes: number;
+    resources: SceneDiagnostics;
+    buffers: number;
+    textures: number;
+  }[] = [];
   // Return to precisely the same canonical state, count, seed, and hybrid renderer each cycle.
   // Warm-up precedes comparisons so lazy shader/program creation does not mimic a leak.
   for (let cycle = 0; cycle < 5; cycle++) {
@@ -242,18 +368,15 @@ test('qualifie génération, CPU, cadence et ressources sur des cycles réels', 
     await page.locator('#quantumN').selectOption('2');
     await page.locator('#quantumL').selectOption('1');
     await page.locator('#quantumM').selectOption('1');
-    await page.locator('#sampleCount').fill(cycle % 2 === 0 ? '2000' : '60000');
-    await page.locator('#seedInput').fill(String(700 + cycle));
-    await page.locator('#seedInput').press('Tab');
-    await ready(page);
+    await setMeasuredSampleCount(page, cycle % 2 === 0 ? 2000 : 60000);
+    await setMeasuredSeed(page, 700 + cycle);
     await page.locator('#displayMode').selectOption('isosurface');
     await page.locator('#displayMode').selectOption('cloud');
     await page.locator('label[for="basisReal"]').click();
     await page.locator('#quantumN').selectOption('3');
     await page.locator('#realOrbital').selectOption('d_xy');
-    await page.locator('#sampleCount').fill('15000');
-    await page.locator('#seedInput').fill('1096044365');
-    await page.locator('#seedInput').press('Tab');
+    await setMeasuredSampleCount(page, 15000);
+    await setMeasuredSeed(page, 1096044365);
     await page.locator('#displayMode').selectOption('hybrid');
     await regenerate(page);
     await cdp.send('HeapProfiler.collectGarbage');
@@ -274,7 +397,9 @@ test('qualifie génération, CPU, cadence et ressources sur des cycles réels', 
   await page.evaluate(() => {
     const button = document.querySelector<HTMLButtonElement>('#generateButton');
     if (!button) throw new Error('Generation control missing');
-    button.click(); button.click(); button.click();
+    button.click();
+    button.click();
+    button.click();
   });
   await ready(page);
   const probe = await page.evaluate(() => window.__qualificationProbe);
@@ -292,9 +417,60 @@ test('qualifie génération, CPU, cadence et ressources sur des cycles réels', 
   expect(probe.buffersDeleted).toBeGreaterThan(0);
   expect(probe.jobs.filter((job) => job.status === 'error')).toEqual([]);
   expect(errors).toEqual([]);
+  const generationSummary = Object.fromEntries(
+    [2000, 15000, 60000].map((sampleCount) => {
+      const matching = generations.filter((entry) => entry.sampleCount === sampleCount);
+      return [
+        sampleCount,
+        {
+          workerToResultMs: quantiles(
+            matching.map((entry) => (entry.finishedMs ?? entry.startedMs) - entry.startedMs),
+          ),
+          readyMs: quantiles(matching.map((entry) => entry.readyMs)),
+          transferBytes: matching[0]?.transferBytes ?? 0,
+        },
+      ];
+    }),
+  );
+  const qualificationSummary = {
+    initialReadyMs,
+    gpu: environment.gpu,
+    generationSummary,
+    frameCadence: {
+      observedFps:
+        1000 / (frameIntervals.reduce((sum, value) => sum + value, 0) / frameIntervals.length),
+      intervalsMs: quantiles(frameIntervals),
+    },
+    heapBytes: resourceSeries.map(({ cycle, heapBytes }) => ({ cycle, heapBytes })),
+    resources: stableResources.map(({ cycle, resources, buffers, textures }) => ({
+      cycle,
+      resources,
+      buffers,
+      textures,
+    })),
+    jobs: {
+      total: probe.jobs.length,
+      results: probe.jobs.filter((job) => job.status === 'result').length,
+      cancelled: probe.jobs.filter((job) => job.status === 'cancelled').length,
+      errors: probe.jobs.filter((job) => job.status === 'error').length,
+      peakWorkers: probe.peakWorkers,
+    },
+  };
+  console.log(`QUALIFICATION_SUMMARY=${JSON.stringify(qualificationSummary)}`);
+
   const report = {
-    recordedAt: new Date().toISOString(), initialReadyMs,
-    environment: { ...environment, browserVersion: browser.version(), node: process.version, platform: platform(), osRelease: release(), cpu: cpus()[0]?.model, logicalCpus: cpus().length, physicalMemoryBytes: totalmem() },
+    recordedAt: new Date().toISOString(),
+    initialReadyMs,
+    environment: {
+      ...environment,
+      browserVersion: browser.version(),
+      node: process.version,
+      platform: platform(),
+      osRelease: release(),
+      cpu: cpus()[0]?.model,
+      logicalCpus: cpus().length,
+      physicalMemoryBytes: totalmem(),
+    },
     notes: [
       'Vite development runtime, instrumented Chromium, fixed viewport; wall-clock timings are environment-specific.',
       'Worker stages are main-thread receipt timestamps, not isolated Worker CPU execution time.',
@@ -304,9 +480,19 @@ test('qualifie génération, CPU, cadence et ressources sur des cycles réels', 
       'Heap values are main-page V8 usedSize after explicit GC; exclude Worker heaps and GPU driver memory.',
       'Plateau asserts equal live Three.js and GL resource counts at the same canonical state after warm-up; bounded stress cannot prove universal absence of leaks.',
     ],
-    generations, conversion: conversion.map((entry) => ({ ...entry, summaryMs: quantiles(entry.elapsedMs) })),
-    frameCadence: { sampleCount: frameIntervals.length, intervalsMs: quantiles(frameIntervals), observedFps: 1000 / (frameIntervals.reduce((sum, value) => sum + value, 0) / frameIntervals.length) },
-    resourceSeries, probe,
+    generations,
+    conversion: conversion.map((entry) => ({ ...entry, summaryMs: quantiles(entry.elapsedMs) })),
+    frameCadence: {
+      sampleCount: frameIntervals.length,
+      intervalsMs: quantiles(frameIntervals),
+      observedFps:
+        1000 / (frameIntervals.reduce((sum, value) => sum + value, 0) / frameIntervals.length),
+    },
+    resourceSeries,
+    probe,
   };
-  await testInfo.attach('performance-resources.json', { body: JSON.stringify(report, null, 2), contentType: 'application/json' });
+  await testInfo.attach('performance-resources.json', {
+    body: JSON.stringify(report, null, 2),
+    contentType: 'application/json',
+  });
 });

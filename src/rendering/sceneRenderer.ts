@@ -460,10 +460,11 @@ export function createSceneRenderer(canvas: HTMLCanvasElement): SceneRenderer {
         ) {
           // Les génériques Three.js par défaut sont permissifs ; valider la valeur observée.
           const objectMaterial: unknown = object.material;
-          if (objectMaterial instanceof THREE.Material) materials.add(objectMaterial);
+          if (objectMaterial instanceof THREE.Material)
+            materials.add(objectMaterial as THREE.Material);
           else if (Array.isArray(objectMaterial)) {
             for (const material of objectMaterial) {
-              if (material instanceof THREE.Material) materials.add(material);
+              if (material instanceof THREE.Material) materials.add(material as THREE.Material);
             }
           }
         }
