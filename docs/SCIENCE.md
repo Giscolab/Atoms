@@ -1,10 +1,3 @@
-# Contrat scientifique d'Atoms
-
-Ce document décrit le noyau scientifique pur construit pendant les Lots 2, 2.1 et les Phases 3 à 7.
-Le pipeline 3D visible consomme maintenant ce noyau via le sampler, le Web Worker et le renderer
-scientifique. Le module photon-hydrogène 2D historique a été retiré du produit courant ; il ne
-participe ni au calcul orbital ni à la visualisation 3D.
-
 ## Domaine du modèle
 
 Le modèle cible représente l'atome d'hydrogène neutre `¹H` comme un système électron-proton dans
@@ -353,7 +346,7 @@ normalisations réutilisent la factorielle IEEE-754 du socle : une fonction radi
 `n+l <= 170`, et une harmonique exige `l+|m| <= 170`. Au-delà, l'API échoue explicitement plutôt que
 de retourner une valeur sous-évaluée ou non finie.
 
-## Pipeline 3D intégré (Phases 4 à 7)
+## Pipeline 3D intégré
 
 La génération visible suit un pipeline unique et versionné :
 
@@ -410,5 +403,4 @@ de densité. Le noyau est schématique et explicitement indiqué comme non à l'
   pas le renommage d'un état complexe possédant une valeur unique de `m`.
 
 Les [captures documentaires](captures/) illustrent ces conventions avec le même moteur orbital 3D.
-Le module 2D historique n'est plus distribué avec l'application. Une future expérience de
-spectroscopie ou de transitions devra repartir d'un modèle scientifique autonome, documenté et testé.
+Une future expérience de spectroscopie ou de transitions devra repartir d'un modèle scientifique autonome, documenté et testé.
