@@ -62,7 +62,7 @@ test('initialise le rendu WebGL2, le champ et les analyses sans erreur', async (
   expect(runtimeErrors, runtimeErrors.join('\n')).toEqual([]);
 });
 
-test('sépare base complexe/réelle, seed, thème, nœuds et outil 2D', async ({ page }) => {
+test('sépare base complexe/réelle, seed, thème et nœuds', async ({ page }) => {
   const runtimeErrors = collectRuntimeErrors(page);
   await page.goto('/');
   await waitForGeneration(page);
@@ -100,7 +100,6 @@ test('sépare base complexe/réelle, seed, thème, nœuds et outil 2D', async ({
   await page.locator('#seedInput').press('Tab');
   await waitForGeneration(page);
   await expect(page.locator('#iSeed')).toHaveText('123');
-
 
   await page.locator('#atomSimCanvas').focus();
   await page.keyboard.press('ArrowLeft');
