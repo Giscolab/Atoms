@@ -4,7 +4,7 @@
 **Projet :** `Giscolab/Atoms`  
 **Origine :** réimplémentation web issue du travail pédagogique original de Kavan (`kavan010/Atoms`)  
 **Cible de refonte :** `v5.0.0`  
-**État du plan :** mis à jour après validation des Phases 4 à 7 ; la Phase 8 reste différée
+**État du plan :** Phases 4 à 8 validées ; préparation de la validation globale et du Showcase
 
 ---
 
@@ -107,7 +107,7 @@ Base réelle    : pₓ, pᵧ, dxy, ...
 ## 2.8 Attribution
 
 - [x] Kavan / `kavan010` reste crédité clairement.
-- [x] Le dépôt original est référencé dans `CREDITS.md`.
+- [x] `CREDITS.md` a servi pendant la refonte puis a été retiré avant Showcase.
 - [x] Le README reprend cette attribution de manière visible.
 
 ---
@@ -419,7 +419,6 @@ Atoms/
 │   ├── SCIENCE.md
 │   ├── VALIDATION.md
 │   └── REFERENCES.md
-├── CREDITS.md
 ├── PLAN.md
 ├── README.md
 └── ...
@@ -1266,11 +1265,11 @@ Doit contenir uniquement ce qui existe réellement :
 - [ ] lien vers `VALIDATION.md` ;
 - [ ] aucune fonction inexistante.
 
-## 19.2 CREDITS.md
+## 19.2 Attribution historique
 
-- [x] Kavan / `kavan010` ;
-- [x] dépôt original ;
-- [x] rôle historique/pédagogique ;
+- [x] Kavan / `kavan010` identifié comme inspiration historique ;
+- [x] le dépôt original reste cité de manière concise dans le README ;
+- [x] `CREDITS.md` a été retiré avant la préparation Showcase ;
 - [ ] audit final avant release.
 
 ## 19.3 SCIENCE.md
@@ -1670,20 +1669,19 @@ npm run test:e2e
 
 ## Actions
 
-- [ ] réécrire README ;
-- [x] `CREDITS.md` initial ;
-- [ ] finaliser `CREDITS.md` ;
+- [x] réécrire README ;
+- [x] `CREDITS.md` initial créé pendant la refonte puis retiré avant Showcase ;
 - [x] `SCIENCE.md` initial ;
 - [ ] finaliser `SCIENCE.md` ;
-- [ ] créer `REFERENCES.md` ;
+- [x] créer `REFERENCES.md` avec des liens institutionnels externes ;
 - [ ] finaliser `VALIDATION.md` ;
 - [ ] clarifier licence ;
-- [ ] vérifier droits des documents redistribués ;
-- [ ] traiter le remote `upstream` ;
-- [ ] vérifier qu'`origin` ne possède que les branches voulues ;
-- [ ] décider autonomie/fork network ;
-- [ ] configurer déploiement réel ;
-- [ ] ajouter badges réels uniquement.
+- [x] retirer les PDF tiers redistribués et conserver uniquement des liens vers les sources ;
+- [x] supprimer le remote local `upstream` après autonomie GitHub ;
+- [x] vérifier qu'`origin` ne pointe que vers `Giscolab/Atoms` ;
+- [x] quitter le fork network et rendre le dépôt autonome ;
+- [x] configurer et valider GitHub Pages ;
+- [x] ajouter uniquement des badges correspondant à des services réels ;
 
 ## Critère de sortie
 

@@ -18,7 +18,7 @@ expérimentales. L'énergie calculée ne doit donc pas être présentée comme l
 l'hydrogène réel.
 
 Référence physique : MIT OpenCourseWare, _Quantum Physics I_, [Lectures 21–22: Hydrogen
-Atom](references/MIT8_04S16_LecNotes22.pdf), notamment les équations (1.13), (1.17)–(1.24) et
+Atom](https://ocw.mit.edu/courses/8-04-quantum-physics-i-spring-2016/resources/mit8_04s16_lecnotes22/), notamment les équations (1.13), (1.17)–(1.24) et
 (2.31). La [ressource officielle MIT](https://ocw.mit.edu/courses/8-04-quantum-physics-i-spring-2016/resources/mit8_04s16_lecnotes22/)
 reste la référence institutionnelle en ligne.
 
@@ -163,7 +163,7 @@ P_1^1(x) = -sqrt(1 - x²)
 
 Références : NIST DLMF [§14.7.8](https://dlmf.nist.gov/14.7.E8), définition avec phase, et
 [§14.10.3](https://dlmf.nist.gov/14.10.E3), récurrence en degré. Les notes MIT
-[Lectures 20–21](references/MIT8_04S16_LecNotes20_21.pdf) placent leur facteur `(-1)^m` au niveau
+[Lectures 20–21](https://ocw.mit.edu/courses/8-04-quantum-physics-i-spring-2016/resources/mit8_04s16_lecnotes20_21/) placent leur facteur `(-1)^m` au niveau
 des harmoniques sphériques ; Atoms choisit au contraire de l'intégrer dès `P_l^m`, conformément à
 la convention DLMF retenue. Un futur module d'harmoniques ne devra donc pas l'appliquer une seconde
 fois.
@@ -198,7 +198,7 @@ Sa normalisation est définie dans la coordonnée numérique du moteur :
 La formule et sa mesure sont celles de NIST DLMF
 [§18.39(ii), équations 18.39.35 et 18.39.37](https://dlmf.nist.gov/18.39.E37), avec `Z=1` et
 l'échelle conventionnelle remplacée explicitement par `a_μ`. Les notes MIT
-[Hydrogen Atom](references/MIT8_04S16_LecNotes22.pdf), équations (2.28), (2.33)–(2.36), confirment
+[Hydrogen Atom](https://ocw.mit.edu/courses/8-04-quantum-physics-i-spring-2016/resources/mit8_04s16_lecnotes22/), équations (2.28), (2.33)–(2.36), confirment
 la séparation, le degré polynomial et l'exponentielle. Leur variable radiale vaut `r/(na)`, soit
 `ρ/2` dans le présent contrat ; cette différence de notation ne change pas la fonction.
 
@@ -225,7 +225,7 @@ Y_l^m(theta,phi) = N_lm P_l^m(cos theta) exp(i m phi)
 `P_l^m` est la fonction de Ferrers du module précédent et contient déjà `(-1)^m`. Le module
 `Y_l^m` **n'ajoute donc aucune seconde phase de Condon–Shortley**. Cette décision suit directement
 NIST DLMF [§14.7.8](https://dlmf.nist.gov/14.7.E8). Les notes MIT
-[Quantum Mechanics in 3D / Angular Momentum](references/MIT8_04S16_LecNotes20_21.pdf), équations
+[Quantum Mechanics in 3D / Angular Momentum](https://ocw.mit.edu/courses/8-04-quantum-physics-i-spring-2016/resources/mit8_04s16_lecnotes20_21/), équations
 (3.26)–(3.27), utilisent une autre répartition du même signe : leur `P_l^m` n'inclut pas la phase et
 leur définition de `Y_l^m` l'ajoute ensuite.
 
