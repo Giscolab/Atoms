@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/captures/visual atoms v 5.png" width="850" alt="Atoms">
+</p>
+
 # Hydrogen Quantum Orbital Visualizer
 
 Atoms is an independent web application built around a tested TypeScript scientific core. It provides hydrogen wavefunctions, probability
@@ -6,7 +10,7 @@ rendering. See the [scientific contract](docs/SCIENCE.md), the [institutional re
 and the [validation report](docs/VALIDATION.md) for scope, formulas, conventions, sources and reproducible qualification.
 
 <p align="center">
-  <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="1100" alt="Interface Atoms en thème sombre affichant l’orbitale réelle 3d_xy, issue des composantes m égales à plus ou moins 2, colorée selon la phase de psi en mode hybride avec 16 000 échantillons">
+  <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="800" alt="Interface Atoms en thème sombre affichant l’orbitale réelle 3d_xy, issue des composantes m égales à plus ou moins 2, colorée selon la phase de psi en mode hybride avec 16 000 échantillons">
 </p>
 
 <p align="center">
@@ -176,14 +180,14 @@ l’interface et ses conventions visuelles. Les régressions scientifiques déte
 leur protocole sont décrits dans [VALIDATION.md](docs/VALIDATION.md).
 
 <p align="center">
-  <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="900" alt="Orbitale réelle 3d_xy en thème sombre, phase de psi, nuage probabiliste et isosurface de densité, avec 16 000 échantillons">
+  <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="850" alt="Orbitale réelle 3d_xy en thème sombre, phase de psi, nuage probabiliste et isosurface de densité, avec 16 000 échantillons">
 </p>
 <p align="center">
   <sub><strong>Vue de référence.</strong> Orbitale réelle 3d<sub>xy</sub> · n = 3, l = 2 · combinaison normalisée issue des composantes m = ±2 · phase de ψ · mode hybride · 16 000 échantillons. Cette vue réunit le nuage probabiliste, l’isosurface de densité et les analyses radiale et angulaire.</sub>
 </p>
 
 <p align="center">
-  <img src="docs/captures/Atoms_8d_x2-y2_phase_nuage_n8_l2_mpm2_16000.png" width="680" alt="Orbitale réelle excitée 8d x carré moins y carré en thème sombre, colorée selon la phase de psi et affichée en nuage de 16 000 échantillons">
+  <img src="docs/captures/Atoms_8d_x2-y2_phase_nuage_n8_l2_mpm2_16000.png" width="650" alt="Orbitale réelle excitée 8d x carré moins y carré en thème sombre, colorée selon la phase de psi et affichée en nuage de 16 000 échantillons">
 </p>
 <p align="center">
   <sub><strong>État excité étendu.</strong> Orbitale réelle 8d<sub>x²−y²</sub> · n = 8, l = 2 · combinaison normalisée issue des composantes m = ±2 · phase de ψ · nuage de points · 16 000 échantillons. Cette vue met en évidence l’extension spatiale et la structure radiale d’un état de grand n.</sub>
