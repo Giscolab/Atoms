@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const isLinuxCi = Boolean(process.env.CI) && process.platform === 'linux';
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
@@ -23,6 +25,7 @@ export default defineConfig({
       name: 'firefox',
       use: {
         ...devices['Desktop Firefox'],
+        headless: !isLinuxCi,
         launchOptions: {
           firefoxUserPrefs: {
             'webgl.force-enabled': true,

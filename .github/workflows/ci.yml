@@ -76,7 +76,7 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Exécuter les tests E2E multi-navigateurs
-        run: npm run test:e2e
+        run: xvfb-run -a npm run test:e2e
 
       - name: Conserver le rapport Playwright en cas d'échec
         if: failure()
