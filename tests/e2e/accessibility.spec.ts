@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 const GENERATION_TIMEOUT = 45_000;
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
-async function loadReadyApp(page: Page): Promise {
+async function loadReadyApp(page: Page): Promise<void> {
   const response = await page.goto('/', { timeout: 60_000, waitUntil: 'domcontentloaded' });
   expect(response?.ok()).toBe(true);
   await expect(page.locator('#generationStatus')).toHaveAttribute('data-visible', 'false', {
@@ -15,7 +15,7 @@ async function loadReadyApp(page: Page): Promise {
   });
 }
 
-async function expectNoAutomatedViolations(page: Page): Promise {
+async function expectNoAutomatedViolations(page: Page): Promise<void> {
   const scan = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
   const violations = scan.violations.map(({ id, impact, nodes }) => ({
     id,
@@ -26,7 +26,10 @@ async function expectNoAutomatedViolations(page: Page): Promise {
 }
 
 test.describe('Audits WCAG', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Audit axe exécuté uniquement sous Chromium.');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Audit axe exécuté uniquement sous Chromium.',
+  );
 
   test.beforeEach(async ({ page }) => {
     test.setTimeout(90_000);
@@ -45,7 +48,7 @@ test.describe('Audits WCAG', () => {
   });
 });
 
-async function expectVisibleKeyboardFocus(page: Page): Promise {
+async function expectVisibleKeyboardFocus(page: Page): Promise<string> {
   const focused = page.locator(':focus');
   await expect(focused).toHaveCount(1);
 
@@ -136,9 +139,13 @@ test.describe('Parcours au clavier', () => {
           visited.push(id);
           if (id === 'generateButton') {
             await page.keyboard.press('Enter');
-            await expect(page.locator('#generationStatus')).toHaveAttribute('data-visible', 'false', {
-              timeout: GENERATION_TIMEOUT,
-            });
+            await expect(page.locator('#generationStatus')).toHaveAttribute(
+              'data-visible',
+              'false',
+              {
+                timeout: GENERATION_TIMEOUT,
+              },
+            );
             await expect(page.locator('#engineStatus')).toContainText('prêt');
           }
           if (id === 'resetCamera') await page.keyboard.press('Enter');
@@ -190,4 +197,3 @@ test.describe('Parcours au clavier', () => {
     }
   }
 });
-
