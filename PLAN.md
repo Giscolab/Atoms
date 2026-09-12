@@ -3,7 +3,7 @@
 Ce document contient uniquement le travail encore ouvert. Toute tâche implémentée et validée doit en disparaître.
 
 **Projet :** `Giscolab/Atoms`
-**Cible :** Showcase puis release `v5.0.0`
+**Cible :** Showcase OpenAI puis évolutions non bloquantes.
 
 ## 1. Showcase
 
@@ -20,14 +20,10 @@ Ce document contient uniquement le travail encore ouvert. Toute tâche implémen
 
 ## 3. Évolutions facultatives
 
-Ces pistes ne bloquent ni le Showcase ni la release si elles ne sont pas retenues.
+Ces pistes ne bloquent pas le Showcase et peuvent être traitées après `v5.0.0`.
 
 - [ ] représenter un éventuel courant de probabilité comme **champ de courant**, jamais comme trajectoires individuelles ;
 - [ ] ajouter plusieurs niveaux d’isosurface uniquement après validation visuelle sur des cas connus ;
 - [ ] étendre les familles d’orbitales réelles seulement si l’interface en a réellement besoin ;
 - [ ] envisager le code-splitting du renderer/Three.js uniquement si une mesure de chargement réel montre un bénéfice justifiant la complexité supplémentaire ;
 - [ ] toute future expérience de spectroscopie ou de transitions photon–hydrogène doit repartir d’un modèle scientifique autonome, documenté et testé.
-
-## 4. Release `v5.0.0`
-
-- [ ] créer le tag `v5.0.0` et publier la release lorsque le dernier commit destiné à la release est vert en CI et sur GitHub Pages.
