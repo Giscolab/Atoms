@@ -1,6 +1,14 @@
 # Hydrogen Quantum Orbital Visualizer
 
+<<<<<<< Updated upstream
 Atoms is an interactive web application for exploring the quantum orbitals of the hydrogen atom. It visualizes electron probability densities and wavefunction phase in 3D, helping users understand orbital structure and the different ways it can be represented. Inspired by Kavan’s educational kavan010/Atoms project, Atoms is an independent reimplementation built around a tested TypeScript scientific core. The [scientific documentation](docs/SCIENCE.md) describes the models, formulas, conventions, and validation limits.
+=======
+Inspired by Kavan's pedagogical `kavan010/Atoms` project, Atoms is an independent web reimplementation
+built around a tested TypeScript scientific core. It provides hydrogen wavefunctions, probability
+densities, real-orbital combinations, deterministic sampling, Web Worker execution and Three.js
+rendering. See the [scientific contract](docs/SCIENCE.md) for scope, formulas, conventions, units,
+sources, and validation boundaries.
+>>>>>>> Stashed changes
 
 <p align="center">
   <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="1100" alt="Interface Atoms en thème sombre affichant l’orbitale réelle 3d_xy, issue des composantes m égales à plus ou moins 2, colorée selon la phase de psi en mode hybride avec 16 000 échantillons">
@@ -160,7 +168,7 @@ Three.js et les outils de développement sont installés de façon reproductible
 3. Choisissez l’observable (densité ou phase) et le mode d’affichage ; ajustez le seuil, l’opacité
    et le nombre de points si nécessaire.
 4. Interagissez avec la vue 3D : glisser pour orienter la caméra, molette ou pinch pour zoomer,
-   touche `0` ou bouton dédié pour réinitialiser la vue. La touche `Q` ouvre l’outil 2D historique.
+   touche `0` ou bouton dédié pour réinitialiser la vue.
 5. Pour reproduire une génération, conservez la seed affichée et relancez « Générer l’état ».
 
 ---
@@ -185,12 +193,6 @@ automatisées décrites dans le plan de validation.
   <sub><strong>État excité étendu.</strong> Orbitale réelle 8d<sub>x²−y²</sub> · n = 8, l = 2 · combinaison normalisée issue des composantes m = ±2 · phase de ψ · nuage de points · 16 000 échantillons. Cette vue met en évidence l’extension spatiale et la structure radiale d’un état de grand n.</sub>
 </p>
 
-<p align="center">
-  <img src="docs/captures/Atoms_2p_m0_phase_nuage_n2_l1_m0_29000_legacy2D.png" width="900" alt="État 2p sélectionné dans la base complexe, de nombres quantiques n égal à 2, l égal à 1 et m égal à 0, affiché en thème clair avec un nuage de 29 000 échantillons et le panneau 2D historique ouvert séparément">
-</p>
-<p align="center">
-  <sub><strong>Frontière 3D/2D.</strong> Base complexe · état |2,1,0⟩ · 2p (m = 0) · phase de ψ · nuage de points · 29 000 échantillons. La capture montre le thème clair et l’ouverture du module 2D historique, lequel reste indépendant du calcul orbital 3D.</sub>
-</p>
 
 ---
 

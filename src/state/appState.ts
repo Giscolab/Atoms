@@ -36,17 +36,12 @@ export interface OrbitalRenderingState {
   readonly theme: RenderTheme;
 }
 
-export interface Legacy2DState {
-  readonly legacy2DInitialized: boolean;
-  readonly showLegacy2D: boolean;
-}
 
 /**
  * État applicatif sérialisable de Phase 7. Les grands buffers transférables du
  * sampler et du champ orbital restent la propriété du Worker et du renderer.
  */
 export interface AppState {
-  readonly legacy: Legacy2DState;
   readonly orbital: OrbitalSamplingState;
   readonly rendering: OrbitalRenderingState;
   readonly sampling: OrbitalSamplingConfiguration;
@@ -187,22 +182,11 @@ export function normalizeSamplingConfiguration(value: unknown): OrbitalSamplingC
   };
 }
 
-function normalizeLegacy2DState(value: unknown): Legacy2DState {
-  const legacy = requireRecord(value, "L'état du module 2D legacy");
-  return {
-    legacy2DInitialized: requireBoolean(
-      legacy.legacy2DInitialized,
-      "L'initialisation du module 2D legacy",
-    ),
-    showLegacy2D: requireBoolean(legacy.showLegacy2D, "L'affichage du module 2D legacy"),
-  };
-}
 
-/** Normalisation pure : validation et copie profonde des quatre sous-états. */
+/** Normalisation pure : validation et copie profonde des trois sous-états. */
 export function normalizeAppState(value: unknown): AppState {
   const state = requireRecord(value, "L'état applicatif");
   return {
-    legacy: normalizeLegacy2DState(state.legacy),
     orbital: normalizeOrbitalState(state.orbital),
     rendering: normalizeRenderingState(state.rendering),
     sampling: normalizeSamplingConfiguration(state.sampling),
@@ -212,10 +196,6 @@ export function normalizeAppState(value: unknown): AppState {
 /** État initial correspondant à la maquette UI validée. */
 export function createAppState(): AppState {
   return normalizeAppState({
-    legacy: {
-      legacy2DInitialized: false,
-      showLegacy2D: false,
-    },
     orbital: { basis: 'real', n: 3, orbital: 'd_xy' },
     rendering: {
       cameraRotationEnabled: true,

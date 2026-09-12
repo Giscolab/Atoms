@@ -101,16 +101,6 @@ test('sépare base complexe/réelle, seed, thème, nœuds et outil 2D', async ({
   await waitForGeneration(page);
   await expect(page.locator('#iSeed')).toHaveText('123');
 
-  await page.locator('#btn2d').click();
-  await expect(page.locator('#panel2d')).toBeVisible();
-  await expect(page.locator('#btn2d')).toHaveAttribute('aria-expanded', 'true');
-  await page.locator('#close2d').click();
-  await expect(page.locator('#panel2d')).toBeHidden();
-  await page.locator('#viewport').click({ position: { x: 12, y: 84 } });
-  await page.keyboard.press('q');
-  await expect(page.locator('#panel2d')).toBeVisible();
-  await page.keyboard.press('q');
-  await expect(page.locator('#panel2d')).toBeHidden();
 
   await page.locator('#atomSimCanvas').focus();
   await page.keyboard.press('ArrowLeft');

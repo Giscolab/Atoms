@@ -1,7 +1,7 @@
 # Crédits
 
-Atoms est une réimplémentation web indépendante issue du projet pédagogique historique **Hydrogen Quantum Orbital Visualizer** de **Kavan** (`kavan010/Atoms`). Ce projet original constitue le point de départ historique et pédagogique d'Atoms.
+Atoms a été inspiré par le projet pédagogique **Hydrogen Quantum Orbital Visualizer** de **Kavan** (`kavan010/Atoms`), qui constitue une référence historique et pédagogique.
 
-- Projet original : [kavan010/Atoms](https://github.com/kavan010/Atoms)
+- Projet d'inspiration : [kavan010/Atoms](https://github.com/kavan010/Atoms)
 
-Ce crédit documente la provenance du projet. Il ne constitue pas une déclaration de licence pour le code ou les ressources d'origine ; le statut de licence doit être clarifié séparément avant publication finale.
+Le produit courant est une implémentation web TypeScript/Three.js autonome. Les fichiers source C++/Python du projet d'origine ne font pas partie du code courant, et l'ancien module 2D historique a été retiré. Ce crédit documente l'inspiration et la provenance ; il ne revendique aucun droit sur le code ou les ressources du projet d'origine.

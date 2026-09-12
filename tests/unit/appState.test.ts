@@ -23,10 +23,6 @@ describe('état applicatif scientifique de Phase 7', () => {
     const state = createAppState();
 
     expect(state).toEqual({
-      legacy: {
-        legacy2DInitialized: false,
-        showLegacy2D: false,
-      },
       orbital: { basis: 'real', n: 3, orbital: 'd_xy' },
       rendering: {
         cameraRotationEnabled: true,
@@ -65,7 +61,6 @@ describe('état applicatif scientifique de Phase 7', () => {
 
     expect(normalized).toEqual(source);
     expect(normalized).not.toBe(source);
-    expect(normalized.legacy).not.toBe(source.legacy);
     expect(normalized.orbital).not.toBe(source.orbital);
     expect(normalized.rendering).not.toBe(source.rendering);
     expect(normalized.sampling).not.toBe(source.sampling);
@@ -158,13 +153,4 @@ describe('état applicatif scientifique de Phase 7', () => {
     }
   });
 
-  it('conserve explicitement le module 2D différé et valide ses drapeaux', () => {
-    const state = createAppState();
-    expect(() =>
-      normalizeAppState({
-        ...state,
-        legacy: { legacy2DInitialized: false, showLegacy2D: 'oui' },
-      }),
-    ).toThrow(TypeError);
-  });
 });

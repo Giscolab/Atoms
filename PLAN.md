@@ -1622,25 +1622,20 @@ npm run test:e2e
 
 ---
 
-# Phase 8 — Interactions photon–hydrogène 2D
+# Phase 8 — Module photon-hydrogène 2D retiré
 
-## Actions
+## Décision
 
-- [x] panneau visible/cachable ;
-- [x] raccourci `Q` ;
-- [x] test E2E de visibilité ;
-- [ ] supprimer le modèle de Bohr comme représentation physique principale ;
-- [ ] renommer le module ;
-- [ ] implémenter transitions énergétiques ;
-- [ ] distinguer excitation et ionisation ;
-- [ ] calculer énergie des photons ;
-- [ ] photoionisation ;
-- [ ] documenter hypothèses ;
-- [ ] ajouter tests.
+- [x] retirer le panneau 2D historique, son raccourci `Q`, son état runtime et ses styles ;
+- [x] supprimer `legacyPhotoelectricModel.ts`, `photoelectric2d.ts` et `legacyScience.ts` ;
+- [x] conserver l'historique uniquement dans Git et dans le présent journal de décisions ;
+- [x] ne pas présenter un modèle de Bohr animé comme partie du moteur scientifique actuel ;
+- [ ] toute future expérience de spectroscopie / transitions doit repartir d'un modèle neuf, documenté et testé.
 
 ## Critère de sortie
 
-- [ ] le module 2D possède une signification physique définie et vérifiable.
+- [x] aucun code 2D historique ne participe au produit courant ;
+- [x] le moteur orbital 3D reste autonome et inchangé scientifiquement.
 
 ---
 
@@ -1824,7 +1819,7 @@ Les cases ci-dessus doivent toutes être cochées avant la release finale.
 10. [x] Phase 5 : Worker/concurrence ;
 11. [x] Phase 6 : renderer scientifique ;
 12. [x] Phase 7 : UI/UX scientifique ;
-13. [ ] Phase 8 : photon–hydrogène 2D ;
+13. [x] Phase 8 : module 2D historique retiré ;
 14. [ ] Phase 9 : validation globale ;
 15. [ ] Phase 10 : documentation/autonomie GitHub ;
 16. [ ] Phase 11 : release `v5.0.0`.
@@ -1914,5 +1909,5 @@ tests statistiques déterministes
 ```
 
 Le prochain lot officiel est la **Phase 9 — validation globale**, puis la
-documentation finale. La démonstration photon–hydrogène 2D reste explicitement
-isolée en Phase 8 et n'est pas présentée comme le modèle orbital 3D.
+documentation finale. Le module photon-hydrogène 2D historique a été retiré ;
+toute future expérience de spectroscopie devra être conçue comme un module scientifique neuf.

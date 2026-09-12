@@ -1143,30 +1143,6 @@
     opacity: 0.45;
   }
 
-  .legacy-section {
-    padding: 13px;
-
-    border: 1px dashed var(--line-strong);
-    border-radius: var(--radius-sm);
-
-    color: var(--muted);
-
-    font-size: 10px;
-  }
-
-  .legacy-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    margin-bottom: 5px;
-
-    color: var(--ink);
-
-    font-size: 11px;
-    font-weight: 700;
-  }
-
   .unit-badge,
   .basis-chip,
   .plane-label {
@@ -1475,64 +1451,6 @@
     font-size: 9px;
 
     white-space: nowrap;
-  }
-
-  .legacy-panel {
-    position: absolute;
-    z-index: 8;
-
-    right: 22px;
-    bottom: 22px;
-
-    width: min(
-      360px,
-      calc(100% - 44px)
-    );
-
-    padding: 14px;
-
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
-
-    background: color-mix(
-      in srgb,
-      var(--surface) 94%,
-      transparent
-    );
-
-    box-shadow: var(--shadow);
-  }
-
-  .legacy-panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 10px;
-  }
-
-  .legacy-panel h2 {
-    font-family: var(--serif);
-    font-size: 16px;
-    font-weight: 400;
-  }
-
-  .legacy-panel p {
-    margin: 7px 0 10px;
-
-    color: var(--muted);
-
-    font-size: 10px;
-  }
-
-  #c2d {
-    display: block;
-
-    width: 100%;
-    height: auto;
-
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
   }
 }
 

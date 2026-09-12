@@ -15,7 +15,6 @@ export interface UiCallbacks {
   setOrbital(orbital: OrbitalSamplingState): void;
   setSampling(sampling: AppState['sampling']): void;
   setRendering(patch: Partial<OrbitalRenderingState>): void;
-  setLegacy2DVisible(visible: boolean): void;
 }
 
 export interface AppUi {
@@ -293,26 +292,6 @@ export function createAppUi(initialState: AppState): AppUi {
       quantumN.focus();
     });
 
-    const button2d = requireElement('btn2d', HTMLButtonElement);
-    const toggle2d = (): void => {
-      const next = !currentState.legacy.showLegacy2D;
-      bound.setLegacy2DVisible(next);
-      button2d.setAttribute('aria-expanded', String(next));
-    };
-    button2d.addEventListener('click', toggle2d);
-    requireElement('close2d', HTMLButtonElement).addEventListener('click', toggle2d);
-    window.addEventListener('keydown', (event) => {
-      if (event.defaultPrevented || event.repeat) return;
-      const target = event.target;
-      if (
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLSelectElement ||
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLButtonElement
-      )
-        return;
-      if (event.key.toLowerCase() === 'q') toggle2d();
-    });
   }
 
   const api: AppUi = {
@@ -390,13 +369,6 @@ export function createAppUi(initialState: AppState): AppUi {
       nodesToggle.title = nodesAvailable
         ? 'Afficher les surfaces nodales ψ = 0'
         : 'Les nœuds de phase complexe non réelle ne sont pas affichés';
-      const panel2d = requireElement('panel2d', HTMLElement);
-      panel2d.hidden = !state.legacy.showLegacy2D;
-      panel2d.classList.toggle('visible', state.legacy.showLegacy2D);
-      requireElement('btn2d', HTMLButtonElement).setAttribute(
-        'aria-expanded',
-        String(state.legacy.showLegacy2D),
-      );
     },
     setEngineStatus(message, status = 'ready'): void {
       const element = requireElement('engineStatus', HTMLElement);

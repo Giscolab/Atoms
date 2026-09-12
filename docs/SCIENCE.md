@@ -2,8 +2,8 @@
 
 Ce document décrit le noyau scientifique pur construit pendant les Lots 2, 2.1 et les Phases 3 à 7.
 Le pipeline 3D visible consomme maintenant ce noyau via le sampler, le Web Worker et le renderer
-scientifique. Le module photon–hydrogène 2D reste une démonstration historique séparée, explicitement
-maintenue en Phase 8, et ne constitue pas la source du modèle orbital 3D.
+scientifique. Le module photon-hydrogène 2D historique a été retiré du produit courant ; il ne
+participe ni au calcul orbital ni à la visualisation 3D.
 
 ## Domaine du modèle
 
@@ -410,11 +410,5 @@ de densité. Le noyau est schématique et explicitement indiqué comme non à l'
   pas le renommage d'un état complexe possédant une valeur unique de `m`.
 
 Les [captures documentaires](captures/) illustrent ces conventions avec le même moteur orbital 3D.
-Dans la capture où le panneau 2D historique est ouvert, seule la visualisation orbitale 3D relève de
-ce pipeline : le panneau 2D reste un module indépendant maintenu pour la Phase 8. Les légendes et le
-rôle de chaque image sont détaillés dans la section
-[Captures d'écran du README](../README.md#captures-décran).
-
-`legacyScience.ts` est désormais limité à la constante du panneau photon–hydrogène 2D historique.
-Il n'est pas utilisé pour la génération orbitale 3D. Toute évolution de ce module 2D doit rester dans
-la Phase 8 et documenter séparément ses hypothèses physiques.
+Le module 2D historique n'est plus distribué avec l'application. Une future expérience de
+spectroscopie ou de transitions devra repartir d'un modèle scientifique autonome, documenté et testé.

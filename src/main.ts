@@ -4,9 +4,7 @@ import {
   createOrbitalWorkerClient,
   OrbitalWorkerCancellationError,
 } from './app/orbitalWorkerClient';
-import { createPhotoelectric2D } from './rendering/photoelectric2d';
 import { createSceneRenderer } from './rendering/sceneRenderer';
-import { LEGACY_PHOTOELECTRIC_ENERGY } from './science/legacyScience';
 import { createAppState, normalizeAppState, type AppState } from './state/appState';
 import { createAppUi } from './ui/appUi';
 import { requireElement } from './ui/dom';
@@ -79,8 +77,6 @@ const renderer = createSceneRenderer(canvas3d);
 const ui = createAppUi(state);
 const workerClient = createOrbitalWorkerClient();
 
-// État runtime impératif : le canvas 2D a-t-il été réellement créé ?
-let photoelectricInitialized = false;
 // Variables partagées (contexte unique)
 let lastNodesAvailable = state.orbital.basis === 'real' || state.orbital.m === 0;
 let generationSequence = 0;
@@ -103,46 +99,6 @@ function updateState(next: AppState): void {
   lastNodesAvailable = state.orbital.basis === 'real' || state.orbital.m === 0;
   renderer.setAppearance(state.rendering);
   renderState(); // Inclut déjà ui.updateHud()
-}
-
-function initializeLegacy2DIfNeeded(): void {
-  if (photoelectricInitialized) return;
-
-  createPhotoelectric2D(
-    requireElement('c2d', HTMLCanvasElement),
-    () => state.legacy.showLegacy2D,
-    LEGACY_PHOTOELECTRIC_ENERGY,
-  ).init();
-
-  photoelectricInitialized = true;
-
-  if (!state.legacy.legacy2DInitialized) {
-    updateState(
-      normalizeAppState({
-        ...state,
-        legacy: {
-          ...state.legacy,
-          legacy2DInitialized: true,
-        },
-      }),
-    );
-  }
-}
-
-function setLegacy2DVisible(visible: boolean): void {
-  updateState(
-    normalizeAppState({
-      ...state,
-      legacy: {
-        ...state.legacy,
-        showLegacy2D: visible,
-      },
-    }),
-  );
-
-  if (visible) {
-    initializeLegacy2DIfNeeded();
-  }
 }
 
 function showGenerationError(message: string): void {
@@ -221,7 +177,6 @@ ui.bind({
     renderer.fitCameraToOrbital();
     ui.updateHud(state, renderer.getCameraDistance());
   },
-  setLegacy2DVisible,
   setOrbital: (orbital) => {
     updateState(normalizeAppState({ ...state, orbital }));
     void generateCurrentOrbital();

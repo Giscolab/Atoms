@@ -25,7 +25,7 @@ function readSource(path: string): string {
 }
 
 describe('frontières architecturales', () => {
-  it('garde la couche scientifique indépendante de Three.js et du navigateur', async () => {
+  it('garde la couche scientifique indépendante de Three.js et du navigateur', () => {
     const scienceDirectory = join(sourceRoot, 'science');
     const scienceFiles = collectTypeScriptFiles(scienceDirectory);
     expect(scienceFiles.length).toBeGreaterThan(0);
@@ -44,10 +44,9 @@ describe('frontières architecturales', () => {
       }
     }
 
-    await expect(import('../../src/science/legacyScience')).resolves.toBeDefined();
   });
 
-  it('confine Three.js au rendu et les formules legacy hors du rendu et de l’UI', () => {
+  it('confine Three.js au rendu et les formules physiques hors du rendu et de l’UI', () => {
     const sourceFiles = collectTypeScriptFiles(sourceRoot);
     const threeImporters = sourceFiles
       .filter((path) =>
@@ -58,7 +57,7 @@ describe('frontières architecturales', () => {
     expect(threeImporters.every((path) => path.startsWith('rendering/'))).toBe(true);
 
     const formulaDefinitionPattern =
-      /-13\.6|52\.9|5\.29|NAMED_SAMPLERS|\bfunction\s+(?:gamma|buildRCDF|buildTCDF|legacyOrbitalIntensity|legacyProbabilityFlow|sampleLegacyOrbitalPoint)\b/u;
+      /-13\.6|52\.9|5\.29|NAMED_SAMPLERS|\bfunction\s+(?:gamma|buildRCDF|buildTCDF)\b/u;
     for (const directoryName of ['rendering', 'ui']) {
       const files = collectTypeScriptFiles(join(sourceRoot, directoryName));
       for (const path of files) {
@@ -66,11 +65,6 @@ describe('frontières architecturales', () => {
       }
     }
 
-    for (const path of collectTypeScriptFiles(join(sourceRoot, 'ui'))) {
-      expect(readSource(path), sourceName(path)).not.toMatch(
-        /legacyOrbitalColor|legacyOrbitalIntensity|sampleLegacyOrbitalPoint/u,
-      );
-    }
   });
 
   it('laisse main comme point de composition et isole le sampler scientifique', () => {
@@ -87,7 +81,7 @@ describe('frontières architecturales', () => {
       /(?:from\s+|import\s*\()\s*['"]node:/u,
       /(?:from\s+|import\s*\()\s*['"](?:\.\.\/)+(?:app|data|rendering|state|ui|workers)(?:\/|['"])/u,
       /\bMath\.random\b/u,
-      /\b(?:SAMPLER_MAP|NAMED_SAMPLERS|legacyScience)\b/u,
+      /\b(?:SAMPLER_MAP|NAMED_SAMPLERS)\b/u,
     ];
     for (const path of collectTypeScriptFiles(samplingDirectory)) {
       const source = readSource(path);
@@ -98,24 +92,6 @@ describe('frontières architecturales', () => {
   });
 
   it('branche le nouveau noyau dans les frontières applicatives prévues', () => {
-    const runtimeFiles = collectTypeScriptFiles(sourceRoot).filter((path) => {
-      const name = sourceName(path);
-      return !name.startsWith('science/') && !name.startsWith('sampling/');
-    });
-    const legacyBoundaryFiles = new Set([
-      'main.ts',
-      'rendering/photoelectric2d.ts',
-      'rendering/legacyPhotoelectricModel.ts',
-    ]);
-    for (const path of runtimeFiles) {
-      const name = sourceName(path);
-      const source = readSource(path);
-      if (!legacyBoundaryFiles.has(name)) {
-        expect(source, `${name} ne doit pas importer la couche legacy`).not.toMatch(
-          /(?:from\s+|import\s*\()\s*['"][^'"]*\/science\/legacyScience['"]/u,
-        );
-      }
-    }
     expect(readSource(join(sourceRoot, 'app', 'orbitalPresentation.ts'))).toMatch(
       /\/science\/hydrogen\//u,
     );
@@ -129,7 +105,7 @@ describe('frontières architecturales', () => {
       /(?:from\s+|import\s*\()\s*['"]three(?:\/[^'"]*)?['"]/u,
       /(?:from\s+|import\s*\()\s*['"](?:\.\.\/)+(?:data|rendering|state|ui)(?:\/|['"])/u,
       /\b(?:document|window|HTMLElement|HTMLCanvasElement|WebGLRenderer|Math\.random)\b/u,
-      /\b(?:SAMPLER_MAP|NAMED_SAMPLERS|legacyScience)\b/u,
+      /\b(?:SAMPLER_MAP|NAMED_SAMPLERS)\b/u,
     ];
     for (const path of collectTypeScriptFiles(workersDirectory)) {
       const source = readSource(path);
