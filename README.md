@@ -37,6 +37,7 @@ and the [validation report](docs/VALIDATION.md) for scope, formulas, conventions
 - [Utilisation](#utilisation)
 - [Captures d'écran](#captures-décran)
 - [Contribution](#contribution)
+- [Licence](#licence)
 - [Objectifs](#objectifs)
 
 ---
@@ -207,6 +208,12 @@ Idées de contributions : Ajout de support pour d’autres atomes, optimisation 
 
 ---
 
+
+## Licence
+
+Atoms est publié sous licence [MIT](LICENSE). Les dépendances tierces conservent leurs licences respectives.
+
+---
 
 ## Objectifs
 

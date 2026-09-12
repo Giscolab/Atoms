@@ -59,6 +59,6 @@ Validation protocol and limits: `docs/VALIDATION.md`
 
 Institutional sources: `docs/REFERENCES.md`
 
-## License status
+## License
 
-The release notes intentionally do not declare a software license. The repository owner must make the license decision before the final `v5.0.0` release checkpoint.
+Atoms v5.0.0 is released under the [MIT License](../LICENSE).
