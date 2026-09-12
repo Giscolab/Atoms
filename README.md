@@ -1,6 +1,6 @@
 # Hydrogen Quantum Orbital Visualizer
-project, Atoms is an independent web reimplementation
-built around a tested TypeScript scientific core. It provides hydrogen wavefunctions, probability
+
+Atoms is an independent web application built around a tested TypeScript scientific core. It provides hydrogen wavefunctions, probability
 densities, real-orbital combinations, deterministic sampling, Web Worker execution and Three.js
 rendering. See the [scientific contract](docs/SCIENCE.md) for scope, formulas, conventions, units,
 sources, and validation boundaries.
