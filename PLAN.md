@@ -7,7 +7,6 @@ Ce document contient uniquement le travail encore ouvert. Toute tâche implémen
 
 ## 1. Showcase
 
-- [ ] finaliser le dossier de soumission : couverture, titre, tagline, description, cas d’usage, stack, processus de construction avec Codex/GPT et URLs publiques ;
 - [ ] soumettre Atoms au Showcase OpenAI.
 
 ## 2. Statut de licence

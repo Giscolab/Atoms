@@ -61,6 +61,10 @@ Playwright qualifie l'application sous Chromium, Firefox et WebKit. Les scénari
 chargement WebGL2, la génération scientifique, les bases complexe/réelle, la seed, les thèmes,
 les nœuds, le responsive mobile, le défilement compact et les interactions principales.
 
+Sur les runners Linux GitHub Actions dépourvus de GPU matériel, le projet Firefox de Playwright
+active `webgl.force-enabled=true` afin d’autoriser le backend logiciel WebGL2. Ce réglage appartient
+uniquement à l’environnement de qualification ; il ne modifie ni le code produit ni le site déployé.
+
 La navigation clavier est testée dans les deux thèmes et les deux bases. Le parcours vérifie les
 contrôles quantiques, l'observable, le mode d'affichage, l'échantillonnage, les toggles, la
 génération, la caméra, le canvas et le panneau d'analyses. Les éléments atteints par `Tab` doivent

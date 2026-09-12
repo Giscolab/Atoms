@@ -170,9 +170,9 @@ Three.js et les outils de développement sont installés de façon reproductible
 
 ## Captures d'écran
 
-Ces captures documentent plusieurs usages du m?me pipeline orbital 3D. Elles servent ? pr?senter
-l?interface et ses conventions visuelles. Les r?gressions scientifiques d?terministes versionn?es et
-leur protocole sont d?crits dans [VALIDATION.md](docs/VALIDATION.md).
+Ces captures documentent plusieurs usages du même pipeline orbital 3D. Elles servent à présenter
+l’interface et ses conventions visuelles. Les régressions scientifiques déterministes versionnées et
+leur protocole sont décrits dans [VALIDATION.md](docs/VALIDATION.md).
 
 <p align="center">
   <img src="docs/captures/Atoms_3d_xy_phase_hybride_n3_l2_mpm2_16000.png" width="900" alt="Orbitale réelle 3d_xy en thème sombre, phase de psi, nuage probabiliste et isosurface de densité, avec 16 000 échantillons">
