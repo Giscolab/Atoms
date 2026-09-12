@@ -14,12 +14,12 @@ npm run typecheck:science
 npm test
 npm run build
 npm run test:e2e
-npx playwright test --config=playwright.qualification.config.ts
+npm run test:qualification
 npm run format:check
 git diff --check
 ```
 
-La CI GitHub exécute les contrôles de qualité puis les E2E sous Chromium, Firefox et WebKit.
+La CI GitHub audite les dépendances, vérifie le formatage et les contrôles de qualité, puis exécute les E2E sous Chromium, Firefox et WebKit.
 La qualification performance reste séparée car ses temps dépendent du matériel et du navigateur.
 
 ## Validation scientifique

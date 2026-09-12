@@ -32,8 +32,10 @@ Ces pistes ne bloquent ni le Showcase ni la release si elles ne sont pas retenue
 - [ ] représenter un éventuel courant de probabilité comme **champ de courant**, jamais comme trajectoires individuelles ;
 - [ ] ajouter plusieurs niveaux d’isosurface uniquement après validation visuelle sur des cas connus ;
 - [ ] étendre les familles d’orbitales réelles seulement si l’interface en a réellement besoin ;
+- [ ] envisager le code-splitting du renderer/Three.js uniquement si une mesure de chargement réel montre un bénéfice justifiant la complexité supplémentaire ;
 - [ ] toute future expérience de spectroscopie ou de transitions photon–hydrogène doit repartir d’un modèle scientifique autonome, documenté et testé.
 
 ## 5. Release `v5.0.0`
 
+- [ ] synchroniser la version de `package.json` et `package-lock.json` avec `5.0.0` au moment de préparer la release ;
 - [ ] créer le tag `v5.0.0` et publier la release lorsque le statut de licence est décidé et que le dernier commit destiné à la release est vert en CI et sur GitHub Pages.

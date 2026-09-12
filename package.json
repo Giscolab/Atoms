@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:qualification": "playwright test --config=playwright.qualification.config.ts"
   },
   "engines": {
     "node": ">=24.19.0"

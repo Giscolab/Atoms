@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -27,6 +27,12 @@ jobs:
 
       - name: Installer les dépendances
         run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+
+      - name: Check formatting
+        run: npm run format:check
 
       - name: Vérifier le lint
         run: npm run lint
